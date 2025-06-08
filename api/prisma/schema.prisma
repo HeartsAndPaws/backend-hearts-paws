@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String   @id @default(uuid())
+  nombre    String
+  email     String   @unique
+  password  String
+  telefono  String?
+  direccion String?
+  ciudad    String?
+  pais      String?
+  rol       Rol      @default(USUARIO)
+  creado_en DateTime @default(now())
+
+  // Relaciones
+  donaciones Donacion[]
+  adopciones Adopcion[]
+  chats      Chat[]     @relation("UsuarioChats")
+  mensajes   Mensaje[]  @relation("UsuarioMensajes")
+}
+
+model Organizacion {
+  id          String   @id @default(uuid())
+  nombre      String
+  email       String   @unique
+  descripcion String?
+  telefono    String?
+  direccion   String?
+  ciudad      String?
+  pais        String?
+  plan        Plan     @default(GRATUITO)
+  creado_en   DateTime @default(now())
+
+  mascotas   Mascota[]
+  chats      Chat[]     @relation("OrganizacionChats")
+  donaciones Donacion[]
+  adopciones Adopcion[]
+}
+
+model Mascota {
+  id             String   @id @default(uuid())
+  nombre         String
+  edad           Int
+  tipo           String
+  raza           String
+  descripcion    String?
+  estadoAdopcion Boolean  @default(false)
+  estadoDonacion Boolean  @default(false)
+  creada_en      DateTime @default(now())
+
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  organizacionId String
+
+  donaciones Donacion[]
+  adopciones Adopcion[]
+}
+
+model Donacion {
+  id             String       @id @default(uuid())
+  usuario        Usuario      @relation(fields: [usuarioId], references: [id])
+  usuarioId      String
+  mascota        Mascota?     @relation(fields: [mascotaId], references: [id])
+  mascotaId      String?
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  organizacionId String
+  monto          Float
+  comprobante    String? // URL al archivo o imagen
+  fecha          DateTime     @default(now())
+}
+
+model Adopcion {
+  id                String         @id @default(uuid())
+  usuario           Usuario        @relation(fields: [usuarioId], references: [id])
+  usuarioId         String
+  mascota           Mascota        @relation(fields: [mascotaId], references: [id])
+  mascotaId         String
+  estado            EstadoAdopcion @default(PENDIENTE)
+  fechaSolicitud    DateTime       @default(now())
+  fechaConfirmacion DateTime?
+
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  organizacionId String
+}
+
+model Chat {
+  id             String       @id @default(uuid())
+  usuario        Usuario      @relation("UsuarioChats", fields: [usuarioId], references: [id])
+  usuarioId      String
+  organizacion   Organizacion @relation("OrganizacionChats", fields: [organizacionId], references: [id])
+  organizacionId String
+  mensajes       Mensaje[]
+  creado_en      DateTime     @default(now())
+}
+
+model Mensaje {
+  id         String   @id @default(uuid())
+  chat       Chat     @relation(fields: [chatId], references: [id])
+  chatId     String
+  autor      Usuario  @relation("UsuarioMensajes", fields: [autorId], references: [id])
+  autorId    String
+  contenido  String
+  enviado_en DateTime @default(now())
+}
+
+enum Rol {
+  USUARIO
+  ADMIN
+}
+
+enum EstadoAdopcion {
+  PENDIENTE
+  ACEPTADA
+  RECHAZADA
+}
+
+enum Plan {
+  GRATUITO
+  PREMIUM
+}
