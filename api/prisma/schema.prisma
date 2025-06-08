@@ -119,7 +119,6 @@ model Mensaje {
 enum Rol {
   USUARIO
   ADMIN
-  ORGANIZACION
 }
 
 enum EstadoAdopcion {
