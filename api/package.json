@@ -6,7 +6,10 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "generate": "prisma generate",
+    "seed": "dotenv -e .env.development -- ts-node prisma/seed.ts",
+    "seed:stagign": "dotenv -e .env.stagign -- ts-node prisma/seed.ts",
+    "build": "npm run generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "dotenv -e .env.development -- nest start --watch",
