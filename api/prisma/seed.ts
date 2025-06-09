@@ -1,8 +1,16 @@
-import { PrismaClient, Rol, Plan } from "../generated/prisma";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+import { PrismaClient, Rol, Plan } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main(){
+    // Limpiar tablas
+    await prisma.mascota.deleteMany();
+    await prisma.organizacion.deleteMany();
+    await prisma.usuario.deleteMany();
+
     // crear usuarios
     const usuario1 = await prisma.usuario.create({
         data: {
@@ -82,15 +90,14 @@ async function main(){
         },
     });
 
-    console.log('Seed completo correctamente');
+    console.log('Seed ejecutado correctamente');
 };
 
 main()
-    .then(async () => {
-        await prisma.$disconnect();
-    })
-    .catch(async (e) => {
+    .catch((e) => {
         console.error('Error en el seed:', e);
+    })
+    .finally(async () => {
         await prisma.$disconnect();
-        process.exit(1);
     });
+    
