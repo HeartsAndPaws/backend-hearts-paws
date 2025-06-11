@@ -21,6 +21,10 @@
     "prisma:prod": "dotenv -e .env.production -- npx prisma db push",
     "prisma:studio": "dotenv -e .env.development -- npx prisma studio",
 
+    "prisma:reset": "dotenv -e .env.development -- npx prisma migrate reset",
+    "prisma:resetstaging": "dotenv -e .env.staging -- npx prisma migrate reset",
+    "prisma:resetprod": "dotenv -e .env.production -- npx prisma migrate reset",
+
     "seed": "dotenv -e .env.development -- ts-node prisma/seed.ts",
     "seed:staging": "dotenv -e .env.staging -- ts-node prisma/seed.ts",
     "seed:prod": "dotenv -e .env.production -- ts-node prisma/seed.ts",
