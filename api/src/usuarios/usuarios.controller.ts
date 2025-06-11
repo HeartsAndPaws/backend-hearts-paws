@@ -1,34 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
-import { CreateUsuarioDto } from './dto/create-usuario.dto';
-import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
+
 
 @Controller('usuarios')
 export class UsuariosController {
-  constructor(private readonly usuariosService: UsuariosService) {}
+  constructor(
+    private readonly usuariosService: UsuariosService,
+    private readonly cloudinaryService: CloudinaryService
+  ) {}
 
-  @Post()
-  create(@Body() createUsuarioDto: CreateUsuarioDto) {
-    return this.usuariosService.create(createUsuarioDto);
+  @Post(':id/foto')
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: filtroArchivoImagen,
+    limits: limits
+  }))
+  async subirFotoPerfil(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ){
+    const subirImagen = await this.cloudinaryService.subirIamgen(file);
+    return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url)
   }
 
-  @Get()
-  findAll() {
-    return this.usuariosService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usuariosService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
-    return this.usuariosService.update(+id, updateUsuarioDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usuariosService.remove(+id);
-  }
 }

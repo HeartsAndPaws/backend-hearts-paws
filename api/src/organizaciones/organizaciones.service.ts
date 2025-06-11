@@ -1,26 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrganizacioneDto } from './dto/create-organizacione.dto';
 import { UpdateOrganizacioneDto } from './dto/update-organizacione.dto';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class OrganizacionesService {
-  create(createOrganizacioneDto: CreateOrganizacioneDto) {
-    return 'This action adds a new organizacione';
-  }
+  constructor(
+    private readonly prisma: PrismaService
+  ){}
 
-  findAll() {
-    return `This action returns all organizaciones`;
-  }
+  async actualizarFotoPerfil(id: string, fotoUrl: string){
+    const ongActualizada = this.prisma.organizacion.update({
+      where: { id },
+      data: { imagenPerfil: fotoUrl},
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        imagenPerfil: true,
+        plan: true,
+        creado_en: true
+      }
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} organizacione`;
-  }
 
-  update(id: number, updateOrganizacioneDto: UpdateOrganizacioneDto) {
-    return `This action updates a #${id} organizacione`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} organizacione`;
+    return ongActualizada;
   }
 }

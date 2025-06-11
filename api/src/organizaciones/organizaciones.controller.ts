@@ -1,34 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { OrganizacionesService } from './organizaciones.service';
-import { CreateOrganizacioneDto } from './dto/create-organizacione.dto';
-import { UpdateOrganizacioneDto } from './dto/update-organizacione.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
+
 
 @Controller('organizaciones')
 export class OrganizacionesController {
-  constructor(private readonly organizacionesService: OrganizacionesService) {}
+  constructor(
+    private readonly organizacionesService: OrganizacionesService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
-  @Post()
-  create(@Body() createOrganizacioneDto: CreateOrganizacioneDto) {
-    return this.organizacionesService.create(createOrganizacioneDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.organizacionesService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.organizacionesService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrganizacioneDto: UpdateOrganizacioneDto) {
-    return this.organizacionesService.update(+id, updateOrganizacioneDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.organizacionesService.remove(+id);
+  @Post(':id/foto')
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: filtroArchivoImagen,
+    limits: limits
+  }))
+  async subirFotoPerfil(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ){
+    const subirImagen = await this.cloudinaryService.subirIamgen(file);
+    return this.organizacionesService.actualizarFotoPerfil(id, subirImagen.secure_url);
   }
 }
