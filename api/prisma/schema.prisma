@@ -17,11 +17,12 @@ model Usuario {
   id        String   @id @default(uuid())
   nombre    String
   email     String   @unique
-  password  String
+  contraseña  String
   telefono  String?
   direccion String?
   ciudad    String?
   pais      String?
+  imagenPerfil String?
   rol       Rol      @default(USUARIO)
   creado_en DateTime @default(now())
 
@@ -36,11 +37,13 @@ model Organizacion {
   id          String   @id @default(uuid())
   nombre      String
   email       String   @unique
+  contraseña  String
   descripcion String?
   telefono    String?
   direccion   String?
   ciudad      String?
   pais        String?
+  imagenPerfil String?
   plan        Plan     @default(GRATUITO)
   creado_en   DateTime @default(now())
 
@@ -66,6 +69,15 @@ model Mascota {
 
   donaciones Donacion[]
   adopciones Adopcion[]
+  imagenes   imagenMascota[] 
+}
+
+model imagenMascota {
+  id             String   @id @default(uuid())
+  url            String
+  mascota        Mascota  @relation(fields: [mascotaId], references: [id])
+  mascotaId      String
+  subida_en      DateTime @default(now())
 }
 
 model Donacion {
