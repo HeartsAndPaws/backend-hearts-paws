@@ -3,11 +3,12 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import * as jwksRsa from 'jwks-rsa';
 import * as dotenv from 'dotenv';
+import { PrismaService } from 'prisma/prisma.service';
 dotenv.config();
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     super({
       secretOrKeyProvider: jwksRsa.passportJwtSecret({
         cache: true,
@@ -23,7 +24,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    console.log("Entrando en la función validate de JwtStrategy");
+    
+      console.log("Entro a validate JWT Strategy");
+      
+
+    
     
     return payload;
   }
