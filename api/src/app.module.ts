@@ -6,8 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { OrganizacionesModule } from './organizaciones/organizaciones.module';
 import { AuthModule } from './auth/auth.module';
-import { PrismaService } from 'prisma/prisma.service';
-import { PrismaModule } from 'prisma/prisma.module'
+import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaModule } from 'src/prisma/prisma.module'
 
 @Module({
   imports: [
