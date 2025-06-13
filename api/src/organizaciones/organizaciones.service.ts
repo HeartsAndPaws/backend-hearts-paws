@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrganizacioneDto } from './dto/create-organizacione.dto';
 import { UpdateOrganizacioneDto } from './dto/update-organizacione.dto';
-import { PrismaService } from 'prisma/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class OrganizacionesService {
