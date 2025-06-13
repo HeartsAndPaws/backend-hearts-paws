@@ -12,7 +12,7 @@
     "start:dev": "dotenv -e .env.development -- nest start --watch",
     "start:staging": "dotenv -e .env.staging -- nest start",
     "start:prod": "dotenv -e .env.production -- node dist/main",
-    "generate": "prisma generate",
+    "generate": "prisma generate --schema=src/prisma/schema.prisma",
     "prisma:dev": "dotenv -e .env.development -- npx prisma migrate dev",
     "prisma:staging": "dotenv -e .env.staging -- npx prisma db push",
     "prisma:prod": "dotenv -e .env.production -- npx prisma db push",
