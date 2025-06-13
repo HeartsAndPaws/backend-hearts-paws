@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import * as jwksRsa from 'jwks-rsa';
 import * as dotenv from 'dotenv';
-import { PrismaService } from 'prisma/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 dotenv.config();
 
 @Injectable()
@@ -27,6 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     
       const email = payload.email
       const nombre = payload.name || null
+      const picture = payload.picture || null
 
       let user = await this.prisma.usuario.findUnique({
         where: { email }
@@ -38,7 +39,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             email,
             nombre,
             rol: 'USUARIO',
-            password: '', // Set a default or placeholder password
+            picture,
+            password: ''
+            
           },
         });
       }
