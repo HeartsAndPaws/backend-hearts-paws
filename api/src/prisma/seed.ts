@@ -16,7 +16,7 @@ async function main(){
         data: {
             nombre: 'Lucía Fernández',
             email: 'lucia@example.com',
-            contraseña: 'hashed-password1', // Asegúrate de usar un hash real en producción
+            contrasena: 'hashed-password1', // Asegúrate de usar un hash real en producción
             telefono: '+5491122334455',
             direccion: 'Av. Siempre Viva 123',
             ciudad: 'Buenos Aires',
@@ -29,7 +29,7 @@ async function main(){
         data: {
             nombre: 'Admin Hearts',
             email: 'admin@heartsandpaws.com',
-            contraseña: 'hashed-admin-contraseña',
+            contrasena: 'hashed-admin-contraseña',
             rol: Rol.ADMIN,
             ciudad: 'Ciudad Autónoma',
             pais: 'Argentina',
@@ -41,7 +41,7 @@ async function main(){
         data: {
             nombre: 'Patitas Callejeras',
             email: 'contacto@patitas.org',
-            contraseña: 'hashed-ong-contraseña',
+            contrasena: 'hashed-ong-contraseña',
             descripcion: 'Refugio y rehabilitación de animales en situación de calle.',
             telefono: '+5491144455566',
             direccion: 'Calle Rescate Animal 456',
@@ -55,7 +55,7 @@ async function main(){
         data: {
             nombre: 'Huellas de Amor',
             email: 'info@huellas.org',
-            contraseña: 'hashed-ong-contraseña',
+            contrasena: 'hashed-ong-contraseña',
             descripcion: 'Adopciones responsables con seguimiento post-adopción.',
             direccion: 'Av. Adopción 789',
             ciudad: 'Mendoza',
