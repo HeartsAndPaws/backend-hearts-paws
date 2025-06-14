@@ -1,8 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { NuevoUsuarioDto } from 'src/dtos/NuevoUsuario.dto';
+import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 
 @Injectable()
 export class ServicioAuth {
@@ -12,14 +12,20 @@ export class ServicioAuth {
   ) {}
 
   async registro(datosDeUsuario: NuevoUsuarioDto) {
-    const hashedPassword = await bcrypt.hash(datosDeUsuario.password, 10);
-    datosDeUsuario.password = hashedPassword;
-    const { confirmPassword, ...nuevoUsuarioScdc } = datosDeUsuario; // Scdc: Sin confirmacion de contraseña.
-    const usuario = await this.prisma.usuario.create({
-      data:nuevoUsuarioScdc
-    });
-    const { password, ...usuarioSc } = usuario; // Sc: Sin contraseña
-    return usuarioSc
+    const siElEmailEstaRegistrado = await this.prisma.usuario.findUnique({
+      where: { email: datosDeUsuario.email },
+    })
+    if(siElEmailEstaRegistrado){
+      return false
+    } else {
+      const hashedPassword = await bcrypt.hash(datosDeUsuario.contrasena, 10);
+      datosDeUsuario.contrasena = hashedPassword;
+      const usuario = await this.prisma.usuario.create({
+        data:datosDeUsuario
+      });
+      const { contrasena, ...usuarioSc } = usuario; // Sc: Sin contraseña
+      return usuarioSc
+    }
   }
 
   async ingreso(email, password) {
@@ -30,15 +36,10 @@ export class ServicioAuth {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
-    const isValidPassword = await bcrypt.compare(password, usuarioEncontrado.password);
+    const isValidPassword = await bcrypt.compare(password, usuarioEncontrado.contrasena);
     if (!isValidPassword) {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
-
-    // const hashedPassword = await bcrypt.hash(password, 10)
-    // if (!usuarioEncontrado || !(await bcrypt.compare(hashedPassword, usuarioEncontrado.password))) {
-    //   throw new UnauthorizedException('Credenciales inválidas');
-    // }
 
     const userPayload = {
       sub: usuarioEncontrado.id,
@@ -49,6 +50,6 @@ export class ServicioAuth {
 
     const token = this.jwtService.sign(userPayload);
 
-    return { exito: 'Usuario logueado exitosamente', token };
+    return { ok: 'Usuario logueado exitosamente', token };
   }
 }

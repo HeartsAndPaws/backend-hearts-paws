@@ -1,15 +1,14 @@
-import { BadRequestException, Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import { ServicioAuth } from './auth.service';
-import { NuevoUsuarioDto } from 'src/dtos/NuevoUsuario.dto';
-import { DatosDeIngresoDto } from 'src/dtos/DatosDeIngreso.dto';
+import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
+import { DatosDeIngresoDto } from 'src/autenticacion/dtos/DatosDeIngreso.dto';
 
-@Controller('auth')
+@Controller('autenticacion')
 export class AuthController {
     constructor(
         private readonly servicioAuth: ServicioAuth
     ) {}
 
-    
   @Post('ingreso')
   ingreso(@Body() datos: DatosDeIngresoDto){
     const { email, password } = datos
@@ -23,12 +22,20 @@ export class AuthController {
   @Post('registro')
   @HttpCode(201)
   async registro(@Body() datosDeUsuario:NuevoUsuarioDto){
-    const comparePasswords = datosDeUsuario.password === datosDeUsuario.confirmPassword
     
-    if(comparePasswords){ // Se pueden agregar mas validaciones a ésta línea
-      return this.servicioAuth.registro(datosDeUsuario)
-    }else if(datosDeUsuario && !comparePasswords){
-      throw new BadRequestException('Las contraseñas deben ser iguales')
+    if(datosDeUsuario){ // Se pueden agregar mas validaciones a ésta línea
+      const exito = await this.servicioAuth.registro(datosDeUsuario)
+      if(exito){
+        return {
+          ok: true,
+          mensaje: "Usuario registrado con éxito"
+        }
+      }else{
+        return {
+          ok: false,
+          mensaje: "El email ya está registrado"
+        }
+      }
     }else {
       throw new BadRequestException('Faltan datos')
     }
