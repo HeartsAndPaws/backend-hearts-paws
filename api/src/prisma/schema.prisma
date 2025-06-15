@@ -17,7 +17,7 @@ model Usuario {
   id        String   @id @default(uuid())
   nombre    String
   email     String   @unique
-  contraseña  String
+  contrasena  String
   telefono  String?
   direccion String?
   ciudad    String?
@@ -37,13 +37,14 @@ model Organizacion {
   id          String   @id @default(uuid())
   nombre      String
   email       String   @unique
-  contraseña  String
+  contrasena  String
   descripcion String?
   telefono    String?
   direccion   String?
   ciudad      String?
   pais        String?
   imagenPerfil String?
+  archivoVerificacionUrl String? 
   plan        Plan     @default(GRATUITO)
   creado_en   DateTime @default(now())
 
