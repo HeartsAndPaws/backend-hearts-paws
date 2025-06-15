@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Delete, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -49,7 +49,54 @@ export class ServicioAuth {
     };
 
     const token = this.jwtService.sign(userPayload);
-
+    
     return { ok: 'Usuario logueado exitosamente', token };
   }
-}
+
+  async listaDeUsuarios(){
+    const usuarios = await this.prisma.usuario.findMany()
+
+    return usuarios
+  }
+  
+  async usuarioPorId(id: string){
+    const usuario = await this.prisma.usuario.findUnique({where: { id }})
+    if(usuario){
+      return usuario
+    } else {
+      return false
+    }
+  }
+
+  async cambiarContrasena(id: string, nuevaContrasena: string){
+    const usuario = await this.prisma.usuario.findUnique({where: { id }})
+    const contrasenaEncriptada = await bcrypt.hash(nuevaContrasena, 10);
+    if(!usuario){
+      return false
+    } else {
+      await this.prisma.usuario.update({
+        where: { id },
+        data: {
+          contrasena: contrasenaEncriptada
+        }
+      })
+      return true
+    }
+  }
+  async borrarUsuario(id:string){
+      try {
+    const usuarioEliminado = await this.prisma.usuario.delete({
+      where: { id },
+    });
+
+    return {
+      ok: true,
+      mensaje: 'Usuario eliminado correctamente',
+      usuario: usuarioEliminado,
+    };
+  } catch (error) {
+    throw new NotFoundException(`No se encontró el usuario con id ${id}`);
+  }
+  }
+  }
+
