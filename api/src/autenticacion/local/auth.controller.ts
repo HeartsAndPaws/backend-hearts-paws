@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ServicioAuth } from './auth.service';
 import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 import { DatosDeIngresoDto } from 'src/autenticacion/dtos/DatosDeIngreso.dto';
@@ -39,5 +39,51 @@ export class AuthController {
     }else {
       throw new BadRequestException('Faltan datos')
     }
+  }
+  
+  @Get()
+  async obtenerUsuarios() {
+    const usuarios = await this.servicioAuth.listaDeUsuarios();
+    return usuarios
+  }
+
+  @Get('usuarios/:id')
+  async obtenerUsuarioPorId(@Param('id', ParseUUIDPipe) id: string) {
+    const usuario = await this.servicioAuth.usuarioPorId(id);
+    if (!usuario) {
+      return {
+        ok: false,
+        mensaje: 'Usuario no encontrado',
+      };
+    }
+    return usuario;
+  }
+
+  @Patch('nuevaContrasena')
+  async cambiarContrasena(
+  @Body() body: { id: string; nuevaContrasena: string }
+) {
+  const { id, nuevaContrasena } = body;
+
+  if (!id || !nuevaContrasena) {
+    throw new BadRequestException('Se requieren el id y la nueva contraseña');
+  }
+
+  if (nuevaContrasena.length < 8) {
+    throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
+  }
+
+  const resultado = await this.servicioAuth.cambiarContrasena(id, nuevaContrasena);
+  
+  if (!resultado) {
+    throw new NotFoundException('Usuario no encontrado');
+  }
+
+  return { ok: true, mensaje: 'Contraseña actualizada correctamente' };
+}
+
+  @Delete('usuarios/:id')
+  async borrarUsuario(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.servicioAuth.borrarUsuario(id);
   }
 }
