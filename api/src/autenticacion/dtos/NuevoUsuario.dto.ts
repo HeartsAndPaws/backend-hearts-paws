@@ -14,7 +14,7 @@ export class NuevoUsuarioDto {
     @IsNotEmpty()
     @IsEmail()
     @Matches(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+$/, {
-    message: 'Solo se permite un "@" y letras, números, ".", "_" o "-"',
+    message: 'Email: solo se permite un "@" y letras, números, ".", "_" o "-"',
   })
     @Trim()
     @Transform(({ value }) => value.toLowerCase())
@@ -54,9 +54,10 @@ export class NuevoUsuarioDto {
 
     @IsNotEmpty()
     @IsString()
-    @Matches(/^[a-zA-Z0-9]+$/, {
-      message: 'Ciudad: solo se permiten letras y números',
+    @Matches(/^[A-Za-z0-9 ]+$/, {
+    message: 'Ciudad:Solo se permiten letras, números y espacios',
 })
+
     @MaxLength(25)
     ciudad: string;
 
