@@ -9,7 +9,6 @@ export class DatosDeIngresoDto{
     @Matches(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+$/, {
     message: 'Solo se permite un "@" y letras, números, ".", "_" o "-"',
   })
-
     @Trim()
     @MaxLength(60)
     email: string;
