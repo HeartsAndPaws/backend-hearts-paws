@@ -3,7 +3,7 @@ import { IsEmail, IsString, Matches, MaxLength } from "class-validator";
 import { Trim } from "src/decoradores/trim.decorator";
 const xss = require('xss');
 
-export class DatosDeIngresoDto{
+export class DatosIngresoOrganizacionDto{
     @IsEmail()
     @IsString()
     @Matches(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+$/, {
