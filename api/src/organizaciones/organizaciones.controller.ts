@@ -7,7 +7,7 @@ import { EstadoOrganizacion } from '@prisma/client';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { JwtAuthguard } from 'src/autenticacion/guards/jwt-auth.guard';
+import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
 
 
 @Controller('organizaciones')
@@ -24,7 +24,7 @@ export class OrganizacionesController {
   }
 
   // GET /organizaciones/:id
-  @UseGuards(JwtAuthguard)
+  @UseGuards(JwtAutCookiesGuardia)
   @Get('me')
   async getOrganizacionActual(@Req() req){
     return await this.organizacionesService.buscarPorId(req.user.id)
@@ -48,7 +48,7 @@ export class OrganizacionesController {
   // PATCH /organizaciones/:id/estado
   @Patch(':id/estado')
   @UseInterceptors(AnyFilesInterceptor())
-  @UseGuards(JwtAuthguard, RolesGuard)
+  @UseGuards(JwtAutCookiesGuardia, RolesGuard)
   @Roles('ADMIN')
   async cambiarEstado(
     @Param('id') id: string,
