@@ -3,7 +3,7 @@ import { UsuariosService } from './usuarios.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
-import { JwtAuthguard } from 'src/autenticacion/guards/jwt-auth.guard';
+import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
 
 
 @Controller('usuarios')
@@ -20,7 +20,7 @@ export class UsuariosController {
 }
 
 // GET /usuarios/me
-@UseGuards(JwtAuthguard)
+@UseGuards(JwtAutCookiesGuardia)
 @Get('me')
 async getUsuarioActual(@Req() req){
   console.log('Decoded token info:', req.user);
