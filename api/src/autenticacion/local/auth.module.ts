@@ -1,24 +1,29 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServicioAuth } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtStrategy } from './jwt.strategy';
+import { JwtStrategy } from '../strategias/jwt.strategy';
+import { JwtAuthGuard } from '../auth0/auth0Logic/jwt-auth.guard';
+import { RolesGuard } from '../guards/roles.guard';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
-    
-    PassportModule,
+    PassportModule.register({defaultStrategy: 'jwt'}),
     JwtModule.registerAsync({
-      inject: [ConfigService],
+      imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '1h' },
       }),
+      inject: [ConfigService],
     }),
+    CloudinaryModule
   ],
-  providers: [ServicioAuth, JwtStrategy],
+  providers: [ServicioAuth, JwtStrategy, JwtAuthGuard, RolesGuard],
   controllers: [AuthController],
+  exports: [JwtModule, PassportModule, JwtStrategy, JwtAuthGuard, RolesGuard]
 })
 export class AuthModule {}

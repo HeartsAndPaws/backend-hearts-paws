@@ -17,7 +17,7 @@ model Usuario {
   id        String   @id @default(uuid())
   nombre    String
   email     String   @unique
-  contrasena  String
+  contrasena  String?
   telefono  String?
   direccion String?
   ciudad    String?
@@ -47,6 +47,7 @@ model Organizacion {
   archivoVerificacionUrl String? 
   plan        Plan     @default(GRATUITO)
   creado_en   DateTime @default(now())
+  estado      EstadoOrganizacion @default(PENDIENTE) 
 
   mascotas   Mascota[]
   chats      Chat[]     @relation("OrganizacionChats")
@@ -142,4 +143,10 @@ enum EstadoAdopcion {
 enum Plan {
   GRATUITO
   PREMIUM
+}
+
+enum EstadoOrganizacion {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
 }

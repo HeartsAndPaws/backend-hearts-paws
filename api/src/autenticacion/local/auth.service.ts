@@ -1,13 +1,13 @@
 import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-  ConflictException,
+    Injectable,
+    UnauthorizedException,
+    ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
+import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 
 @Injectable()
 export class ServicioAuth {
@@ -16,7 +16,9 @@ export class ServicioAuth {
     private readonly jwtService: JwtService,
   ) {}
 
-  async registro(datosDeUsuario: NuevoUsuarioDto) {
+  async registro(datosDeUsuario: NuevoUsuarioDto & 
+    {imagenPerfil?: string}
+  ) {
     const siElEmailEstaRegistrado = await this.prisma.usuario.findUnique({
       where: { email: datosDeUsuario.email },
     });
@@ -29,12 +31,30 @@ export class ServicioAuth {
     datosDeUsuario.contrasena = hashedPassword;
 
     const usuario = await this.prisma.usuario.create({
-      data: datosDeUsuario,
+      data: {
+        ...datosDeUsuario,
+        contrasena: hashedPassword,
+        imagenPerfil: datosDeUsuario.imagenPerfil ?? null,
+        rol: 'USUARIO'
+      },
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        telefono: true,
+        direccion: true,
+        ciudad: true,
+        pais: true
+      }
     });
 
-    const { contrasena, ...usuarioSinContrasena } = usuario;
-    return usuarioSinContrasena;
+    return {
+      ok: true,
+      mensaje: 'Usuario registrado con éxito',
+      usuario: usuario
+    }
   }
+
 
   async ingreso(email: string, contrasena: string) {
     const usuarioEncontrado = await this.prisma.usuario.findUnique({
@@ -63,7 +83,19 @@ export class ServicioAuth {
 
     const token = this.jwtService.sign(userPayload);
 
-    return { ok: 'Usuario logueado exitosamente', token };
+    return { 
+      ok: 'Usuario logueado exitosamente', 
+      token,
+      usuario: {
+        id: usuarioEncontrado.id,
+        nombre: usuarioEncontrado.nombre,
+        telefono: usuarioEncontrado.telefono,
+        direccion: usuarioEncontrado.direccion,
+        ciudad: usuarioEncontrado.ciudad,
+        pais: usuarioEncontrado.pais,
+        imagenPerfil: usuarioEncontrado.imagenPerfil,
+      }
+    };
   }
 
   async ingresoOrganizacion(email: string, contrasena: string){
@@ -71,6 +103,10 @@ export class ServicioAuth {
 
     if (!organizacion) {
       throw new UnauthorizedException('Credenciales incorrectas');
+    }
+
+    if (organizacion.estado !== 'APROBADA') {
+      throw new UnauthorizedException('Tu organización aún no ha sido aprobada por un administrador.')
     }
 
     const isValidPassword = await bcrypt.compare(contrasena, organizacion.contrasena);
@@ -90,76 +126,57 @@ export class ServicioAuth {
     return {
       ok: 'Organización logueada exitosamente',
       token,
+      organizacion: {
+        id: organizacion.id,
+        nombre: organizacion.nombre,
+        descripcion: organizacion.descripcion,
+        telefono: organizacion.telefono,
+        direccion: organizacion.direccion,
+        ciudad: organizacion.ciudad,
+        pais: organizacion.pais,
+        plan: organizacion.plan,
+        imagenPerfil: organizacion.imagenPerfil,
+      }
     }
   }
 
-  async listaDeUsuarios() {
-    const usuarios = await this.prisma.usuario.findMany({
+  async crearOrganizacion(data: NuevaOrganizacionDto & {
+    archivoVerificacionUrl: string;
+    imagenPerfil?: string
+  }): Promise<any>{
+    const existe = await this.prisma.organizacion.findUnique({
+      where: { email: data.email},
+    });
+
+    if (existe) {
+      throw new ConflictException('El email ya está registrado')
+    }
+
+    const contraseñaHash = await bcrypt.hash(data.contrasena, 10);
+
+    const nuevaOrganizacion = await this.prisma.organizacion.create({
+      data: {
+        ...data,
+        contrasena: contraseñaHash,
+        archivoVerificacionUrl: data.archivoVerificacionUrl,
+        imagenPerfil: data.imagenPerfil ?? null,
+        estado: 'PENDIENTE',
+      },
       select: {
         id: true,
         nombre: true,
         email: true,
-        rol: true,
-        // No incluir contraseñas ni otros campos sensibles
-      },
-    });
-    return usuarios;
-  }
-
-  async usuarioPorId(id: string) {
-    const usuario = await this.prisma.usuario.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        nombre: true,
-        email: true,
-        rol: true,
-      },
+        creado_en: true,
+        archivoVerificacionUrl: true,
+        imagenPerfil: true,
+      }
     });
 
-    if (!usuario) {
-      throw new NotFoundException(`No se encontró el usuario con id ${id}`);
-    }
-
-    return usuario;
-  }
-
-  async cambiarContrasena(id: string, nuevaContrasena: string) {
-    const usuario = await this.prisma.usuario.findUnique({
-      where: { id },
-    });
-
-    if (!usuario) {
-      throw new NotFoundException(`No se encontró el usuario con id ${id}`);
-    }
-
-    const contrasenaEncriptada = await bcrypt.hash(nuevaContrasena, 10);
-
-    await this.prisma.usuario.update({
-      where: { id },
-      data: { contrasena: contrasenaEncriptada },
-    });
-
-    return { ok: true, mensaje: 'Contraseña actualizada correctamente' };
-  }
-
-  async borrarUsuario(id: string) {
-    try {
-      const usuarioEliminado = await this.prisma.usuario.delete({
-        where: { id },
-      });
-
-      return {
-        ok: true,
-        mensaje: 'Usuario eliminado correctamente',
-        usuario: {
-          id: usuarioEliminado.id,
-          email: usuarioEliminado.email,
-          nombre: usuarioEliminado.nombre,
-        },
-      };
-    } catch (error) {
-      throw new NotFoundException(`No se encontró el usuario con id ${id}`);
+    return {
+      ok: true,
+      mensaje: 'Organización registrada con éxito. Está pendiente de aprobación por un administrador.',
+      organizacion: nuevaOrganizacion,
     }
   }
+
 }
