@@ -2,26 +2,31 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
-  Get,
   HttpCode,
-  NotFoundException,
-  Param,
-  ParseUUIDPipe,
-  Patch,
   Post,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ServicioAuth } from './auth.service';
 import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 import { DatosDeIngresoDto } from 'src/autenticacion/dtos/DatosDeIngreso.dto';
 import { DatosIngresoOrganizacionDto } from '../dtos/DatosIngresoOrganizacionDto';
+import { AnyFilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
+import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly servicioAuth: ServicioAuth) {}
+  constructor(
+    private readonly servicioAuth: ServicioAuth,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
+  // INGRESO USUARIOS ===
+  // POST /usuarios/ingreso
   @Post('usuarios/ingreso')
   @HttpCode(200)
+  @UseInterceptors(AnyFilesInterceptor())
   async ingreso(@Body() datos: DatosDeIngresoDto) {
     const { email, contrasena } = datos;
 
@@ -32,8 +37,11 @@ export class AuthController {
     return await this.servicioAuth.ingreso(email, contrasena);
   }
 
+  // === INGRESO ORGANIZACIONES ===
+  // POST /usuarios/ingreso
   @Post('organizaciones/ingreso')
   @HttpCode(200)
+  @UseInterceptors(AnyFilesInterceptor())
   async ingresoOrganizacion(
     @Body() datos: DatosIngresoOrganizacionDto
   ){
@@ -46,57 +54,77 @@ export class AuthController {
     return await this.servicioAuth.ingresoOrganizacion(email, contrasena);
   }
 
-
+  // ==== REGISTRO USUARIOS ===
+  // POST /registro
   @Post('registro')
   @HttpCode(201)
-  async registro(@Body() datosDeUsuario: NuevoUsuarioDto) {
+  @UseInterceptors(FileFieldsInterceptor([
+    {name: 'imagenPerfil', maxCount: 1},
+  ]))
+  async registro(
+    @UploadedFiles() files: {
+      imagenPerfil?: Express.Multer.File[],
+    },
+    @Body() datosDeUsuario: NuevoUsuarioDto) {
+      
+      const imagenPerfil = files?.imagenPerfil?.[0];
+      let imagenPerfilUrl: string | undefined = undefined;
+
+      if (imagenPerfil) {
+        imagenPerfilUrl = (await this.cloudinaryService.subirIamgen(imagenPerfil)).secure_url;
+      }
+
     if (!datosDeUsuario) {
       throw new BadRequestException('Faltan datos');
     }
 
-    const nuevoUsuario = await this.servicioAuth.registro(datosDeUsuario);
+    return this.servicioAuth.registro({
+      ...datosDeUsuario,
+      imagenPerfil: imagenPerfilUrl
+    })
 
-    return {
-      ok: true,
-      mensaje: 'Usuario registrado con éxito',
-      usuario: nuevoUsuario,
-    };
+
   }
 
-  @Get('usuarios')
-  async obtenerUsuarios() {
-    return await this.servicioAuth.listaDeUsuarios();
-  }
+  // === REGISTRO ORGANIZACIONES ===
+  // POST /registro-ong
+  @Post('registro-ong')
+  @UseInterceptors(FileFieldsInterceptor([
+    {name: 'archivoVerificacionUrl', maxCount: 1},
+    {name: 'imagenPerfil', maxCount: 1},
+  ]))
+  async crearOrganizacion(
+    @UploadedFiles() files: {
+      archivoVerificacionUrl?: Express.Multer.File[],
+      imagenPerfil?: Express.Multer.File[],
+    },
+    @Body() data: NuevaOrganizacionDto,
+  ){
+    const archivoVerificacion = files?.archivoVerificacionUrl?.[0];
+    const imagenPerfil = files?.imagenPerfil?.[0];
 
-  @Get('usuarios/:id')
-  async obtenerUsuarioPorId(@Param('id', ParseUUIDPipe) id: string) {
-    const usuario = await this.servicioAuth.usuarioPorId(id);
-
-    return usuario; // ya lanza NotFoundException si no existe
-  }
-
-  @Patch('usuarios/:id/contrasena')
-  async cambiarContrasena(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { nuevaContrasena: string },
-  ) {
-    const { nuevaContrasena } = body;
-
-    if (!nuevaContrasena) {
-      throw new BadRequestException('Debe proporcionar una nueva contraseña');
+    if (!archivoVerificacion) {
+      throw new BadRequestException('Archivo PDF requerido');
     }
 
-    if (nuevaContrasena.length < 8) {
-      throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
+    if (archivoVerificacion.mimetype !== 'application/pdf') {
+      throw new BadRequestException('El archivo debe ser PDF')
     }
 
-    const resultado = await this.servicioAuth.cambiarContrasena(id, nuevaContrasena);
+    const { secure_url } = await this.cloudinaryService.subirPdf(archivoVerificacion);
 
-    return resultado;
+    let imagenPerfilUrl: string | undefined = undefined;
+    if (imagenPerfil) {
+      imagenPerfilUrl = (await this.cloudinaryService.subirIamgen(imagenPerfil)).secure_url;
+    }
+
+
+    return this.servicioAuth.crearOrganizacion({
+      ...data,
+      archivoVerificacionUrl: secure_url,
+      imagenPerfil: imagenPerfilUrl
+    })
   }
 
-  @Delete('usuarios/:id')
-  async borrarUsuario(@Param('id', ParseUUIDPipe) id: string) {
-    return await this.servicioAuth.borrarUsuario(id);
-  }
+
 }

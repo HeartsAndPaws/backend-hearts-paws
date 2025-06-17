@@ -1,6 +1,6 @@
 import { Transform } from "class-transformer";
 import { IsEmail, IsString, Matches, MaxLength } from "class-validator";
-import { Trim } from "src/decoradores/trim.decorator";
+import { Trim } from "src/autenticacion/decoradores/trim.decorator";
 const xss = require('xss');
 
 export class DatosDeIngresoDto{
