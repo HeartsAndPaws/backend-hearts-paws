@@ -8,9 +8,10 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://repo-prueba-zeta.vercel.app'],
     credentials: true,
   });
+
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

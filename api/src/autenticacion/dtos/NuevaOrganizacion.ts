@@ -1,9 +1,9 @@
-import { IsEmail, IsString, IsStrongPassword, IsNotEmpty, MinLength, MaxLength, Matches } from "class-validator";
 import { Transform } from "class-transformer";
+import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, Matches, MaxLength, MinLength } from "class-validator";
 const xss = require('xss');
 import { Trim } from "src/autenticacion/decoradores/trim.decorator";
 
-export class NuevoUsuarioDto {
+export class NuevaOrganizacionDto {
     @IsNotEmpty()
     @IsString()
     @Matches(/^[A-Za-zÀ-ÿ\s]+$/, { message: 'El nombre solo puede contener letras y espacios' })
@@ -15,6 +15,7 @@ export class NuevoUsuarioDto {
     @IsEmail()
     @Matches(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+$/, {
     message: 'Email: solo se permite un "@" y letras, números, ".", "_" o "-"',})
+
     @Trim()
     @Transform(({ value }) => value.toLowerCase())
     @MaxLength(60)
@@ -25,13 +26,17 @@ export class NuevoUsuarioDto {
     @Transform(({ value }) => xss(value))
     @MinLength(8)
     @MaxLength(40)
-        @IsStrongPassword({
+    @IsStrongPassword({
         minUppercase:1,
         minLowercase:1,
         minNumbers:1,
         minSymbols:1
     })
     contrasena: string;
+
+    @IsString()
+    @IsNotEmpty()
+    descripcion: string;
 
     @IsNotEmpty()
     @IsString()
@@ -41,30 +46,17 @@ export class NuevoUsuarioDto {
     @MaxLength(20)
     telefono: string;
 
-    @IsNotEmpty()
     @IsString()
-    @Matches(/^[a-zA-Z0-9.,_\-\s]+$/, {
-    message: 'Dirección: solo se permiten letras, números, espacios, puntos, comas, guiones medios, guiones bajos.',
-})
-
-
+    @IsNotEmpty()
     @MaxLength(70)
     direccion: string;
 
-    @IsNotEmpty()
     @IsString()
-    @Matches(/^[A-Za-z0-9 ]+$/, {
-    message: 'Ciudad:Solo se permiten letras, números y espacios',
-})
-
+    @IsNotEmpty()
     @MaxLength(25)
     ciudad: string;
 
-    @IsNotEmpty()
-    @MaxLength(25)
     @IsString()
-    @Matches(/^[a-zA-Z0-9]+$/, {
-    message: 'Pais: solo se permiten letras y números',
-})
+    @IsNotEmpty()
     pais: string;
 }
