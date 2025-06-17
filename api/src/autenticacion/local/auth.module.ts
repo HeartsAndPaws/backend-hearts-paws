@@ -8,6 +8,7 @@ import { JwtStrategy } from '../strategias/jwt.strategy';
 import { JwtAuthGuard } from '../auth0/auth0Logic/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
 
 @Module({
   imports: [
@@ -22,8 +23,8 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
     }),
     CloudinaryModule
   ],
-  providers: [ServicioAuth, JwtStrategy, JwtAuthGuard, RolesGuard],
+  providers: [ServicioAuth, JwtStrategy, JwtAutCookiesGuardia, RolesGuard, JwtAuthGuard],
   controllers: [AuthController],
-  exports: [JwtModule, PassportModule, JwtStrategy, JwtAuthGuard, RolesGuard]
+  exports: [JwtModule, PassportModule, JwtStrategy,JwtAutCookiesGuardia , RolesGuard, JwtAuthGuard]
 })
 export class AuthModule {}

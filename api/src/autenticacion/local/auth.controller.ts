@@ -4,6 +4,7 @@ import {
   Controller,
   HttpCode,
   Post,
+  Res,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { DatosIngresoOrganizacionDto } from '../dtos/DatosIngresoOrganizacionDto
 import { AnyFilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
 import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -27,22 +29,34 @@ export class AuthController {
   @Post('usuarios/ingreso')
   @HttpCode(200)
   @UseInterceptors(AnyFilesInterceptor())
-  async ingreso(@Body() datos: DatosDeIngresoDto) {
+  async ingreso(
+    @Res({passthrough: true}) res: Response,
+    @Body() datos: DatosDeIngresoDto) {
     const { email, contrasena } = datos;
 
     if (!email || !contrasena) {
       throw new BadRequestException('Las credenciales son necesarias');
     }
 
-    return await this.servicioAuth.ingreso(email, contrasena);
+    const respuesta = await this.servicioAuth.ingreso(email, contrasena);
+    const token = respuesta.token
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24
+    });
+
+    return respuesta.ok;
   }
 
   // === INGRESO ORGANIZACIONES ===
-  // POST /usuarios/ingreso
+  // POST /organizaciones/ingreso
   @Post('organizaciones/ingreso')
   @HttpCode(200)
   @UseInterceptors(AnyFilesInterceptor())
   async ingresoOrganizacion(
+    @Res({passthrough: true}) res: Response,
     @Body() datos: DatosIngresoOrganizacionDto
   ){
     const { email, contrasena } = datos;
@@ -51,7 +65,17 @@ export class AuthController {
       throw new BadRequestException('Las credenciales son necesarias');
     }
 
-    return await this.servicioAuth.ingresoOrganizacion(email, contrasena);
+    const respuesta = await this.servicioAuth.ingresoOrganizacion(email, contrasena);
+    const token = respuesta.token
+    res.cookie('authToken', token, {
+      httpOnly:true,
+      sameSite: 'lax',
+      secure: false,
+      maxAge: 1000 * 60 * 60 * 24
+    });
+
+    return respuesta.ok;
+  
   }
 
   // ==== REGISTRO USUARIOS ===
