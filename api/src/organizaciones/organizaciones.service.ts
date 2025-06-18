@@ -3,6 +3,8 @@ import { CreateOrganizacioneDto } from './dto/create-organizacione.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { UpdateOrganizacioneDto } from './dto/update-organizacione.dto';
+import { ok } from 'assert';
+import { EstadoOrganizacion } from '@prisma/client';
 
 @Injectable()
 export class OrganizacionesService {
@@ -27,39 +29,7 @@ export class OrganizacionesService {
     return ongActualizada;
   }
 
-  async crearOrganizacion(data: CreateOrganizacioneDto & {
-    archivoVerificacionUrl: string;
-    imagenPerfil?: string
-  }): Promise<any>{
-    const existe = await this.prisma.organizacion.findUnique({
-      where: { email: data.email},
-    });
-
-    if (existe) {
-      throw new ConflictException('El email ya está registrado')
-    }
-
-    const contraseñaHash = await bcrypt.hash(data.contrasena, 10);
-
-    const nuevaOrganizacion = await this.prisma.organizacion.create({
-      data: {
-        ...data,
-        contrasena: contraseñaHash,
-        archivoVerificacionUrl: data.archivoVerificacionUrl,
-        imagenPerfil: data.imagenPerfil ?? null,
-      },
-      select: {
-        id: true,
-        nombre: true,
-        email: true,
-        creado_en: true,
-        archivoVerificacionUrl: true,
-        imagenPerfil: true,
-      }
-    });
-
-    return nuevaOrganizacion;
-  }
+  
 
   async buscarPorId(id: string){
     const organizacion = await this.prisma.organizacion.findUnique({
@@ -86,20 +56,10 @@ export class OrganizacionesService {
     return organizacion;
   }
 
-  async eliminarPorId(id: string){
-    const existe = await this.prisma.organizacion.findUnique({
-      where: {id}
-    });
-
-    if (!existe) {
-      throw new NotFoundException('Organización no encontrada');
-    }
-    await this.prisma.organizacion.delete({where: {id}})
-    return { mensaje: 'Organización eliminada exitosamente' };
-  }
 
   async listarTodas(){
     return this.prisma.organizacion.findMany({
+      where: { estado: 'APROBADA'},
       select: {
         id: true,
         nombre: true,
@@ -138,5 +98,25 @@ export class OrganizacionesService {
     });
     
     return organizacionActualizada;
+  }
+
+  async actualizarEstado(id: string, estado: EstadoOrganizacion){
+    const organizacion = await this.prisma.organizacion.findUnique({where: {id}});
+    if (!organizacion) {
+      throw new NotFoundException('Organización no encontrada');
+    }
+
+    const actualizada = await this.prisma.organizacion.update({
+      where: {id},
+      data: { estado}
+    });
+
+    // implementar logica para enviar correo
+
+    return {
+      ok: true,
+      mensaje: `Estado actualizado a ${estado}`,
+      organizacion: actualizada,
+    };
   }
 }

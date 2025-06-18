@@ -9,11 +9,14 @@ async function bootstrap() {
   app.use(cookieParser());
   const configService = app.get(ConfigService);
 
+  const corsOrigins = configService.get<string>('CORS_ORIGINS')?.split(',') || [];
+
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: corsOrigins,
     credentials: true,
   });
 
+  app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
