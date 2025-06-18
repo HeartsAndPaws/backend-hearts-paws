@@ -1,100 +1,107 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  NotFoundException,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
 import { ServicioAuth } from './auth.service';
 import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 import { DatosDeIngresoDto } from 'src/autenticacion/dtos/DatosDeIngreso.dto';
-import { DatosIngresoOrganizacionDto } from '../dtos/DatosIngresoOrganizacionDto';
+import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
 
-@Controller('auth')
+@Controller('autLocal')
 export class AuthController {
-  constructor(private readonly servicioAuth: ServicioAuth) {}
+    constructor(
+        private readonly servicioAuth: ServicioAuth
+    ) {}
 
-  @Post('usuarios/ingreso')
-  @HttpCode(200)
-  async ingreso(@Body() datos: DatosDeIngresoDto) {
-    const { email, contrasena } = datos;
-
-    if (!email || !contrasena) {
-      throw new BadRequestException('Las credenciales son necesarias');
+    @Post('ingreso')
+    async ingreso(@Res({ passthrough: true }) res: Response, @Body() credenciales: DatosDeIngresoDto){
+      const { email, contrasena } = credenciales
+      if(!email || !contrasena){
+        return 'Las credenciales son necesarias'
+      }else{
+        const respuesta = await this.servicioAuth.ingreso(email, contrasena)
+        const token = respuesta.token
+          res.cookie('authToken', token, {
+            httpOnly: true, 
+            sameSite: 'lax',
+            secure: false,
+            maxAge: 1000 * 60 * 60 * 24,
+  });
+        return { mensaje: respuesta.mensaje}
     }
-
-    return await this.servicioAuth.ingreso(email, contrasena);
   }
 
-  @Post('organizaciones/ingreso')
-  @HttpCode(200)
-  async ingresoOrganizacion(
-    @Body() datos: DatosIngresoOrganizacionDto
-  ){
-    const { email, contrasena } = datos;
-
-    if (!email || !contrasena) {
-      throw new BadRequestException('Las credenciales son necesarias');
+  @Post('cerrarSesion')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('authToken');
+    return { message: 'Sesión cerrada' };
     }
-
-    return await this.servicioAuth.ingresoOrganizacion(email, contrasena);
-  }
-
 
   @Post('registro')
   @HttpCode(201)
-  async registro(@Body() datosDeUsuario: NuevoUsuarioDto) {
-    if (!datosDeUsuario) {
-      throw new BadRequestException('Faltan datos');
+  async registro(@Body() datosDeUsuario:NuevoUsuarioDto){
+    
+    if(datosDeUsuario){
+      
+      const exito = await this.servicioAuth.registro(datosDeUsuario)
+      if(exito){
+        return {
+          ok: true,
+          mensaje: "Usuario registrado con éxito"
+        }
+      }else{
+        return {
+          ok: false,
+          mensaje: "El email ya está registrado"
+        }
+      }
+    }else {
+      throw new BadRequestException('Faltan datos')
     }
-
-    const nuevoUsuario = await this.servicioAuth.registro(datosDeUsuario);
-
-    return {
-      ok: true,
-      mensaje: 'Usuario registrado con éxito',
-      usuario: nuevoUsuario,
-    };
   }
-
-  @Get('usuarios')
+  
+  @Get()
   async obtenerUsuarios() {
-    return await this.servicioAuth.listaDeUsuarios();
+    const usuarios = await this.servicioAuth.listaDeUsuarios();
+    return usuarios
   }
 
+  @UseGuards(JwtAutCookiesGuardia)
   @Get('usuarios/:id')
   async obtenerUsuarioPorId(@Param('id', ParseUUIDPipe) id: string) {
     const usuario = await this.servicioAuth.usuarioPorId(id);
-
-    return usuario; // ya lanza NotFoundException si no existe
+    if (!usuario) {
+      return {
+        ok: false,
+        mensaje: 'Usuario no encontrado',
+      };
+    }
+    return usuario;
   }
 
-  @Patch('usuarios/:id/contrasena')
+  @UseGuards(JwtAutCookiesGuardia)
+  @Patch('nuevaContrasena')
   async cambiarContrasena(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { nuevaContrasena: string },
-  ) {
-    const { nuevaContrasena } = body;
+  @Body() body: { id: string; nuevaContrasena: string }
+) {
+  const { id, nuevaContrasena } = body;
 
-    if (!nuevaContrasena) {
-      throw new BadRequestException('Debe proporcionar una nueva contraseña');
-    }
-
-    if (nuevaContrasena.length < 8) {
-      throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
-    }
-
-    const resultado = await this.servicioAuth.cambiarContrasena(id, nuevaContrasena);
-
-    return resultado;
+  if (!id || !nuevaContrasena) {
+    throw new BadRequestException('Se requieren el id y la nueva contraseña');
   }
 
+  if (nuevaContrasena.length < 8) {
+    throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
+  }
+
+  const resultado = await this.servicioAuth.cambiarContrasena(id, nuevaContrasena);
+  
+  if (!resultado) {
+    throw new NotFoundException('Usuario no encontrado');
+  }
+
+  return { ok: true, mensaje: 'Contraseña actualizada correctamente' };
+}
+
+  @UseGuards(JwtAutCookiesGuardia)
   @Delete('usuarios/:id')
   async borrarUsuario(@Param('id', ParseUUIDPipe) id: string) {
     return await this.servicioAuth.borrarUsuario(id);
