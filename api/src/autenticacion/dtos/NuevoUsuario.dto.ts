@@ -80,6 +80,7 @@ export class NuevoUsuarioDto {
     @Matches(/^[a-zA-Z0-9.,_\-\s]+$/, {
     message: 'Dirección: solo se permiten letras, números, espacios, puntos, comas, guiones medios, guiones bajos.',
 })
+
     @MaxLength(70)
     direccion: string;
 
