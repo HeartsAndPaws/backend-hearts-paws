@@ -19,13 +19,10 @@ import { AnyFilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-exp
 import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
-<<<<<<< HEAD
-import { JwtAutCookiesGuardia } from '../guardias/jwtAut.guardia';
-=======
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
->>>>>>> a0a23eb839d36f3428c0a2d3ada7a0a87db57208
 
 
+import { JwtAutCookiesGuardia } from '../guardias/jwtAut.guardia';
 
 @ApiTags('Autenticación')
 @Controller('auth')
