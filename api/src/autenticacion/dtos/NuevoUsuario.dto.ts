@@ -47,8 +47,6 @@ export class NuevoUsuarioDto {
     @Matches(/^[a-zA-Z0-9.,_\-\s]+$/, {
     message: 'Dirección: solo se permiten letras, números, espacios, puntos, comas, guiones medios, guiones bajos.',
 })
-
-
     @MaxLength(70)
     direccion: string;
 
@@ -57,7 +55,6 @@ export class NuevoUsuarioDto {
     @Matches(/^[A-Za-z0-9 ]+$/, {
     message: 'Ciudad:Solo se permiten letras, números y espacios',
 })
-
     @MaxLength(25)
     ciudad: string;
 

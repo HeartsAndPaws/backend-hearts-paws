@@ -63,7 +63,7 @@ export class ServicioAuth {
 
     const token = this.jwtService.sign(userPayload);
 
-    return { ok: 'Usuario logueado exitosamente', token };
+    return {mensaje: "Acreditación exitosa", token}
   }
 
   async ingresoOrganizacion(email: string, contrasena: string){
