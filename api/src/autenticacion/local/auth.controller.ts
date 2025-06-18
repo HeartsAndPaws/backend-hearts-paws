@@ -42,7 +42,7 @@ export class AuthController {
             secure: false,
             maxAge: 1000 * 60 * 60 * 24,
   });
-        return { mensaje: respuesta.mensaje }
+        return { mensaje: respuesta.ok }
     }
   }
 
