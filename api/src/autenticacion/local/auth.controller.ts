@@ -8,7 +8,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ServicioAuth } from './auth.service';
+import { ServicioAut } from './auth.service';
 import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 import { DatosDeIngresoDto } from 'src/autenticacion/dtos/DatosDeIngreso.dto';
 import { DatosIngresoOrganizacionDto } from '../dtos/DatosIngresoOrganizacionDto';
@@ -19,13 +19,14 @@ import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 
+
 @ApiTags('Autenticación')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly servicioAuth: ServicioAuth,
-    private readonly cloudinaryService: CloudinaryService,
-  ) {}
+    constructor(
+        private readonly servicioAuth: ServicioAut,
+        private readonly cloudinaryService: CloudinaryService
+    ) {}
 
 
   @Post('usuarios/ingreso')
@@ -34,25 +35,30 @@ export class AuthController {
   @ApiOperation({ summary: 'Ingreso de usuario' })
   @ApiOkResponse({ description: 'Usuario autenticado exitosamente' })
   @ApiBody({ type: DatosDeIngresoDto })
-  async ingreso(
-    @Res({passthrough: true}) res: Response,
-    @Body() datos: DatosDeIngresoDto) {
-    const { email, contrasena } = datos;
 
-    if (!email || !contrasena) {
-      throw new BadRequestException('Las credenciales son necesarias');
+  async ingreso(@Res({ passthrough: true }) res: Response, @Body() credenciales: DatosDeIngresoDto){
+      const { email, contrasena } = credenciales
+      if(!email || !contrasena){
+        return 'Las credenciales son necesarias'
+      }else{
+        const respuesta = await this.servicioAuth.ingreso(email, contrasena)
+        const token = respuesta.token
+          res.cookie('authToken', token, {
+            httpOnly: true, 
+            sameSite: 'lax',
+            secure: false,
+            maxAge: 1000 * 60 * 60 * 24,
+  });
+        return { mensaje: respuesta.ok }
+
     }
+  }
 
-    const respuesta = await this.servicioAuth.ingreso(email, contrasena);
-    const token = respuesta.token
-    res.cookie('authToken', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: false,
-      maxAge: 1000 * 60 * 60 * 24
-    });
 
-    return respuesta.ok;
+  @Post('cerrarSesion')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('authToken');
+    return { message: 'Sesión cerrada' };
   }
 
 
@@ -91,7 +97,9 @@ export class AuthController {
   @UseInterceptors(FileFieldsInterceptor([
     {name: 'imagenPerfil', maxCount: 1},
   ]))
-    @ApiOperation({ summary: 'Registro de nuevo usuario' })
+
+  @ApiOperation({ summary: 'Registro de nuevo usuario' })
+
   @ApiCreatedResponse({ description: 'Usuario creado exitosamente' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

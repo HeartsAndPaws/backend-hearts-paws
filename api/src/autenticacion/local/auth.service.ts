@@ -8,9 +8,10 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
+import { EstadoOrganizacion } from '@prisma/client';
 
 @Injectable()
-export class ServicioAuth {
+export class ServicioAut {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
