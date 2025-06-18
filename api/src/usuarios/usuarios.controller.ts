@@ -4,8 +4,10 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
 import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 
 
+@ApiTags('Usuarios')
 @Controller('usuarios')
 export class UsuariosController {
   constructor(
@@ -13,30 +15,50 @@ export class UsuariosController {
     private readonly cloudinaryService: CloudinaryService
   ) {}
   
-  // GET /usuarios
+
   @Get()
+  @ApiOperation({ summary: 'Listar todos los usuarios' })
+  @ApiResponse({ status: 200, description: 'Lista de usuarios obtenida correctamente' })
   async obtenerUsuarios() {
   return await this.usuariosService.listaDeUsuarios();
 }
 
-// GET /usuarios/me
+
 @UseGuards(JwtAutCookiesGuardia)
 @Get('me')
+@ApiBearerAuth()
+@ApiOperation({ summary: 'Obtener el usuario autenticado' })
+@ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
 async getUsuarioActual(@Req() req){
   console.log('Decoded token info:', req.user);
   return await this.usuariosService.usuarioPorId(req.user.id)
 }
 
-  // GET /usuarios/:id
+
   @Get(':id')
+  @ApiOperation({ summary: 'Obtener usuario por ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'UUID del usuario' })
+  @ApiResponse({ status: 200, description: 'Usuario encontrado' })
   async obtenerUsuarioPorId(@Param('id', ParseUUIDPipe) id: string) {
     const usuario = await this.usuariosService.usuarioPorId(id);
     return usuario; // ya lanza NotFoundException si no existe
   }
 
 
-  // PATCH /usuarios/:id/contrasena
+
   @Patch('usuarios/:id/contrasena')
+  @ApiOperation({ summary: 'Cambiar la contraseña del usuario' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        nuevaContrasena: { type: 'string', minLength: 8 }
+      },
+      required: ['nuevaContrasena']
+    }
+  })
+  @ApiResponse({ status: 200, description: 'Contraseña actualizada exitosamente' })
   async cambiarContrasena(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: { nuevaContrasena: string },
@@ -57,18 +79,35 @@ async getUsuarioActual(@Req() req){
   }
 
 
-  // DELETE /usuarios/:id
   @Delete('usuarios/:id')
+  @ApiOperation({ summary: 'Eliminar un usuario por ID' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })
   async borrarUsuario(@Param('id', ParseUUIDPipe) id: string) {
     return await this.usuariosService.borrarUsuario(id);
   }
 
-  // POST /usuarios/:id/foto
+
   @Post(':id/foto')
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: filtroArchivoImagen,
     limits: limits
   }))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Subir imagen de perfil del usuario' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary'
+        }
+      }
+    }
+  })
+  @ApiResponse({ status: 200, description: 'Foto de perfil actualizada correctamente' })
   async subirFotoPerfil(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
@@ -76,6 +115,5 @@ async getUsuarioActual(@Req() req){
     const subirImagen = await this.cloudinaryService.subirIamgen(file);
     return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url)
   }
-
 
 }

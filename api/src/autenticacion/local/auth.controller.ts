@@ -19,21 +19,31 @@ import { AnyFilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-exp
 import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
+<<<<<<< HEAD
 import { JwtAutCookiesGuardia } from '../guardias/jwtAut.guardia';
+=======
+import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+>>>>>>> a0a23eb839d36f3428c0a2d3ada7a0a87db57208
 
-@Controller('autLocal')
+
+
+@ApiTags('Autenticación')
+@Controller('auth')
 export class AuthController {
     constructor(
         private readonly servicioAuth: ServicioAut,
         private readonly cloudinaryService: CloudinaryService
     ) {}
 
-  // INGRESO USUARIOS ===
-  // POST /usuarios/ingreso
+
   @Post('usuarios/ingreso')
   @HttpCode(200)
   @UseInterceptors(AnyFilesInterceptor())
-    async ingreso(@Res({ passthrough: true }) res: Response, @Body() credenciales: DatosDeIngresoDto){
+  @ApiOperation({ summary: 'Ingreso de usuario' })
+  @ApiOkResponse({ description: 'Usuario autenticado exitosamente' })
+  @ApiBody({ type: DatosDeIngresoDto })
+
+  async ingreso(@Res({ passthrough: true }) res: Response, @Body() credenciales: DatosDeIngresoDto){
       const { email, contrasena } = credenciales
       if(!email || !contrasena){
         return 'Las credenciales son necesarias'
@@ -47,20 +57,24 @@ export class AuthController {
             maxAge: 1000 * 60 * 60 * 24,
   });
         return { mensaje: respuesta.ok }
+
     }
   }
+
 
   @Post('cerrarSesion')
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('authToken');
     return { message: 'Sesión cerrada' };
-    }
+  }
 
-  // === INGRESO ORGANIZACIONES ===
-  // POST /organizaciones/ingreso
+
   @Post('organizaciones/ingreso')
   @HttpCode(200)
   @UseInterceptors(AnyFilesInterceptor())
+  @ApiOperation({ summary: 'Ingreso de organización' })
+  @ApiOkResponse({ description: 'Organización autenticada exitosamente' })
+  @ApiBody({ type: DatosIngresoOrganizacionDto })
   async ingresoOrganizacion(
     @Res({passthrough: true}) res: Response,
     @Body() datos: DatosIngresoOrganizacionDto
@@ -84,13 +98,40 @@ export class AuthController {
   
   }
 
-  // ==== REGISTRO USUARIOS ===
-  // POST /registro
+
   @Post('registro')
   @HttpCode(201)
   @UseInterceptors(FileFieldsInterceptor([
     {name: 'imagenPerfil', maxCount: 1},
   ]))
+
+  @ApiOperation({ summary: 'Registro de nuevo usuario' })
+
+  @ApiCreatedResponse({ description: 'Usuario creado exitosamente' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+  description: 'Formulario con datos del usuario y una imagen opcional',
+  schema: {
+    type: 'object',
+    properties: {
+      nombre: { type: 'string', example: 'Juan Pérez' },
+      email: { type: 'string', format: 'email', example: 'juan@example.com' },
+      contrasena: { type: 'string', minLength: 8, example: 'Contrasena123!' },
+      telefono: { type: 'string', example: '3201234567' },
+      direccion: { type: 'string', example: 'Calle 123 #45-67' },
+      ciudad: { type: 'string', example: 'Bogotá' },
+      pais: { type: 'string', example: 'Colombia' },
+      imagenPerfil: {
+        type: 'string',
+        format: 'binary',
+      },
+    },
+    required: ['nombre', 'email', 'contrasena', 'telefono', 'direccion', 'ciudad', 'pais'],
+  },
+})
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'imagenPerfil', maxCount: 1 }]),
+  )
   async registro(
     @UploadedFiles() files: {
       imagenPerfil?: Express.Multer.File[],
@@ -114,13 +155,51 @@ export class AuthController {
     })
   }
 
-  // === REGISTRO ORGANIZACIONES ===
-  // POST /registro-ong
   @Post('registro-ong')
   @UseInterceptors(FileFieldsInterceptor([
     {name: 'archivoVerificacionUrl', maxCount: 1},
     {name: 'imagenPerfil', maxCount: 1},
   ]))
+  @ApiOperation({ summary: 'Registro de organización con archivo y foto' })
+  @ApiCreatedResponse({ description: 'Organización creada exitosamente' })
+  @ApiBody({
+  description: 'Formulario con datos de la organización, PDF y una imagen opcional',
+  type: 'object',
+  required: true,
+  schema: {
+    type: 'object',
+    properties: {
+      nombre: { type: 'string' },
+      email: { type: 'string', format: 'email' },
+      contrasena: { type: 'string', minLength: 6 },
+      descripcion: { type: 'string' },
+      telefono: { type: 'string' },
+      direccion: { type: 'string' },
+      ciudad: { type: 'string' },
+      pais: { type: 'string' },
+      archivoVerificacionUrl: {
+        type: 'string',
+        format: 'binary',
+      },
+      imagenPerfil: {
+        type: 'string',
+        format: 'binary',
+      },
+    },
+    required: [
+      'nombre',
+      'email',
+      'contrasena',
+      'descripcion',
+      'telefono',
+      'direccion',
+      'ciudad',
+      'pais',
+      'archivoVerificacionUrl',
+    ],
+  },
+})
+  @ApiConsumes('multipart/form-data')
   async crearOrganizacion(
     @UploadedFiles() files: {
       archivoVerificacionUrl?: Express.Multer.File[],
