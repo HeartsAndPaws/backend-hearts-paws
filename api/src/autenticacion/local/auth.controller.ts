@@ -94,10 +94,6 @@ export class AuthController {
 
   @Post('registro')
   @HttpCode(201)
-  @UseInterceptors(FileFieldsInterceptor([
-    {name: 'imagenPerfil', maxCount: 1},
-  ]))
-
   @ApiOperation({ summary: 'Registro de nuevo usuario' })
 
   @ApiCreatedResponse({ description: 'Usuario creado exitosamente' })
