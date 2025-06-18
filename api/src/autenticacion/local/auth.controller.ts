@@ -35,6 +35,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Ingreso de usuario' })
   @ApiOkResponse({ description: 'Usuario autenticado exitosamente' })
   @ApiBody({ type: DatosDeIngresoDto })
+
   async ingreso(@Res({ passthrough: true }) res: Response, @Body() credenciales: DatosDeIngresoDto){
       const { email, contrasena } = credenciales
       if(!email || !contrasena){
@@ -49,6 +50,7 @@ export class AuthController {
             maxAge: 1000 * 60 * 60 * 24,
   });
         return { mensaje: respuesta.ok }
+
     }
   }
 
@@ -58,6 +60,7 @@ export class AuthController {
     res.clearCookie('authToken');
     return { message: 'Sesión cerrada' };
   }
+
 
   @Post('organizaciones/ingreso')
   @HttpCode(200)
@@ -92,6 +95,7 @@ export class AuthController {
   @Post('registro')
   @HttpCode(201)
   @ApiOperation({ summary: 'Registro de nuevo usuario' })
+
   @ApiCreatedResponse({ description: 'Usuario creado exitosamente' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
