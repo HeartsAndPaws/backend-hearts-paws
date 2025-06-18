@@ -17,6 +17,7 @@ import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ok } from 'assert';
 
 
 
@@ -50,6 +51,7 @@ export class AuthController {
             maxAge: 1000 * 60 * 60 * 24,
   });
         return { 
+          ok: true,
           mensaje: respuesta.ok,
           usuario: respuesta.usuario,
         }
@@ -91,7 +93,9 @@ export class AuthController {
     });
 
     return {
-      mensaje: respuesta.organizacion
+      ok:true,
+      mensaje: respuesta.ok,
+      organizacion: respuesta.organizacion
     }
   
   }
