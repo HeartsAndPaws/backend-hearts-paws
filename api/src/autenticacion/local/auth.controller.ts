@@ -20,6 +20,7 @@ import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ok } from 'assert';
 
 
 import { JwtAutCookiesGuardia } from '../guardias/jwtAut.guardia';
@@ -53,7 +54,11 @@ export class AuthController {
             secure: false,
             maxAge: 1000 * 60 * 60 * 24,
   });
-        return { mensaje: respuesta.ok }
+        return { 
+          ok: true,
+          mensaje: respuesta.ok,
+          usuario: respuesta.usuario,
+        }
 
     }
   }
@@ -91,17 +96,17 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24
     });
 
-    return respuesta.ok;
+    return {
+      ok:true,
+      mensaje: respuesta.ok,
+      organizacion: respuesta.organizacion
+    }
   
   }
 
 
   @Post('registro')
   @HttpCode(201)
-  @UseInterceptors(FileFieldsInterceptor([
-    {name: 'imagenPerfil', maxCount: 1},
-  ]))
-
   @ApiOperation({ summary: 'Registro de nuevo usuario' })
 
   @ApiCreatedResponse({ description: 'Usuario creado exitosamente' })
