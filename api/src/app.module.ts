@@ -8,6 +8,7 @@ import { OrganizacionesModule } from './organizaciones/organizaciones.module';
 import { AuthModule } from './autenticacion/local/auth.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaModule } from 'src/prisma/prisma.module'
+import { EmailModule } from './shared/email/email.module';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { PrismaModule } from 'src/prisma/prisma.module'
     }),
     CloudinaryModule,
     UsuariosModule,
-    OrganizacionesModule, AuthModule, PrismaModule],
+    OrganizacionesModule, AuthModule, PrismaModule, EmailModule],
     controllers: [AppController],
     providers: [AppService, PrismaService],
 })
