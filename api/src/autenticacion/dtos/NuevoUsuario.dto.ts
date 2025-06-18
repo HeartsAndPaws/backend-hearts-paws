@@ -95,7 +95,6 @@ export class NuevoUsuarioDto {
     @Matches(/^[A-Za-z0-9 ]+$/, {
     message: 'Ciudad:Solo se permiten letras, números y espacios',
 })
-
     @MaxLength(25)
     ciudad: string;
 
