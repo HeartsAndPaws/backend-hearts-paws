@@ -229,10 +229,4 @@ export class AuthController {
       imagenPerfil: imagenPerfilUrl
     })
   }
-
-    @UseGuards(JwtAutCookiesGuardia)
-    @Get('me')
-    getMe(@Request() req) {
-    return req.user; // Esto lo pone el guard automáticamente tras validar el token
-}
 }
