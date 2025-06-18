@@ -2,10 +2,13 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
+  Request,
   Res,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ServicioAut } from './auth.service';
@@ -16,6 +19,7 @@ import { AnyFilesInterceptor, FileFieldsInterceptor } from '@nestjs/platform-exp
 import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
+import { JwtAutCookiesGuardia } from '../guardias/jwtAut.guardia';
 
 @Controller('autLocal')
 export class AuthController {
@@ -108,8 +112,6 @@ export class AuthController {
       ...datosDeUsuario,
       imagenPerfil: imagenPerfilUrl
     })
-
-
   }
 
   // === REGISTRO ORGANIZACIONES ===
@@ -151,4 +153,10 @@ export class AuthController {
       imagenPerfil: imagenPerfilUrl
     })
   }
+
+    @UseGuards(JwtAutCookiesGuardia)
+    @Get('me')
+    getMe(@Request() req) {
+    return req.user; // Esto lo pone el guard automáticamente tras validar el token
+}
 }
