@@ -23,7 +23,7 @@ import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, 
 import { ok } from 'assert';
 
 
-import { JwtAutCookiesGuardia } from '../guardias/jwtAut.guardia';
+import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
 
 @ApiTags('Autenticación')
 @Controller('auth')
