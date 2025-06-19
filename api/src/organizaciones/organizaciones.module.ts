@@ -6,8 +6,7 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { EmailService } from 'src/shared/email/email.service';
-import { EmailModule } from 'src/shared/email/email.module';
+import { EmailModule } from 'src/shared/email/email-server.module';
 
 @Module({
   imports: [

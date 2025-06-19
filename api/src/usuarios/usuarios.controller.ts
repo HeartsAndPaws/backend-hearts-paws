@@ -46,7 +46,7 @@ async getUsuarioActual(@Req() req){
 
 
 
-  @Patch('usuarios/:id/contrasena')
+  @Patch(':id/contrasena')
   @ApiOperation({ summary: 'Cambiar la contraseña del usuario' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiBody({
@@ -79,7 +79,7 @@ async getUsuarioActual(@Req() req){
   }
 
 
-  @Delete('usuarios/:id')
+  @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })

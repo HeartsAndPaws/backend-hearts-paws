@@ -8,7 +8,7 @@ import { OrganizacionesModule } from './organizaciones/organizaciones.module';
 import { AuthModule } from './autenticacion/local/auth.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaModule } from 'src/prisma/prisma.module'
-import { EmailModule } from './shared/email/email.module';
+import { EmailModule } from './shared/email/email-server.module';
 
 @Module({
   imports: [
