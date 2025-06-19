@@ -2,10 +2,13 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
+  Request,
   Res,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ServicioAut } from './auth.service';
@@ -20,6 +23,7 @@ import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, 
 import { ok } from 'assert';
 
 
+import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
 
 @ApiTags('Autenticación')
 @Controller('auth')
@@ -30,7 +34,7 @@ export class AuthController {
     ) {}
 
 
-  @Post('usuarios/ingreso')
+  @Post('ingreso')
   @HttpCode(200)
   @UseInterceptors(AnyFilesInterceptor())
   @ApiOperation({ summary: 'Ingreso de usuario' })
