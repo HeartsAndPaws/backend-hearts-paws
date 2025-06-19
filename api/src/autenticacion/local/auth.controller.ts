@@ -50,7 +50,7 @@ export class AuthController {
         const token = respuesta.token
           res.cookie('authToken', token, {
             httpOnly: true, 
-            sameSite: 'lax',
+            sameSite: 'none',
             secure: false,
             maxAge: 1000 * 60 * 60 * 24,
   });
@@ -91,7 +91,7 @@ export class AuthController {
     const token = respuesta.token
     res.cookie('authToken', token, {
       httpOnly:true,
-      sameSite: 'lax',
+      sameSite: 'none',
       secure: false,
       maxAge: 1000 * 60 * 60 * 24
     });
