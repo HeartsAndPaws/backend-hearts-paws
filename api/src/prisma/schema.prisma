@@ -114,11 +114,11 @@ model Donacion {
   usuario        Usuario      @relation(fields: [usuarioId], references: [id])
   usuarioId      String
   mascota        Mascota?     @relation(fields: [mascotaId], references: [id])
-  mascotaId      String?
+  mascotaId      String
   organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
   organizacionId String
   monto          Float
-  comprobante    String? // URL al archivo o imagen
+  comprobante    String // URL al archivo o imagen
   fecha          DateTime     @default(now())
 }
 
