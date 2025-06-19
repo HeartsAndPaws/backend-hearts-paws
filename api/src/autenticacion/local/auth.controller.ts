@@ -34,7 +34,7 @@ export class AuthController {
     ) {}
 
 
-  @Post('usuarios/ingreso')
+  @Post('ingreso')
   @HttpCode(200)
   @UseInterceptors(AnyFilesInterceptor())
   @ApiOperation({ summary: 'Ingreso de usuario' })
