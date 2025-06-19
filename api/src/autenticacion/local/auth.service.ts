@@ -10,7 +10,7 @@ import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 
 @Injectable()
-export class ServicioAuth {
+export class ServicioAut {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,

@@ -8,36 +8,50 @@ import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiParam, ApiConsumes, ApiBody, ApiExtraModels } from '@nestjs/swagger';
 
 
+
+@ApiTags('Organizaciones')
 @Controller('organizaciones')
 export class OrganizacionesController {
   constructor(
     private readonly organizacionesService: OrganizacionesService,
-    private readonly cloudinaryService: CloudinaryService
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  // GET /organizaciones
+
   @Get()
+  @ApiOperation({ summary: 'Obtener todas las organizaciones' })
+  @ApiResponse({ status: 200, description: 'Lista de organizaciones' })
   async obtenerTodas() {
     return this.organizacionesService.listarTodas();
   }
 
-  // GET /organizaciones/:id
+
   @UseGuards(JwtAutCookiesGuardia)
   @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Obtener organización autenticada' })
+  @ApiResponse({ status: 200, description: 'Datos de la organización actual' })
   async getOrganizacionActual(@Req() req){
     return await this.organizacionesService.buscarPorId(req.user.id)
   }
 
-  // GET /organizaciones/:id
+
   @Get(':id')
+  @ApiOperation({ summary: 'Obtener organización por ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'UUID de la organización' })
+  @ApiResponse({ status: 200, description: 'Organización encontrada' })
   async obtenerPorId(@Param('id', ParseUUIDPipe) id: string) {
     return this.organizacionesService.buscarPorId(id);
   }
 
-  // PATCH /organizaciones/:id
+
   @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar datos de una organización' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Organización actualizada' })
   async actualizar(
     @Param('id') id: string,
     @Body() data: UpdateOrganizacioneDto,
@@ -45,11 +59,15 @@ export class OrganizacionesController {
     return this.organizacionesService.actualizarDatosOng(id, data);
   }
 
-  // PATCH /organizaciones/:id/estado
+
   @Patch(':id/estado')
   @UseInterceptors(AnyFilesInterceptor())
   @UseGuards(JwtAutCookiesGuardia, RolesGuard)
   @Roles('ADMIN')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cambiar estado de una organización (solo ADMIN)' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Estado actualizado' })
   async cambiarEstado(
     @Param('id') id: string,
     @Body('estado') estado: EstadoOrganizacion // 'APROBADA' o 'RECHAZADA'
@@ -57,12 +75,27 @@ export class OrganizacionesController {
     return this.organizacionesService.actualizarEstado(id, estado);
   }
 
-  // POST /organizaciones/:id/foto
+
   @Post(':id/foto')
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: filtroArchivoImagen,
     limits: limits
   }))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Subir foto de perfil de la organización' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Foto de perfil actualizada' })
   async subirFotoPerfil(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,

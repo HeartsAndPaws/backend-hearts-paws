@@ -7,8 +7,9 @@ import { UsuariosModule } from './usuarios/usuarios.module';
 import { OrganizacionesModule } from './organizaciones/organizaciones.module';
 import { AuthModule } from './autenticacion/local/auth.module';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaModule } from 'src/prisma/prisma.module'
+import { PrismaModule } from 'src/prisma/prisma.module';
 import { MascotasModule } from './mascotas/mascotas.module';
+import { EmailModule } from './shared/email/email.module';
 
 @Module({
   imports: [
@@ -18,8 +19,13 @@ import { MascotasModule } from './mascotas/mascotas.module';
     }),
     CloudinaryModule,
     UsuariosModule,
-    OrganizacionesModule, AuthModule, PrismaModule, MascotasModule],
-    controllers: [AppController],
-    providers: [AppService, PrismaService],
+    OrganizacionesModule,
+    AuthModule,
+    PrismaModule,
+    MascotasModule,
+    EmailModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}

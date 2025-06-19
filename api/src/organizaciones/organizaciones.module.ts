@@ -6,6 +6,8 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { EmailService } from 'src/shared/email/email.service';
+import { EmailModule } from 'src/shared/email/email.module';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { PassportModule } from '@nestjs/passport';
         signOptions: { expiresIn: '1h'},
       })
     }),
-    PrismaModule, CloudinaryModule, PassportModule],
+    PrismaModule, CloudinaryModule, PassportModule, EmailModule],
   controllers: [OrganizacionesController],
   providers: [OrganizacionesService, JwtService],
 })
