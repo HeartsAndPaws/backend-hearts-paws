@@ -52,35 +52,62 @@ model Organizacion {
   mascotas   Mascota[]
   chats      Chat[]     @relation("OrganizacionChats")
   donaciones Donacion[]
+  casos Caso[]
   adopciones Adopcion[]
 }
 
 model Mascota {
-  id             String   @id @default(uuid())
+  id             String         @id @default(uuid())
   nombre         String
   edad           Int
-  tipo           String
-  raza           String
   descripcion    String?
-  estadoAdopcion Boolean  @default(false)
-  estadoDonacion Boolean  @default(false)
-  creada_en      DateTime @default(now())
+  creada_en      DateTime       @default(now())
 
-  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
+  organizacion   Organizacion   @relation(fields: [organizacionId], references: [id])
   organizacionId String
 
-  donaciones Donacion[]
-  adopciones Adopcion[]
-  imagenes   imagenMascota[] 
+  tipo           TiposMascota   @relation(fields: [tipoId], references: [id])
+  tipoId         String
+
+  imagenes       imagenMascota[]
+  casos          Caso[]
+  donaciones     Donacion[]
+  adopciones     Adopcion[]
 }
 
 model imagenMascota {
-  id             String   @id @default(uuid())
-  url            String
-  mascota        Mascota  @relation(fields: [mascotaId], references: [id])
-  mascotaId      String
-  subida_en      DateTime @default(now())
+  id        String   @id @default(uuid())
+  url       String
+  mascota   Mascota  @relation(fields: [mascotaId], references: [id])
+  mascotaId String
+  subida_en DateTime @default(now())
 }
+
+model TiposMascota {
+  id      String    @id @default(uuid())
+  nombre  String    @unique
+  mascotas Mascota[]
+}
+
+model Caso {
+  id              String      @id @default(uuid())
+  descripcion     String
+  tipo            TipoCaso
+  mascota         Mascota     @relation(fields: [mascotaId], references: [id])
+  mascotaId       String
+  estadoAdopcion  Boolean     @default(false)
+  estadoDonacion  Float?
+  metaDonacion    Float?
+  ong             Organizacion? @relation(fields: [ongId], references: [id])
+  ongId           String?
+}
+
+enum TipoCaso {
+  ADOPCION
+  DONACION
+}
+
+
 
 model Donacion {
   id             String       @id @default(uuid())

@@ -40,7 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             nombre,
             rol: 'USUARIO',
             imagenPerfil: picture,
-            contrasena: '',
+            contrasena: null,
          
             
           },
