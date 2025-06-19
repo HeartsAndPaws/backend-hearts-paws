@@ -5,6 +5,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
 import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
+import { ActualizarUsuarioDTO } from 'src/usuarios/dto/ActualizarUsuario.dto';
 
 
 @ApiTags('Usuarios')
@@ -14,7 +15,6 @@ export class UsuariosController {
     private readonly usuariosService: UsuariosService,
     private readonly cloudinaryService: CloudinaryService
   ) {}
-  
 
   @Get()
   @ApiOperation({ summary: 'Listar todos los usuarios' })
@@ -34,7 +34,7 @@ async getUsuarioActual(@Req() req){
   return await this.usuariosService.usuarioPorId(req.user.id)
 }
 
-
+  @UseGuards(JwtAutCookiesGuardia)
   @Get(':id')
   @ApiOperation({ summary: 'Obtener usuario por ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'UUID del usuario' })
@@ -44,41 +44,23 @@ async getUsuarioActual(@Req() req){
     return usuario; // ya lanza NotFoundException si no existe
   }
 
-
-
-  @Patch('usuarios/:id/contrasena')
-  @ApiOperation({ summary: 'Cambiar la contraseña del usuario' })
+  @Patch('actualizar/:id')
+  @ApiOperation({ summary: 'Cambia los datos del usuario' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        nuevaContrasena: { type: 'string', minLength: 8 }
-      },
-      required: ['nuevaContrasena']
-    }
+    type: ActualizarUsuarioDTO
   })
-  @ApiResponse({ status: 200, description: 'Contraseña actualizada exitosamente' })
-  async cambiarContrasena(
+  @ApiResponse({ status: 200, description: 'Datos actualizados' })
+  async actualizarUsuario(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { nuevaContrasena: string },
+    @Body() datosDeUsuario: ActualizarUsuarioDTO,
   ) {
-    const { nuevaContrasena } = body;
-
-    if (!nuevaContrasena) {
-      throw new BadRequestException('Debe proporcionar una nueva contraseña');
-    }
-
-    if (nuevaContrasena.length < 8) {
-      throw new BadRequestException('La contraseña debe tener al menos 8 caracteres');
-    }
-
-    const resultado = await this.usuariosService.cambiarContrasena(id, nuevaContrasena);
-
+    const resultado = await this.usuariosService.actualizarUsuario(id, datosDeUsuario);
     return resultado;
   }
 
 
+  @UseGuards(JwtAutCookiesGuardia)
   @Delete('usuarios/:id')
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
   @ApiParam({ name: 'id', type: 'string' })
