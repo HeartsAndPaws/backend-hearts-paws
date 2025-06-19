@@ -10,6 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { MascotasModule } from './mascotas/mascotas.module';
 import { EmailModule } from './shared/email/email.module';
+import { DonacionModule } from './donacion/donaciones.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EmailModule } from './shared/email/email.module';
     PrismaModule,
     MascotasModule,
     EmailModule,
+    DonacionModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
