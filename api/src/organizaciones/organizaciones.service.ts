@@ -59,7 +59,7 @@ export class OrganizacionesService {
 
   async listarTodas(){
     return this.prisma.organizacion.findMany({
-      where: { estado: 'APROBADA'},
+      where: { estado: 'PENDIENTE'},
       select: {
         id: true,
         nombre: true,
