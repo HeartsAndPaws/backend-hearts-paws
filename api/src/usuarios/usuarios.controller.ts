@@ -44,7 +44,8 @@ async getUsuarioActual(@Req() req){
     return usuario; // ya lanza NotFoundException si no existe
   }
 
-  @Patch('actualizar/:id')
+
+  @Patch(':id')
   @ApiOperation({ summary: 'Cambia los datos del usuario' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiBody({
@@ -60,8 +61,9 @@ async getUsuarioActual(@Req() req){
   }
 
 
+
+  @Delete(':id')
   @UseGuards(JwtAutCookiesGuardia)
-  @Delete('usuarios/:id')
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })
