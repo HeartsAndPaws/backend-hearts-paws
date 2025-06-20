@@ -7,10 +7,14 @@ import { UsuariosModule } from './usuarios/usuarios.module';
 import { OrganizacionesModule } from './organizaciones/organizaciones.module';
 import { AuthModule } from './autenticacion/local/auth.module';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EmailModule } from './shared/email/email-server.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { MascotasModule } from './mascotas/mascotas.module';
-import { EmailModule } from './shared/email/email.module';
 import { DonacionModule } from './donacion/donaciones.module';
+import { ChatModule } from './chat/chat.module';
+
+
+
 
 @Module({
   imports: [
@@ -26,6 +30,7 @@ import { DonacionModule } from './donacion/donaciones.module';
     MascotasModule,
     EmailModule,
     DonacionModule,
+    ChatModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

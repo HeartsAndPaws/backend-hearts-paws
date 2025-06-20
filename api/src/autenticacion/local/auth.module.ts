@@ -24,6 +24,6 @@ import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
   ],
   providers: [ServicioAut, JwtStrategy, JwtAutCookiesGuardia, RolesGuard, JwtAutCookiesGuardia],
   controllers: [AuthController],
-  exports: [JwtModule, PassportModule, JwtStrategy,JwtAutCookiesGuardia , RolesGuard, JwtAutCookiesGuardia]
+  exports: [JwtModule, PassportModule, JwtStrategy, JwtAutCookiesGuardia , RolesGuard, JwtAutCookiesGuardia]
 })
 export class AuthModule {}
