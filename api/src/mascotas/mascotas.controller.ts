@@ -27,6 +27,11 @@ export class MascotasController {
       return this.mascotasService.GetMascotaById(id);
     }
 
+    @Get("ong/:id")
+    GetMascotasByOngId(@Param('id') ongId: string) {
+      return this.mascotasService.GetMascotasByOngId(ongId);
+    }
+
 
     @Post()
     CreateMascota(@Body() createMascotaDto: CreateMascotaDto) {
