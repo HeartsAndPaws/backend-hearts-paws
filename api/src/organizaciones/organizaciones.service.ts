@@ -2,13 +2,14 @@ import {  Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateOrganizacioneDto } from './dto/update-organizacione.dto';
 import { EstadoOrganizacion } from '@prisma/client';
-import { EmailService } from 'src/shared/email/email.service';
+import { MailerService } from 'src/shared/email/email-server.service';
+
 
 @Injectable()
 export class OrganizacionesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly emailService: EmailService,
+    private readonly mailerService: MailerService,
   ){}
 
   async actualizarFotoPerfil(id: string, fotoUrl: string){
@@ -110,11 +111,13 @@ export class OrganizacionesService {
       data: { estado }
     });
 
-    // Enviar correo de estado actualizado
-    await this.emailService.enviarEstadoActualizado(
-      organizacion.email,
-      estado === 'APROBADA' ? 'ACEPTADA' : 'RECHAZADA'
-    )
+    const resultado =
+      estado === EstadoOrganizacion.APROBADA ? 'ACEPTADA' : 'RECHAZADA';
+
+      await this.mailerService.enviarEstadoActualizado(
+        organizacion.email,
+        resultado,
+      )
 
     return {
       ok: true,
