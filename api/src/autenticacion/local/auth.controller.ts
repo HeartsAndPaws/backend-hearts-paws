@@ -42,10 +42,13 @@ export class AuthController {
       }else{
         const respuesta = await this.servicioAuth.ingreso(email, contrasena)
         const token = respuesta.token
+
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+
           res.cookie('authToken', token, {
             httpOnly: true, 
-            sameSite: 'lax',
-            secure: false,
+            sameSite: isProduction ? 'none' : 'lax',
+            secure: isProduction,
             maxAge: 1000 * 60 * 60 * 24,
   });
         return { 
@@ -83,10 +86,13 @@ export class AuthController {
 
     const respuesta = await this.servicioAuth.ingresoOrganizacion(email, contrasena);
     const token = respuesta.token
+
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+
     res.cookie('authToken', token, {
       httpOnly:true,
-      sameSite: 'none',
-      secure: false,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
       maxAge: 1000 * 60 * 60 * 24
     });
 
