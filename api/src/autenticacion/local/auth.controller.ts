@@ -44,7 +44,7 @@ export class AuthController {
         const token = respuesta.token
           res.cookie('authToken', token, {
             httpOnly: true, 
-            sameSite: 'none',
+            sameSite: 'lax',
             secure: false,
             maxAge: 1000 * 60 * 60 * 24,
   });
