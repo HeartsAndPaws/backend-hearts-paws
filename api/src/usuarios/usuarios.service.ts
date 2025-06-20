@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { ActualizarUsuarioDTO } from './dto/ActualizarUsuario.dto';
 
 
 @Injectable()
@@ -41,6 +43,7 @@ export class UsuariosService {
         nombre: true,
         email: true,
         rol: true,
+        imagenPerfil: true,
         // No incluir contraseñas ni otros campos sensibles
       },
     });
@@ -48,7 +51,8 @@ export class UsuariosService {
   }
 
 
-  async cambiarContrasena(id: string, nuevaContrasena: string) {
+  async actualizarUsuario(id: string, datosDeUsuario: ActualizarUsuarioDTO) {
+    const { email, contrasena, telefono, direccion, ciudad, pais } = datosDeUsuario;
     const usuario = await this.prisma.usuario.findUnique({
       where: { id },
     });
@@ -57,14 +61,52 @@ export class UsuariosService {
       throw new NotFoundException(`No se encontró el usuario con id ${id}`);
     }
 
-    const contrasenaEncriptada = await bcrypt.hash(nuevaContrasena, 10);
+    if(email){
+      await this.prisma.usuario.update({
+      where: { id },
+      data: { email },
+    });
+    }
+    if(contrasena){
+    const contrasenaEncriptada = await bcrypt.hash(contrasena, 10);
 
     await this.prisma.usuario.update({
       where: { id },
       data: { contrasena: contrasenaEncriptada },
     });
+    }
 
-    return { ok: true, mensaje: 'Contraseña actualizada correctamente' };
+    if(telefono){
+      await this.prisma.usuario.update({
+      where: { id },
+      data: { telefono },
+    });
+    }
+
+      if(direccion){
+      await this.prisma.usuario.update({
+      where: { id },
+      data: { direccion },
+    });
+
+        if(ciudad){
+      await this.prisma.usuario.update({
+      where: { id },
+      data: { ciudad },
+    });
+    }
+        if(pais){
+      await this.prisma.usuario.update({
+      where: { id },
+      data: { pais },
+    });
+    }
+    }
+      const usuarioActualizado = await this.prisma.usuario.findUnique({
+      where: { id },
+    });
+
+    return { ok: true, mensaje: 'Contraseña actualizada correctamente', usuarioActualizado };
   }
 
   async borrarUsuario(id: string) {
