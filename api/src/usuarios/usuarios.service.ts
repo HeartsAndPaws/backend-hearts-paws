@@ -43,6 +43,7 @@ export class UsuariosService {
         nombre: true,
         email: true,
         rol: true,
+        imagenPerfil: true,
         // No incluir contraseñas ni otros campos sensibles
       },
     });
