@@ -6,18 +6,8 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NuevoUsuarioDto } from './autenticacion/dtos/NuevoUsuario.dto';
 import { NuevaOrganizacionDto } from './autenticacion/dtos/NuevaOrganizacion';
-// import * as fs from 'fs';
 
 async function bootstrap() {
-
-  // const httpsOptions = {
-  //   key: fs.readFileSync('ssl/key.pem'),
-  //   cert: fs.readFileSync('ssl/cert.pem'),
-  // };
-
-  // const app = await NestFactory.create(AppModule, {
-  //   httpsOptions 
-  // });
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   const configService = app.get(ConfigService);
@@ -51,7 +41,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    // origin: 'http://localhost:3000',
     origin: corsOrigins,
     credentials: true,
   });
