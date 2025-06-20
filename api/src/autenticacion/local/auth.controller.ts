@@ -2,13 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
   HttpCode,
   Post,
-  Request,
   Res,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ServicioAut } from './auth.service';
@@ -20,10 +17,7 @@ import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ok } from 'assert';
 
-
-import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
 
 @ApiTags('Autenticación')
 @Controller('auth')

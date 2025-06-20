@@ -9,14 +9,10 @@ import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
-    JwtModule.registerAsync({
-      inject: [ ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {expiresIn: '1h'},
-      })
-    }),
-    PrismaModule, CloudinaryModule, PassportModule],
+    JwtModule,
+    PrismaModule, 
+    CloudinaryModule, 
+    PassportModule],
   controllers: [UsuariosController],
   providers: [UsuariosService, JwtService],
 })
