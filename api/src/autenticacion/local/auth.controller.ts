@@ -2,13 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
   HttpCode,
   Post,
-  Request,
   Res,
   UploadedFiles,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ServicioAut } from './auth.service';
@@ -20,10 +17,7 @@ import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ok } from 'assert';
 
-
-import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
 
 @ApiTags('Autenticación')
 @Controller('auth')
@@ -48,10 +42,13 @@ export class AuthController {
       }else{
         const respuesta = await this.servicioAuth.ingreso(email, contrasena)
         const token = respuesta.token
+
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+
           res.cookie('authToken', token, {
             httpOnly: true, 
-            sameSite: 'lax',
-            secure: false,
+            sameSite: isProduction ? 'none' : 'lax',
+            secure: isProduction,
             maxAge: 1000 * 60 * 60 * 24,
   });
         return { 
@@ -89,10 +86,13 @@ export class AuthController {
 
     const respuesta = await this.servicioAuth.ingresoOrganizacion(email, contrasena);
     const token = respuesta.token
+
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+
     res.cookie('authToken', token, {
       httpOnly:true,
-      sameSite: 'none',
-      secure: false,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
       maxAge: 1000 * 60 * 60 * 24
     });
 

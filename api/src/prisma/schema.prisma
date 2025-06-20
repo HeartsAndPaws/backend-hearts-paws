@@ -54,6 +54,7 @@ model Organizacion {
   donaciones Donacion[]
   casos Caso[]
   adopciones Adopcion[]
+  mensajes     Mensaje[]    @relation("OrgMensajes")
 }
 
 model Mascota {
@@ -150,8 +151,10 @@ model Mensaje {
   id         String   @id @default(uuid())
   chat       Chat     @relation(fields: [chatId], references: [id])
   chatId     String
-  autor      Usuario  @relation("UsuarioMensajes", fields: [autorId], references: [id])
-  autorId    String
+  autorUsuario           Usuario?      @relation("UsuarioMensajes", fields: [autorUsuarioId], references: [id])
+  autorUsuarioId         String?
+  autorOrganizacion      Organizacion? @relation("OrgMensajes", fields: [autorOrganizacionId], references: [id])
+  autorOrganizacionId    String?
   contenido  String
   enviado_en DateTime @default(now())
 }
