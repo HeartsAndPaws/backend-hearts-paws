@@ -31,8 +31,16 @@ export class MascotasService {
         imagenes: true,
       },
     });
+  }
 
-  
+  async GetMascotasByOngId(ongId: string) {
+    
+    return this.prismaService.mascota.findMany({
+      where: { organizacionId: ongId },
+      include: {
+        imagenes: true,
+      },
+    });
   }
 
   async GetTipo(){
