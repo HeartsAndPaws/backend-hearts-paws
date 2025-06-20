@@ -44,7 +44,9 @@ export class ServicioAut {
         telefono: true,
         direccion: true,
         ciudad: true,
-        pais: true
+        pais: true,
+        imagenPerfil: true,
+        rol: true,
       }
     });
 
@@ -79,6 +81,7 @@ export class ServicioAut {
       id: usuarioEncontrado.id,
       email: usuarioEncontrado.email,
       rol: usuarioEncontrado.rol,
+      tipo: 'USUARIO'
     };
 
     const token = this.jwtService.sign(userPayload);
@@ -119,7 +122,8 @@ export class ServicioAut {
       sub: organizacion.id,
       id: organizacion.id,
       email: organizacion.email,
-      plan: organizacion.plan
+      plan: organizacion.plan,
+      tipo: 'ONG'
     };
 
     const token = this.jwtService.sign(payload);

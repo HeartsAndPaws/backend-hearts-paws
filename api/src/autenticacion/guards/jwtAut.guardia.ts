@@ -7,15 +7,23 @@ export class JwtAutCookiesGuardia implements CanActivate {
 
     canActivate(context: ExecutionContext): boolean {
         const request = context.switchToHttp().getRequest();
-
         const token = request.cookies?.authToken;
+
         if (!token) throw new UnauthorizedException('Token no encontrado');
 
         try {
             const secret = process.env.JWT_SECRET
             const payload = this.jwtService.verify(token, {secret});
-            request.user = payload;
-            return true;
+
+            request.user = {
+                id: payload.sub,
+                email: payload.email,
+                tipo: payload.tipo,
+                rol: payload.rol || null
+            };
+
+            return true
+
         } catch (e) {
             throw new UnauthorizedException('Token inválido');
     }

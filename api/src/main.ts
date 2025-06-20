@@ -6,9 +6,11 @@ import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NuevoUsuarioDto } from './autenticacion/dtos/NuevoUsuario.dto';
 import { NuevaOrganizacionDto } from './autenticacion/dtos/NuevaOrganizacion';
+import { CustomSocketIoAdapter } from './chat/socket-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new CustomSocketIoAdapter(app));
   app.use(cookieParser());
   const configService = app.get(ConfigService);
 
@@ -42,6 +44,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
   });
 
@@ -51,7 +54,7 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }));
-  await app.listen(configService.get<number>('PORT') ?? 3001);
+  await app.listen(configService.get<number>('PORT') ?? 3002);
   console.log(`Servidor prendido en el puerto ${configService.get<number>('PORT')}`);
 }
 bootstrap();
