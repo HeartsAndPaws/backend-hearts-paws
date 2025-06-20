@@ -1,13 +1,16 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import { PrismaClient, Rol, Plan } from "@prisma/client";
+import { PrismaClient, Rol, Plan, EstadoAdopcion, TipoCaso } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
     // Limpieza (en orden de dependencias para evitar errores por FK)
     await prisma.imagenMascota.deleteMany();
+    await prisma.casoAdopcion.deleteMany();
+    await prisma.casoDonacion.deleteMany();
+    await prisma.caso.deleteMany();
     await prisma.mascota.deleteMany();
     await prisma.tiposMascota.deleteMany();
     await prisma.organizacion.deleteMany();
@@ -111,6 +114,64 @@ async function main() {
             { url: 'https://images.pexels.com/photos/rabbit.jpg', mascotaId: mascota3.id },
             { url: 'https://images.pexels.com/photos/rabbit2.jpg', mascotaId: mascota3.id },
         ],
+    });
+
+    // === Crear casos ===
+
+    // Caso de adopción para Luna (mascota1, ONG1)
+    const casoAdopcionLuna = await prisma.caso.create({
+        data: {
+            titulo: 'Adopta a Luna',
+            descripcion: 'Luna busca una familia amorosa.',
+            tipo: TipoCaso.ADOPCION,
+            mascotaId: mascota1.id,
+            ongId: ong1.id,
+        }
+    });
+
+    await prisma.casoAdopcion.create({
+        data: {
+            casoId: casoAdopcionLuna.id,
+            estado: EstadoAdopcion.PENDIENTE, // Enum del schema Prisma
+        }
+    });
+
+    // Caso de donación para Michi (mascota2, ONG2)
+    const casoDonacionMichi = await prisma.caso.create({
+        data: {
+            titulo: 'Ayuda a Michi',
+            descripcion: 'Recaudación para operación de Michi.',
+            tipo: TipoCaso.DONACION,
+            mascotaId: mascota2.id,
+            ongId: ong2.id,
+        }
+    });
+
+    await prisma.casoDonacion.create({
+        data: {
+            casoId: casoDonacionMichi.id,
+            metaDonacion: 250000,
+            estadoDonacion: 35000,
+        }
+    });
+
+    // Caso de donación para Saltitos (mascota3, ONG1)
+    const casoDonacionSaltitos = await prisma.caso.create({
+        data: {
+            titulo: 'Salva a Saltitos',
+            descripcion: 'Saltitos necesita medicinas y alimento.',
+            tipo: TipoCaso.DONACION,
+            mascotaId: mascota3.id,
+            ongId: ong1.id,
+        }
+    });
+
+    await prisma.casoDonacion.create({
+        data: {
+            casoId: casoDonacionSaltitos.id,
+            metaDonacion: 120000,
+            estadoDonacion: 7000,
+        }
     });
 
     console.log('Seed ejecutado correctamente');
