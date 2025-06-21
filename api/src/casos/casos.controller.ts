@@ -9,9 +9,7 @@ export class CasosController {
 
   @Get()
   GetCasos(){
-
     return this.casosService.GetCasos();
-
   }
 
   @Get('adopcion')

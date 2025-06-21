@@ -4,10 +4,11 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ServicioAut } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtStrategy } from '../strategias/jwt.strategy';
+import { JwtLocalStrategy } from '../strategias/jwt.strategy';
 import { RolesGuard } from '../guards/roles.guard';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
+import { JwtAuth0Strategy } from '../auth0/auth0Logic/jwt.strategy';
 
 @Module({
   imports: [
@@ -22,8 +23,8 @@ import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
     }),
     CloudinaryModule
   ],
-  providers: [ServicioAut, JwtStrategy, JwtAutCookiesGuardia, RolesGuard, JwtAutCookiesGuardia],
+  providers: [ServicioAut, JwtLocalStrategy, JwtAuth0Strategy, JwtAutCookiesGuardia, RolesGuard],
   controllers: [AuthController],
-  exports: [JwtModule, PassportModule, JwtStrategy, JwtAutCookiesGuardia , RolesGuard, JwtAutCookiesGuardia]
+  exports: [JwtModule, PassportModule, JwtLocalStrategy, JwtAutCookiesGuardia , RolesGuard, JwtAutCookiesGuardia]
 })
 export class AuthModule {}

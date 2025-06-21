@@ -6,6 +6,7 @@ import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
 import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { ActualizarUsuarioDTO } from 'src/usuarios/dto/ActualizarUsuario.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 
 @ApiTags('Usuarios')
@@ -34,7 +35,7 @@ async getUsuarioActual(@Req() req){
   return await this.usuariosService.usuarioPorId(req.user.id)
 }
 
-  @UseGuards(JwtAutCookiesGuardia)
+  @UseGuards(AuthGuard(['jwt-local', 'jwt-auth0']))
   @Get(':id')
   @ApiOperation({ summary: 'Obtener usuario por ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'UUID del usuario' })
@@ -63,7 +64,7 @@ async getUsuarioActual(@Req() req){
 
 
   @Delete(':id')
-  @UseGuards(JwtAutCookiesGuardia)
+  @UseGuards(AuthGuard(['jwt-local', 'jwt-auth0']))
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })

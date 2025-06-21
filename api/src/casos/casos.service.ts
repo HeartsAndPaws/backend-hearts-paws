@@ -123,12 +123,8 @@ export class CasosService {
         adopcion: true,
         donacion: true,
       }
-     
-
     })
 
   }
-
-  
 
 }
