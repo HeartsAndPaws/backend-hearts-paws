@@ -13,8 +13,7 @@ import { EmailModule } from './shared/email/email-server.module';
 import { CasosModule } from './casos/casos.module';
 import { DonacionModule } from './donacion/donaciones.module';
 import { ChatModule } from './chat/chat.module';
-
-
+import { StripeModule } from './stripe/stripe.module';
 
 
 
@@ -33,7 +32,8 @@ import { ChatModule } from './chat/chat.module';
     EmailModule,
     CasosModule,
     DonacionModule,
-    ChatModule
+    ChatModule,
+    StripeModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
