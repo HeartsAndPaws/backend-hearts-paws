@@ -41,7 +41,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             rol: 'USUARIO',
             imagenPerfil: picture,
             contrasena: null,
-         
             
           },
         });
