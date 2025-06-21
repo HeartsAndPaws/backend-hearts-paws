@@ -35,8 +35,15 @@ export class CasosService {
     return this.prismaService.caso.findMany({
       where: { tipo: 'ADOPCION' },
       include: {
-        mascota: true,
-        ong: true,
+        mascota: {
+          include: {
+            imagenes: {
+              take: 1,
+              orderBy: { subida_en: 'desc'}, // Trae la imagen más reciente
+            },
+          },
+        },
+        ong: true
       },
     });
     
@@ -46,11 +53,17 @@ export class CasosService {
     return this.prismaService.caso.findMany({
       where: { tipo: 'DONACION' },
       include: {
-        mascota: true,
-        ong: true,
+        mascota: {
+          include: {
+            imagenes: {
+              take: 1,
+              orderBy: { subida_en: 'desc'}, // Trae solo la imagen más reciente
+            },
+          },
+        },
+        ong: true
       },
     });
-    
   }
 
   async CreateCaso(createCasoDto: CreateCasoDto) {
@@ -66,7 +79,7 @@ export class CasosService {
       throw new BadRequestException(`Ya existe un caso de tipo ${createCasoDto.tipo} para la mascota con ID ${createCasoDto.mascotaId}`);
     }
 
-     const caso = await this.prismaService.caso.create({
+    const caso = await this.prismaService.caso.create({
       data: {
         titulo: createCasoDto.titulo,
         descripcion: createCasoDto.descripcion,
