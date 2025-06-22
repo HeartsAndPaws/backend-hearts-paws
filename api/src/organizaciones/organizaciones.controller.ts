@@ -48,7 +48,7 @@ export class OrganizacionesController {
   }
 
   @Get('casosPorOng')
-  async casosPorOng(id: string){
+  async casosPorOng(@Param('id') id: string){
     return this.organizacionesService.buscarCasosPorOng(id)
   }
 
