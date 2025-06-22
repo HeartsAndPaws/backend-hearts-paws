@@ -4,6 +4,7 @@ import { CreateMascotaDto } from './dto/create-mascota.dto';
 import { UpdateMascotaDto } from './dto/update-mascota.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { TipoMascotaDto } from './dto/tipoMascota.dto';
 
 @Injectable()
 export class MascotasService {
@@ -47,6 +48,13 @@ export class MascotasService {
 
     return await this.prismaService.tiposMascota.findMany();
 
+  }
+  async CreateTipoMascota(createTipoMascotaDto: TipoMascotaDto) {
+    return this.prismaService.tiposMascota.create({
+      data: {
+        nombre: createTipoMascotaDto.nombre,
+      },
+    });
   }
 
   async CreateMascota(createMascotaDto: CreateMascotaDto) {
