@@ -25,17 +25,18 @@ export class UsuariosController {
 }
 
 
-@UseGuards(JwtAutCookiesGuardia)
+@UseGuards(AuthGuard(['jwt-local', 'supabase']))
 @Get('me')
 @ApiBearerAuth()
 @ApiOperation({ summary: 'Obtener el usuario autenticado' })
 @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
 async getUsuarioActual(@Req() req){
+  const isExternal = req.user.picture !== undefined;
   console.log('Decoded token info:', req.user);
-  return await this.usuariosService.usuarioPorId(req.user.id)
+  return await this.usuariosService.usuarioPorId(req.user.id, req.user.external)
 }
 
-  @UseGuards(AuthGuard(['jwt-local', 'jwt-auth0']))
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get(':id')
   @ApiOperation({ summary: 'Obtener usuario por ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'UUID del usuario' })
@@ -64,7 +65,7 @@ async getUsuarioActual(@Req() req){
 
 
   @Delete(':id')
-  @UseGuards(AuthGuard(['jwt-local', 'jwt-auth0']))
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })
