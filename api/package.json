@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npm run generate && swc src -d dist --copy-files",
+    "build": "npm run generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "dotenv -e .env.development -- node --max-old-space-size=512 dist/main",
     "start:dev": "node --max-old-space-size=512 ./node_modules/dotenv-cli -e .env.development -- nest start --watch",
