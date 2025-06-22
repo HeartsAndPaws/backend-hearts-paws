@@ -12,6 +12,9 @@ import { MascotasModule } from './mascotas/mascotas.module';
 import { EmailModule } from './shared/email/email-server.module';
 import { CasosModule } from './casos/casos.module';
 import { ChatModule } from './chat/chat.module';
+import { StripeModule } from './stripe/stripe.module';
+import { SupabaseModule } from './autenticacion/supabase/supabase.module';
+
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { ChatModule } from './chat/chat.module';
     MascotasModule,
     EmailModule,
     CasosModule,
+    ChatModule,
+    StripeModule,
+    SupabaseModule,
     ChatModule
   ],
   controllers: [AppController],

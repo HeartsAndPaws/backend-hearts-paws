@@ -1,9 +1,10 @@
-import {  Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateOrganizacioneDto } from './dto/update-organizacione.dto';
 import { EstadoOrganizacion } from '@prisma/client';
 import { MailerService } from 'src/shared/email/email-server.service';
-
+import { Response } from 'express';
+import axios from 'axios';
 
 @Injectable()
 export class OrganizacionesService {
@@ -126,24 +127,30 @@ export class OrganizacionesService {
     };
   }
 
-    async buscarCasosPorOng(ongId: string) {
-    return await this.prisma.caso.findMany({
-      where: {
-        ongId: ongId,
-      },
-      include: {
-        mascota: {
-          include: {
-            tipo: true,
-          },
-        },
-        ong: {
-          select: {
-          nombre: true,
-        },
-      },
-        donacion: true,
-        adopcion: true,
-    }})
+  async servirArchivoVerificacion(id: string, res: Response){
+    const organizacion = await this.prisma.organizacion.findUnique({
+      where: { id },
+      select: { archivoVerificacionUrl: true, nombre: true},
+    });
+
+    if (!organizacion || !organizacion.archivoVerificacionUrl) {
+      throw new NotFoundException('Archivo de verificación no encontrado');
+    }
+
+    try {
+      const response = await axios.get(organizacion.archivoVerificacionUrl, {
+        responseType: 'stream',
+      });
+
+      res.set({
+        'content-type': 'application/pdf',
+        'content-Disposition': `inline; filename="${organizacion.nombre}-verificacion.pdf"`
+      });
+
+      response.data.pipe(res);
+    } catch (error) {
+      throw new NotFoundException('No se pudo acceder al archivo de verificación');
+    }
   }
+
 }

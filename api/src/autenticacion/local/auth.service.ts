@@ -123,7 +123,8 @@ export class ServicioAut {
       id: organizacion.id,
       email: organizacion.email,
       plan: organizacion.plan,
-      tipo: 'ONG'
+      tipo: 'ONG',
+      rol: 'ONG',
     };
 
     const token = this.jwtService.sign(payload);
