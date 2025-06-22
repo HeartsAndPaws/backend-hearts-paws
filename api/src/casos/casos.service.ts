@@ -138,41 +138,52 @@ export class CasosService {
     })
 
   }
-    async filtroParaDonacionesPorMascota(tipo: string) {
-    return await this.prismaService.donacion.findMany({
-      where: {
-        mascota: {
-          tipo: {
-            nombre: {
-              equals: tipo
-            },
+async filtroParaDonacionesPorMascota(tipo: string) {
+  return await this.prismaService.donacion.findMany({
+    where: {
+      mascota: {
+        tipo: {
+          nombre: {
+            equals: tipo,
+            mode: 'insensitive', // Ignora mayúsculas/minúsculas
           },
         },
       },
-      include: {
-        mascota: true,
-        organizacion: true,
-        usuario: true,
+    },
+    include: {
+      mascota: {
+        include: {
+          tipo: true, // opcional si querés ver el tipo en el resultado
+        },
       },
-    });
-  }
+      organizacion: true,
+      usuario: true,
+    },
+  });
+}
 
-    async filtroParaAdopcionesPorMascota(tipo: string) {
-    return await this.prismaService.adopcion.findMany({
-      where: {
-        mascota: {
-          tipo: {
-            nombre: {
-              equals: tipo.toUpperCase(),
-            },
+async filtroParaAdopcionesPorMascota(tipo: string) {
+  return await this.prismaService.adopcion.findMany({
+    where: {
+      mascota: {
+        tipo: {
+          nombre: {
+            equals: tipo,
+            mode: 'insensitive',
           },
         },
       },
-      include: {
-        mascota: true,
-        organizacion: true,
-        usuario: true,
+    },
+    include: {
+      mascota: {
+        include: {
+          tipo: true,
+        },
       },
-    });
-  }
+      organizacion: true,
+      usuario: true,
+    },
+  });
+}
+
 }
