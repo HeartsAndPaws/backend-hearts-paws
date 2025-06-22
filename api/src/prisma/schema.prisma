@@ -102,6 +102,8 @@ model Caso {
   ong         Organizacion?  @relation(fields: [ongId], references: [id])
   ongId       String?
 
+  creado_en DateTime @default(now())
+
   // Relaciones con subtipos
   adopcion    CasoAdopcion?
   donacion    CasoDonacion?
