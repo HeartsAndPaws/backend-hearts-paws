@@ -7,15 +7,50 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NuevoUsuarioDto } from './autenticacion/dtos/NuevoUsuario.dto';
 import { NuevaOrganizacionDto } from './autenticacion/dtos/NuevaOrganizacion';
 import { CustomSocketIoAdapter } from './chat/socket-io.adapter';
+import  express  from 'express';
+import * as bodyParser from 'body-parser';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useWebSocketAdapter(new CustomSocketIoAdapter(app));
-  app.use(cookieParser());
-  const configService = app.get(ConfigService);
 
+  // Adaptador de WebSocket (Chat)
+  app.useWebSocketAdapter(new CustomSocketIoAdapter(app));
+
+  const configService = app.get(ConfigService);
   const corsOrigins = configService.get<string>('CORS_ORIGINS')?.split(',') || [];
 
+  // Middleware especial para Stripe Webhook (RAW BODY)
+  app.use((req, res, next) => {
+    if (req.originalUrl === '/stripe/webhook') {
+      bodyParser.raw({ type: 'aplication/json'})(req, res, () => {
+        (req as any).rawBody = req.body;
+        next();
+      });
+    }else{
+      bodyParser.json()(req, res, next);
+    }
+  });
+
+  // Midleware general
+  app.use(cookieParser());
+
+  // Pipes globales de validación
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+
+  // CORS
+  app.enableCors({
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    credentials: true,
+  });
+
+
+  // Swagger
   const config = new DocumentBuilder()
   .setTitle('Hearts&Paws API')
   .setDescription(
@@ -42,18 +77,7 @@ async function bootstrap() {
   });
   SwaggerModule.setup('api', app, document);
 
-  app.enableCors({
-    origin: corsOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    credentials: true,
-  });
-
-  app.use(cookieParser())
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  // Iniciar servidor
   await app.listen(configService.get<number>('PORT') ?? 3002);
   console.log(`Servidor prendido en el puerto ${configService.get<number>('PORT')}`);
 }

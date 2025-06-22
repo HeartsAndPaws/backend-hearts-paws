@@ -220,7 +220,9 @@ export class AuthController {
       throw new BadRequestException('El archivo debe ser PDF')
     }
 
-    const { secure_url } = await this.cloudinaryService.subirPdf(archivoVerificacion);
+    const uploadResult = await this.cloudinaryService.subirPdf(archivoVerificacion);
+
+    const archivoVerificacionUrl = uploadResult.secure_url;
 
     let imagenPerfilUrl: string | undefined = undefined;
     if (imagenPerfil) {
@@ -230,7 +232,7 @@ export class AuthController {
 
     return this.servicioAuth.crearOrganizacion({
       ...data,
-      archivoVerificacionUrl: secure_url,
+      archivoVerificacionUrl,
       imagenPerfil: imagenPerfilUrl
     })
   }
