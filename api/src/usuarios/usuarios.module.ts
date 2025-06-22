@@ -3,17 +3,10 @@ import { UsuariosService } from './usuarios.service';
 import { UsuariosController } from './usuarios.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [
-    JwtModule,
-    PrismaModule, 
-    CloudinaryModule, 
-    PassportModule],
+  imports: [PrismaModule, CloudinaryModule],
   controllers: [UsuariosController],
-  providers: [UsuariosService, JwtService],
+  providers: [UsuariosService],
 })
 export class UsuariosModule {}
