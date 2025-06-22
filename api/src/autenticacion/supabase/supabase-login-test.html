@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login Supabase - Extraer Token Válido</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+  <h1>Login con Google</h1>
+  <button onclick="login()">Iniciar sesión</button>
+
+  <h2 id="tokenTitle" style="display: none;">Token de acceso (válido para backend):</h2>
+  <pre id="tokenDisplay"></pre>
+
+  <script>
+    const supabase = window.supabase.createClient(
+      'https://owotvccwapykkxwjlyvk.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93b3R2Y2N3YXB5a2t4d2pseXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1MzcyNTgsImV4cCI6MjA2NjExMzI1OH0.QwQY-hc5ZNy7uIH_FALS-bLv4pPYwxGqMXSWurq06Lc'
+    );
+
+    function login() {
+      supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+    }
+
+    // 🔁 Esperamos a que el usuario sea autenticado y obtengamos una sesión válida
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const token = session.access_token;
+        document.getElementById('tokenTitle').style.display = 'block';
+        document.getElementById('tokenDisplay').textContent = token;
+        console.log("✅ Access Token de Supabase (válido):", token);
+        // Aquí puedes enviarlo por fetch al backend si quieres
+      }
+    });
+  </script>
+</body>
+</html>
