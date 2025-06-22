@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UseInterceptors, UploadedFile, UploadedFiles, Body, BadRequestException, Get, Patch, Delete, UseGuards, Req, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Post, Param, UseInterceptors, UploadedFile, UploadedFiles, Body, BadRequestException, Get, Patch, Delete, UseGuards, Req, ParseUUIDPipe, Res } from '@nestjs/common';
 import { OrganizacionesService } from './organizaciones.service';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
@@ -9,6 +9,8 @@ import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiParam, ApiConsumes, ApiBody, ApiExtraModels } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 
 
 
@@ -47,11 +49,15 @@ export class OrganizacionesController {
     return this.organizacionesService.buscarPorId(id);
   }
 
+<<<<<<< HEAD
   @Get('casosPorOng/:id')
   async casosPorOng(@Param('id') id: string){
     return this.organizacionesService.buscarCasosPorOng(id)
   }
 
+=======
+  
+>>>>>>> b6a68598644e760da79fac4c4e112a4a9b7678b2
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de una organización' })
   @ApiParam({ name: 'id', type: 'string' })
@@ -66,8 +72,13 @@ export class OrganizacionesController {
 
   @Patch(':id/estado')
   @UseInterceptors(AnyFilesInterceptor())
+<<<<<<< HEAD
   // @UseGuards(JwtAutCookiesGuardia, RolesGuard)
   // @Roles('ADMIN')
+=======
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+  @Roles('ADMIN')
+>>>>>>> b6a68598644e760da79fac4c4e112a4a9b7678b2
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cambiar estado de una organización (solo ADMIN)' })
   @ApiParam({ name: 'id', type: 'string' })
@@ -107,5 +118,13 @@ export class OrganizacionesController {
     const subirImagen = await this.cloudinaryService.subirIamgen(file);
     return this.organizacionesService.actualizarFotoPerfil(id, subirImagen.secure_url);
   }
+
+  @Get(':id/archivo-verificacion')
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+  @Roles('ADMIN')
+  async obtenerArchivoPdf(@Param('id') id: string, @Res() res: Response){
+    return this.organizacionesService.servirArchivoVerificacion(id, res);
+  }
+
 
 }
