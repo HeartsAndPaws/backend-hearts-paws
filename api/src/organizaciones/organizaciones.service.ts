@@ -27,9 +27,7 @@ export class OrganizacionesService {
     });
 
     return ongActualizada;
-  }
-
-  
+  }  
 
   async buscarPorId(id: string){
     const organizacion = await this.prisma.organizacion.findUnique({

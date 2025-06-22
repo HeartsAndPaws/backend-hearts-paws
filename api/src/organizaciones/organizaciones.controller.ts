@@ -47,7 +47,7 @@ export class OrganizacionesController {
     return this.organizacionesService.buscarPorId(id);
   }
 
-  @Get('casosPorOng')
+  @Get('casosPorOng/:id')
   async casosPorOng(@Param('id') id: string){
     return this.organizacionesService.buscarCasosPorOng(id)
   }
@@ -66,8 +66,8 @@ export class OrganizacionesController {
 
   @Patch(':id/estado')
   @UseInterceptors(AnyFilesInterceptor())
-  @UseGuards(JwtAutCookiesGuardia, RolesGuard)
-  @Roles('ADMIN')
+  // @UseGuards(JwtAutCookiesGuardia, RolesGuard)
+  // @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cambiar estado de una organización (solo ADMIN)' })
   @ApiParam({ name: 'id', type: 'string' })

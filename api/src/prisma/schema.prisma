@@ -57,25 +57,6 @@ model Organizacion {
   mensajes     Mensaje[]    @relation("OrgMensajes")
 }
 
-model Mascota {
-  id             String         @id @default(uuid())
-  nombre         String
-  edad           Int
-  descripcion    String?
-  creada_en      DateTime       @default(now())
-
-  organizacion   Organizacion   @relation(fields: [organizacionId], references: [id])
-  organizacionId String
-
-  tipo           TiposMascota   @relation(fields: [tipoId], references: [id])
-  tipoId         String
-
-  imagenes       imagenMascota[]
-  casos          Caso[]
-  donaciones     Donacion[]
-  adopciones     Adopcion[]
-}
-
 model imagenMascota {
   id        String   @id @default(uuid())
   url       String
@@ -119,15 +100,12 @@ model CasoDonacion {
   casoId        String   @unique
   estadoDonacion Float   // Monto recaudado hasta el momento
   metaDonacion   Float   // Meta de la donación
-
 }
 
 enum TipoCaso {
   ADOPCION
   DONACION
 }
-
-
 
 model Donacion {
   id             String       @id @default(uuid())
@@ -141,6 +119,26 @@ model Donacion {
   comprobante    String // URL al archivo o imagen
   fecha          DateTime     @default(now())
 }
+
+model Mascota {
+  id             String         @id @default(uuid())
+  nombre         String
+  edad           Int
+  descripcion    String?
+  creada_en      DateTime       @default(now())
+
+  organizacion   Organizacion   @relation(fields: [organizacionId], references: [id])
+  organizacionId String
+
+  tipo           TiposMascota   @relation(fields: [tipoId], references: [id])
+  tipoId         String
+
+  imagenes       imagenMascota[]
+  casos          Caso[]
+  donaciones     Donacion[]
+  adopciones     Adopcion[]
+}
+
 
 model Adopcion {
   id                String         @id @default(uuid())

@@ -17,8 +17,6 @@ export class CasosService {
     });
 
   }
-
-  
   
   async GetCasoById(id: string) {
     return this.prismaService.caso.findUnique({
@@ -138,33 +136,14 @@ export class CasosService {
     })
 
   }
-async filtroParaDonacionesPorMascota(tipo: string) {
-  return await this.prismaService.donacion.findMany({
-    where: {
-      mascota: {
-        tipo: {
-          nombre: {
-            equals: tipo,
-            mode: 'insensitive', // Ignora mayúsculas/minúsculas
-          },
-        },
-      },
-    },
-    include: {
-      mascota: {
-        include: {
-          tipo: true, // opcional si querés ver el tipo en el resultado
-        },
-      },
-      organizacion: true,
-      usuario: true,
-    },
-  });
-}
 
-async filtroParaAdopcionesPorMascota(tipo: string) {
-  return await this.prismaService.adopcion.findMany({
+  async buscarCasosDeAdopcionPorTipoDeMascota(tipo: string) {
+  return this.prismaService.caso.findMany({
     where: {
+      adopcion: {
+        // con este filtro nos aseguramos que solo traiga casos que tengan un subtipo adopcion
+        isNot: null,
+      },
       mascota: {
         tipo: {
           nombre: {
@@ -175,15 +154,38 @@ async filtroParaAdopcionesPorMascota(tipo: string) {
       },
     },
     include: {
-      mascota: {
-        include: {
-          tipo: true,
-        },
-      },
-      organizacion: true,
-      usuario: true,
+      mascota: true,
+      ong: true,
     },
   });
 }
+
+async buscarCasosDeDonacionPorTipoDeMascota(tipo: string) {
+  return this.prismaService.caso.findMany({
+    where: {
+      donacion: {
+        isNot: null, // Solo casos que tienen relación con CasoDonacion
+      },
+      mascota: {
+        tipo: {
+          nombre: {
+            equals: tipo,
+            mode: 'insensitive', // Ignora mayúsculas y minúsculas
+          },
+        },
+      },
+    },
+    include: {
+      mascota: {
+        include: {
+          tipo: true, // Incluye el tipo de mascota
+        },
+      },
+      ong: true,       // Incluye la organización
+      donacion: true,  // Incluye los datos del subtipo donación
+    },
+  });
+}
+
 
 }

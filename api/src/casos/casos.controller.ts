@@ -24,12 +24,12 @@ export class CasosController {
 
   @Get('adopcion/buscar')
   busquedaAdopcion(@Query('tipo') tipo: string){
-    return this.casosService.filtroParaAdopcionesPorMascota(tipo)
+    return this.casosService.buscarCasosDeAdopcionPorTipoDeMascota(tipo)
   }
 
   @Get('donacion/buscar')
   busquedaDonacion(@Query('tipo') tipo: string){
-    return this.casosService.filtroParaDonacionesPorMascota(tipo)
+    return this.casosService.buscarCasosDeDonacionPorTipoDeMascota(tipo)
   }
 
   @Post()
