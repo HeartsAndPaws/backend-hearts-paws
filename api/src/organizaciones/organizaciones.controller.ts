@@ -47,6 +47,10 @@ export class OrganizacionesController {
     return this.organizacionesService.buscarPorId(id);
   }
 
+  @Get('casosPorOng')
+  async casosPorOng(@Param('id') id: string){
+    return this.organizacionesService.buscarCasosPorOng(id)
+  }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de una organización' })

@@ -125,4 +125,25 @@ export class OrganizacionesService {
       organizacion: actualizada,
     };
   }
+
+    async buscarCasosPorOng(ongId: string) {
+    return await this.prisma.caso.findMany({
+      where: {
+        ongId: ongId,
+      },
+      include: {
+        mascota: {
+          include: {
+            tipo: true,
+          },
+        },
+        ong: {
+          select: {
+          nombre: true,
+        },
+      },
+        donacion: true,
+        adopcion: true,
+    }})
+  }
 }
