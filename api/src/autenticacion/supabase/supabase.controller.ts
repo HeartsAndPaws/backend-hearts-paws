@@ -2,7 +2,6 @@ import { Controller, Get, UseGuards, Post, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { SupabaseService } from './supabase.service';
-import { SupabaseGuard } from './supabaseLogic/jwt-supabase.guard';
 
 @Controller('auth')
 export class SupabaseController {

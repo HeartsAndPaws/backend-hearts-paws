@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { CasosService } from './casos.service';
 import { CreateCasoDto } from './dto/create-caso.dto';
 import { UpdateCasoDto } from './dto/update-caso.dto';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('casos')
 export class CasosController {
@@ -25,11 +27,15 @@ export class CasosController {
   }
 
   @Get('adopcion/buscar')
+  @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
+  @ApiOperation({ summary: 'Buscar casos de adopción por tipo de mascota' })
   busquedaAdopcion(@Query('tipo') tipo: string){
     return this.casosService.filtroParaAdopcionesPorMascota(tipo)
   }
 
   @Get('donacion/buscar')
+  @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
+@ApiOperation({ summary: 'Buscar casos de donación por tipo de mascota' })
   busquedaDonacion(@Query('tipo') tipo: string){
     return this.casosService.filtroParaDonacionesPorMascota(tipo)
   }
@@ -50,5 +56,18 @@ export class CasosController {
     return this.casosService.GetCasoById(id);
   }
 
+  @UseGuards(AuthGuard('jwt-local'))
+  @Get('ong/mis-casos')
+  @ApiParam({ name: 'id', description: 'ID de la organización' })
+  @ApiOperation({ summary: 'Obtener todos los casos de una ONG' })
+  @ApiResponse({ status: 200, description: 'Casos obtenidos exitosamente' })
+  async obtenerCasosPorOng(@Req() req){
+    const ongId = req.user.id;
+
+    if (req.user.tipo !== 'ONG') {
+      throw new UnauthorizedException('Solo una organizacion puede acceder a esta ruta.')
+    }
+    return await this.casosService.obtenerCasosPorOng(ongId);
+  }
   
 }

@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-http-bearer';
 import { createClient } from '@supabase/supabase-js'
+import { PrismaService } from 'src/prisma/prisma.service';
 
 
 
@@ -9,7 +10,7 @@ import { createClient } from '@supabase/supabase-js'
 export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
   private supabase;
 
-  constructor() {
+  constructor( private readonly prisma: PrismaService) {
     super();
 
     const url = process.env.SUPABASE_URL;
@@ -35,11 +36,22 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
       throw new UnauthorizedException('El token no contiene email o ID');
     }
 
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { externalId: sub},
+      select: { id: true, rol: true},
+    });
+
+    if (!usuario) {
+      throw new UnauthorizedException('Usuario externo no registrado en el sistema local');
+    }
+
     return {
-      sub,
+      id: usuario.id,
       email,
+      rol: usuario.rol,
       name: user_metadata?.full_name || null,
       picture: user_metadata?.avatar_url || null,
+      external: true,
     }
   }
 }
