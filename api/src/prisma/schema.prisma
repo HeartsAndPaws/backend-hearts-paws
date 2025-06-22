@@ -17,7 +17,7 @@ model Usuario {
   id        String   @id @default(uuid())
   nombre    String
   email     String   @unique
-  contrasena  String?
+  contraseña  String
   telefono  String?
   direccion String?
   ciudad    String?
@@ -25,8 +25,6 @@ model Usuario {
   imagenPerfil String?
   rol       Rol      @default(USUARIO)
   creado_en DateTime @default(now())
-
-  externalId   String?  @unique 
 
   // Relaciones
   donaciones Donacion[]
@@ -39,101 +37,48 @@ model Organizacion {
   id          String   @id @default(uuid())
   nombre      String
   email       String   @unique
-  contrasena  String
+  contraseña  String
   descripcion String?
   telefono    String?
   direccion   String?
   ciudad      String?
   pais        String?
   imagenPerfil String?
-  archivoVerificacionUrl String? 
   plan        Plan     @default(GRATUITO)
   creado_en   DateTime @default(now())
-  estado      EstadoOrganizacion @default(PENDIENTE) 
 
   mascotas   Mascota[]
   chats      Chat[]     @relation("OrganizacionChats")
   donaciones Donacion[]
-  casos Caso[]
   adopciones Adopcion[]
-  mensajes     Mensaje[]    @relation("OrgMensajes")
 }
 
 model Mascota {
-  id             String         @id @default(uuid())
+  id             String   @id @default(uuid())
   nombre         String
   edad           Int
+  tipo           String
+  raza           String
   descripcion    String?
-  creada_en      DateTime       @default(now())
+  estadoAdopcion Boolean  @default(false)
+  estadoDonacion Boolean  @default(false)
+  creada_en      DateTime @default(now())
 
-  organizacion   Organizacion   @relation(fields: [organizacionId], references: [id])
+  organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
   organizacionId String
 
-  tipo           TiposMascota   @relation(fields: [tipoId], references: [id])
-  tipoId         String
-
-  imagenes       imagenMascota[]
-  casos          Caso[]
-  donaciones     Donacion[]
-  adopciones     Adopcion[]
+  donaciones Donacion[]
+  adopciones Adopcion[]
+  imagenes   imagenMascota[] 
 }
 
 model imagenMascota {
-  id        String   @id @default(uuid())
-  url       String
-  mascota   Mascota  @relation(fields: [mascotaId], references: [id])
-  mascotaId String
-  subida_en DateTime @default(now())
+  id             String   @id @default(uuid())
+  url            String
+  mascota        Mascota  @relation(fields: [mascotaId], references: [id])
+  mascotaId      String
+  subida_en      DateTime @default(now())
 }
-
-model TiposMascota {
-  id      String    @id @default(uuid())
-  nombre  String    @unique
-  mascotas Mascota[]
-}
-
-model Caso {
-  id          String         @id @default(uuid())
-  titulo      String
-  descripcion String
-  tipo        TipoCaso
-  mascota     Mascota        @relation(fields: [mascotaId], references: [id])
-  mascotaId   String
-  ong         Organizacion?  @relation(fields: [ongId], references: [id])
-  ongId       String?
-
-  creado_en DateTime @default(now())
-
-  // Relaciones con subtipos
-  adopcion    CasoAdopcion?
-  donacion    CasoDonacion?
-}
-
-model CasoAdopcion {
-  id           String   @id @default(uuid())
-  caso         Caso     @relation(fields: [casoId], references: [id])
-  casoId       String   @unique
-  estado       EstadoAdopcion @default(PENDIENTE)
-
-}
-
-model CasoDonacion {
-  id            String   @id @default(uuid())
-  caso          Caso     @relation(fields: [casoId], references: [id])
-  casoId        String   @unique
-  estadoDonacion Float   // Monto recaudado hasta el momento
-  metaDonacion   Float   // Meta de la donación
-
-  // Relacion inversa
-  donaciones    Donacion[]  @relation("DonacionesPorCaso")
-  estado        EstadoCasoDonacion  @default(ACTIVO)
-}
-
-enum TipoCaso {
-  ADOPCION
-  DONACION
-}
-
 
 model Donacion {
   id             String       @id @default(uuid())
@@ -143,20 +88,9 @@ model Donacion {
   mascotaId      String?
   organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
   organizacionId String
-
   monto          Float
   comprobante    String? // URL al archivo o imagen
   fecha          DateTime     @default(now())
-
-  // Para integrar Stripe
-  estadoPago     String?
-  stripeSessionId   String? 
-  referenciaPago   String?
-
-  // Relación al caso especifico
-  casoDonacionId  String?
-  casoDonacion  CasoDonacion?   @relation("DonacionesPorCaso", fields: [casoDonacionId], references: [id])
- 
 }
 
 model Adopcion {
@@ -187,10 +121,8 @@ model Mensaje {
   id         String   @id @default(uuid())
   chat       Chat     @relation(fields: [chatId], references: [id])
   chatId     String
-  autorUsuario           Usuario?      @relation("UsuarioMensajes", fields: [autorUsuarioId], references: [id])
-  autorUsuarioId         String?
-  autorOrganizacion      Organizacion? @relation("OrgMensajes", fields: [autorOrganizacionId], references: [id])
-  autorOrganizacionId    String?
+  autor      Usuario  @relation("UsuarioMensajes", fields: [autorId], references: [id])
+  autorId    String
   contenido  String
   enviado_en DateTime @default(now())
 }
@@ -209,21 +141,4 @@ enum EstadoAdopcion {
 enum Plan {
   GRATUITO
   PREMIUM
-}
-
-enum EstadoOrganizacion {
-  PENDIENTE
-  APROBADA
-  RECHAZADA
-}
-
-enum EstadoPago {
-  PENDIENTE
-  COMPLETADO
-  FALLIDO
-}
-
-enum EstadoCasoDonacion {
-  ACTIVO
-  COMPLETADO
 }

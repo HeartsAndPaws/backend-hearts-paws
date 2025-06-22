@@ -1,9 +1,8 @@
 import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiExcludeController } from '@nestjs/swagger';
+import { url } from 'inspector';
 
-@ApiExcludeController()
 @Controller('upload')
 export class UploadController{
     constructor(private readonly cloudinaryService: CloudinaryService){}

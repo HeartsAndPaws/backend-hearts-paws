@@ -17,5 +17,5 @@ export const filtroArchivoImagen = (
 };
 
 export const limits = {
-    fileSize: 5 * 1024 * 1024, // 5 MB 
+    fileSize: 2 * 1024 * 1024, // 2 MB 
 }
