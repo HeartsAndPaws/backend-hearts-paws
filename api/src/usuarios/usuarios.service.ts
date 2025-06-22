@@ -12,15 +12,23 @@ export class UsuariosService {
   
 
   async actualizarFotoPerfil(id: string, fotoUrl: string){
+    const usuario = await this.prisma.usuario.findUnique({where: {id}});
+
+    if (!usuario) {
+      throw new NotFoundException(`No se encontro el usuario con id ${ id }`);
+    }
+
     return this.prisma.usuario.update({
       where: { id },
       data: { imagenPerfil: fotoUrl}
     });
   }
 
-    async usuarioPorId(id: string) {
+    async usuarioPorId(id: string, external = false) {
+      const where = external ? { externalId: id } : { id };
+
       const usuario = await this.prisma.usuario.findUnique({
-        where: { id },
+        where,
         select: {
           id: true,
           nombre: true,
@@ -30,7 +38,7 @@ export class UsuariosService {
       });
   
       if (!usuario) {
-        throw new NotFoundException(`No se encontró el usuario con id ${id}`);
+        throw new NotFoundException(`No se encontró el usuario con ${external ? 'externalId' : 'id'} ${id}`);
       }
   
       return usuario;
@@ -61,52 +69,47 @@ export class UsuariosService {
       throw new NotFoundException(`No se encontró el usuario con id ${id}`);
     }
 
-    if(email){
-      await this.prisma.usuario.update({
-      where: { id },
-      data: { email },
-    });
+    const data: any = {};
+
+    const esExterno = !!usuario.externalId;
+
+    if (!esExterno && datosDeUsuario.email) {
+      data.email = datosDeUsuario.email
     }
-    if(contrasena){
-    const contrasenaEncriptada = await bcrypt.hash(contrasena, 10);
+
+    if (!esExterno && datosDeUsuario.contrasena) {
+      data.contrasena = await bcrypt.hash(datosDeUsuario.contrasena, 10)
+    }
+
+    if(datosDeUsuario.telefono) data.telefono = datosDeUsuario.telefono;
+    if(datosDeUsuario.direccion) data.direccion = datosDeUsuario.direccion;
+    if(datosDeUsuario.ciudad) data.ciudad = datosDeUsuario.ciudad;
+    if(datosDeUsuario.pais) data.pais = datosDeUsuario.pais;
 
     await this.prisma.usuario.update({
       where: { id },
-      data: { contrasena: contrasenaEncriptada },
-    });
-    }
-
-    if(telefono){
-      await this.prisma.usuario.update({
-      where: { id },
-      data: { telefono },
-    });
-    }
-
-      if(direccion){
-      await this.prisma.usuario.update({
-      where: { id },
-      data: { direccion },
+      data,
     });
 
-        if(ciudad){
-      await this.prisma.usuario.update({
+    const usuarioActualizado = await this.prisma.usuario.findUnique({
       where: { id },
-      data: { ciudad },
-    });
-    }
-        if(pais){
-      await this.prisma.usuario.update({
-      where: { id },
-      data: { pais },
-    });
-    }
-    }
-      const usuarioActualizado = await this.prisma.usuario.findUnique({
-      where: { id },
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        telefono: true,
+        direccion: true,
+        ciudad: true,
+        pais: true,
+        rol: true,
+      },
     });
 
-    return { ok: true, mensaje: 'Contraseña actualizada correctamente', usuarioActualizado };
+    return {
+      ok: true,
+      mensaje: 'Usuario actualizado correctamente',
+      usuarioActualizado,
+    }
   }
 
   async borrarUsuario(id: string) {

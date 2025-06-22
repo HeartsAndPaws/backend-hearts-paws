@@ -26,6 +26,8 @@ model Usuario {
   rol       Rol      @default(USUARIO)
   creado_en DateTime @default(now())
 
+  externalId   String?  @unique 
+
   // Relaciones
   donaciones Donacion[]
   adopciones Adopcion[]
@@ -81,6 +83,8 @@ model Caso {
   ong         Organizacion?  @relation(fields: [ongId], references: [id])
   ongId       String?
 
+  creado_en DateTime @default(now())
+
   // Relaciones con subtipos
   adopcion    CasoAdopcion?
   donacion    CasoDonacion?
@@ -100,6 +104,11 @@ model CasoDonacion {
   casoId        String   @unique
   estadoDonacion Float   // Monto recaudado hasta el momento
   metaDonacion   Float   // Meta de la donación
+
+
+  // Relacion inversa
+  donaciones    Donacion[]  @relation("DonacionesPorCaso")
+  estado        EstadoCasoDonacion  @default(ACTIVO)
 }
 
 enum TipoCaso {
@@ -112,12 +121,23 @@ model Donacion {
   usuario        Usuario      @relation(fields: [usuarioId], references: [id])
   usuarioId      String
   mascota        Mascota?     @relation(fields: [mascotaId], references: [id])
-  mascotaId      String
+  mascotaId      String?
   organizacion   Organizacion @relation(fields: [organizacionId], references: [id])
   organizacionId String
+
   monto          Float
-  comprobante    String // URL al archivo o imagen
+  comprobante    String? // URL al archivo o imagen
   fecha          DateTime     @default(now())
+
+  // Para integrar Stripe
+  estadoPago     String?
+  stripeSessionId   String? 
+  referenciaPago   String?
+
+  // Relación al caso especifico
+  casoDonacionId  String?
+  casoDonacion  CasoDonacion?   @relation("DonacionesPorCaso", fields: [casoDonacionId], references: [id])
+ 
 }
 
 model Mascota {
@@ -196,4 +216,15 @@ enum EstadoOrganizacion {
   PENDIENTE
   APROBADA
   RECHAZADA
+}
+
+enum EstadoPago {
+  PENDIENTE
+  COMPLETADO
+  FALLIDO
+}
+
+enum EstadoCasoDonacion {
+  ACTIVO
+  COMPLETADO
 }
