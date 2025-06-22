@@ -4,6 +4,7 @@ import { CreateMascotaDto } from './dto/create-mascota.dto';
 import { UpdateMascotaDto } from './dto/update-mascota.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { TipoMascotaDto } from './dto/tipoMascota.dto';
 
 @Controller('mascotas')
 export class MascotasController {
@@ -30,6 +31,11 @@ export class MascotasController {
     @Get("ong/:id")
     GetMascotasByOngId(@Param('id') ongId: string) {
       return this.mascotasService.GetMascotasByOngId(ongId);
+    }
+
+    @Post("crearTipo")
+    CreateTipoMascota(@Body() createTipoMascotaDto: TipoMascotaDto) {
+      return this.mascotasService.CreateTipoMascota(createTipoMascotaDto);
     }
 
 

@@ -25,7 +25,6 @@ async function main() {
     // Crear tipos de mascota
     const tipoPerro = await prisma.tiposMascota.create({ data: { nombre: 'Perro' } });
     const tipoGato = await prisma.tiposMascota.create({ data: { nombre: 'Gato' } });
-    const tipoConejo = await prisma.tiposMascota.create({ data: { nombre: 'Conejo' } });
 
     // Crear usuarios
     const usuario1 = await prisma.usuario.create({
@@ -102,23 +101,13 @@ async function main() {
         },
     });
 
-    const mascota3 = await prisma.mascota.create({
-        data: {
-            nombre: 'Saltitos',
-            edad: 3,
-            descripcion: 'Conejo juguetón, le encanta saltar y las zanahorias.',
-            organizacionId: ong1.id,
-            tipoId: tipoConejo.id,
-        },
-    });
+
 
     // Agregar imágenes de prueba
     await prisma.imagenMascota.createMany({
         data: [
             { url: 'https://placedog.net/400/300', mascotaId: mascota1.id },
-            { url: 'https://placekitten.com/300/300', mascotaId: mascota2.id },
-            { url: 'https://images.pexels.com/photos/rabbit.jpg', mascotaId: mascota3.id },
-            { url: 'https://images.pexels.com/photos/rabbit2.jpg', mascotaId: mascota3.id },
+            { url: 'https://comunidad.retorn.com/wp-content/uploads/cache/2018/09/gatitos/1583254719.jpg', mascotaId: mascota2.id },
         ],
     });
 
@@ -161,24 +150,6 @@ async function main() {
         }
     });
 
-    // Caso de donación para Saltitos (mascota3, ONG1)
-    const casoDonacionSaltitos = await prisma.caso.create({
-        data: {
-            titulo: 'Salva a Saltitos',
-            descripcion: 'Saltitos necesita medicinas y alimento.',
-            tipo: TipoCaso.DONACION,
-            mascotaId: mascota3.id,
-            ongId: ong1.id,
-        }
-    });
-
-    await prisma.casoDonacion.create({
-        data: {
-            casoId: casoDonacionSaltitos.id,
-            metaDonacion: 120000,
-            estadoDonacion: 7000,
-        }
-    });
 
     console.log('Seed ejecutado correctamente');
 };
