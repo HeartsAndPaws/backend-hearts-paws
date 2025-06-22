@@ -22,6 +22,16 @@ export class CasosController {
     return this.casosService.GetCasosDonacion();
   }
 
+  @Get('adopcion/buscar')
+  busquedaAdopcion(@Query('tipo') tipo: string){
+    return this.casosService.filtroParaAdopcionesPorMascota(tipo)
+  }
+
+  @Get('donacion/buscar')
+  busquedaDonacion(@Query('tipo') tipo: string){
+    return this.casosService.filtroParaDonacionesPorMascota(tipo)
+  }
+
   @Post()
   CreateCaso(@Body() createCasoDto: CreateCasoDto) {
     return this.casosService.CreateCaso(createCasoDto);

@@ -7,7 +7,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class CasosService {
   constructor(private readonly prismaService: PrismaService){}
 
-
   async GetCasos() {
 
     return this.prismaService.caso.findMany({
@@ -139,5 +138,41 @@ export class CasosService {
     })
 
   }
+    async filtroParaDonacionesPorMascota(tipo: string) {
+    return await this.prismaService.donacion.findMany({
+      where: {
+        mascota: {
+          tipo: {
+            nombre: {
+              equals: tipo.toUpperCase(),
+            },
+          },
+        },
+      },
+      include: {
+        mascota: true,
+        organizacion: true,
+        usuario: true,
+      },
+    });
+  }
 
+    async filtroParaAdopcionesPorMascota(tipo: string) {
+    return await this.prismaService.adopcion.findMany({
+      where: {
+        mascota: {
+          tipo: {
+            nombre: {
+              equals: tipo.toUpperCase(),
+            },
+          },
+        },
+      },
+      include: {
+        mascota: true,
+        organizacion: true,
+        usuario: true,
+      },
+    });
+  }
 }

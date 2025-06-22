@@ -11,7 +11,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { MascotasModule } from './mascotas/mascotas.module';
 import { EmailModule } from './shared/email/email-server.module';
 import { CasosModule } from './casos/casos.module';
-import { DyAModule } from './donacion-adopcion/dya.module';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
@@ -28,7 +27,6 @@ import { ChatModule } from './chat/chat.module';
     MascotasModule,
     EmailModule,
     CasosModule,
-    DyAModule,
     ChatModule
   ],
   controllers: [AppController],
