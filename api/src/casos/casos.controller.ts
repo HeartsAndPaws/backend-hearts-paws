@@ -9,9 +9,7 @@ export class CasosController {
 
   @Get()
   GetCasos(){
-
     return this.casosService.GetCasos();
-
   }
 
   @Get('adopcion')
@@ -22,6 +20,16 @@ export class CasosController {
   @Get('donacion')
   GetCasosDonacion() {
     return this.casosService.GetCasosDonacion();
+  }
+
+  @Get('adopcion/buscar')
+  busquedaAdopcion(@Query('tipo') tipo: string){
+    return this.casosService.filtroParaAdopcionesPorMascota(tipo)
+  }
+
+  @Get('donacion/buscar')
+  busquedaDonacion(@Query('tipo') tipo: string){
+    return this.casosService.filtroParaDonacionesPorMascota(tipo)
   }
 
   @Post()
