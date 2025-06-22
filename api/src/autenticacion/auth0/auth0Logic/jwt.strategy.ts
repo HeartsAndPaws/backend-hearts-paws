@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 dotenv.config();
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtAuth0Strategy extends PassportStrategy(Strategy, 'jwt-auth0') {
   constructor(private readonly prisma: PrismaService) {
     super({
       secretOrKeyProvider: jwksRsa.passportJwtSecret({
