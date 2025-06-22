@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import { PrismaClient, Rol, Plan, EstadoAdopcion, TipoCaso } from "@prisma/client";
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -16,6 +17,11 @@ async function main() {
     await prisma.organizacion.deleteMany();
     await prisma.usuario.deleteMany();
 
+    // Hasheo de contraseñas
+    const hashedPasswordUsuario = await bcrypt.hash('usuario123', 10);
+    const hashedPasswordAdmin = await bcrypt.hash('admin123', 10);
+    const hashedPasswordONG = await bcrypt.hash('ong123', 10);
+
     // Crear tipos de mascota
     const tipoPerro = await prisma.tiposMascota.create({ data: { nombre: 'Perro' } });
     const tipoGato = await prisma.tiposMascota.create({ data: { nombre: 'Gato' } });
@@ -26,7 +32,7 @@ async function main() {
         data: {
             nombre: 'Lucía Fernández',
             email: 'lucia@example.com',
-            contrasena: 'hashed-password1',
+            contrasena: hashedPasswordUsuario,
             telefono: '+5491122334455',
             direccion: 'Av. Siempre Viva 123',
             ciudad: 'Buenos Aires',
@@ -39,7 +45,7 @@ async function main() {
         data: {
             nombre: 'Admin Hearts',
             email: 'admin@heartsandpaws.com',
-            contrasena: 'hashed-admin-contraseña',
+            contrasena: hashedPasswordAdmin,
             rol: Rol.ADMIN,
             ciudad: 'Ciudad Autónoma',
             pais: 'Argentina',
@@ -51,7 +57,7 @@ async function main() {
         data: {
             nombre: 'Patitas Callejeras',
             email: 'contacto@patitas.org',
-            contrasena: 'hashed-ong-contraseña',
+            contrasena: hashedPasswordONG,
             descripcion: 'Refugio y rehabilitación de animales en situación de calle.',
             telefono: '+5491144455566',
             direccion: 'Calle Rescate Animal 456',
@@ -65,7 +71,7 @@ async function main() {
         data: {
             nombre: 'Huellas de Amor',
             email: 'info@huellas.org',
-            contrasena: 'hashed-ong-contraseña',
+            contrasena: hashedPasswordONG,
             descripcion: 'Adopciones responsables con seguimiento post-adopción.',
             direccion: 'Av. Adopción 789',
             ciudad: 'Mendoza',

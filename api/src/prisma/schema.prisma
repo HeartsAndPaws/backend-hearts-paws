@@ -133,7 +133,6 @@ enum TipoCaso {
 }
 
 
-
 model Donacion {
   id             String       @id @default(uuid())
   usuario        Usuario      @relation(fields: [usuarioId], references: [id])
