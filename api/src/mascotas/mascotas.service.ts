@@ -49,6 +49,14 @@ export class MascotasService {
 
   }
 
+ async crearTipoDeMascota(nombre: string) {
+  return this.prismaService.tiposMascota.create({
+    data: {
+      nombre: nombre.toUpperCase(),
+    },
+  });
+}
+
   async CreateMascota(createMascotaDto: CreateMascotaDto) {
     
     return this.prismaService.mascota.create({
