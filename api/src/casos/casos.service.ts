@@ -144,7 +144,7 @@ export class CasosService {
         mascota: {
           tipo: {
             nombre: {
-              equals: tipo.toUpperCase(),
+              equals: tipo
             },
           },
         },
