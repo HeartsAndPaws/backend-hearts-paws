@@ -8,7 +8,7 @@
   "scripts": {
     "build": "npm run generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "dotenv -e .env.development -- node --max-old-space-size=512 dist/main",
+    "start": "node --max-old-space-size=512 dist/main",
     "start:dev": "npx dotenv -e .env.development -- nest start --watch",
     "start:staging": "dotenv -e .env.staging -- nest start",
     "start:prod": "dotenv -e .env.production -- node dist/main",
