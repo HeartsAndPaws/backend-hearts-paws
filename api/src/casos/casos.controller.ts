@@ -42,9 +42,5 @@ export class CasosController {
     return this.casosService.GetCasoById(id);
   }
 
-  @Get(':casoId/progreso')
-  async obtenerProgreso(@Param('casoId') casoId: string){
-    return await this.casosService.ontenerProgreso(casoId);
-  }
   
 }

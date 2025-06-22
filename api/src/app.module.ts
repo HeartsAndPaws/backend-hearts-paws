@@ -14,6 +14,7 @@ import { CasosModule } from './casos/casos.module';
 import { DonacionModule } from './donacion/donaciones.module';
 import { ChatModule } from './chat/chat.module';
 import { StripeModule } from './stripe/stripe.module';
+import { SupabaseModule } from './autenticacion/supabase/supabase.module';
 
 
 
@@ -33,7 +34,8 @@ import { StripeModule } from './stripe/stripe.module';
     CasosModule,
     DonacionModule,
     ChatModule,
-    StripeModule
+    StripeModule,
+    SupabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

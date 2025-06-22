@@ -26,6 +26,8 @@ model Usuario {
   rol       Rol      @default(USUARIO)
   creado_en DateTime @default(now())
 
+  externalId   String?  @unique 
+
   // Relaciones
   donaciones Donacion[]
   adopciones Adopcion[]
