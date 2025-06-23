@@ -4,11 +4,7 @@ import { CreateMascotaDto } from './dto/create-mascota.dto';
 import { UpdateMascotaDto } from './dto/update-mascota.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
-<<<<<<< HEAD
-import { CrearTipoDeMascotaDto } from './dto/crearTipoDeMascota.dto';
-=======
 import { TipoMascotaDto } from './dto/tipoMascota.dto';
->>>>>>> b6a68598644e760da79fac4c4e112a4a9b7678b2
 
 @Controller('mascotas')
 export class MascotasController {
@@ -49,7 +45,7 @@ export class MascotasController {
     }
 
 @Post('tipo')
-crearTipoDeMascota(@Body() datos: CrearTipoDeMascotaDto) {
+crearTipoDeMascota(@Body() datos: TipoMascotaDto) {
   const { nombre } = datos;
   return this.mascotasService.crearTipoDeMascota(nombre);
 }
