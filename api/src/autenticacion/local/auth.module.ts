@@ -8,6 +8,7 @@ import { JwtLocalStrategy } from '../strategias/jwt.strategy';
 import { RolesGuard } from '../guards/roles.guard';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
+import { MailerService } from 'src/shared/email/email-server.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { JwtAutCookiesGuardia } from '../guards/jwtAut.guardia';
     }),
     CloudinaryModule
   ],
-  providers: [ServicioAut, JwtLocalStrategy, JwtAutCookiesGuardia, RolesGuard],
+  providers: [ServicioAut, JwtLocalStrategy, JwtAutCookiesGuardia, RolesGuard, MailerService],
   controllers: [AuthController],
   exports: [JwtModule, PassportModule, JwtLocalStrategy, JwtAutCookiesGuardia , RolesGuard, JwtAutCookiesGuardia]
 })
