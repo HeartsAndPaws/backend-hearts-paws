@@ -14,23 +14,27 @@ datasource db {
 }
 
 model Usuario {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   nombre    String
-  email     String   @unique
-  contrasena  String?
-  telefono  String?
-  direccion String?
-  ciudad    String?
-  pais      String?
+  dni       String    @default("Incompleto")
+  email     String    @unique
+  contrasena  String
+  ocupacion String    @default("Incompleto")
+  estadoCivil String  @default("Incompleto")
+  telefono  String
+  direccion String
+  ciudad    String
+  pais      String
   imagenPerfil String?
-  rol       Rol      @default(USUARIO)
-  creado_en DateTime @default(now())
+  rol       Rol       @default(USUARIO)
+  creado_en DateTime  @default(now())
 
   externalId   String?  @unique 
 
   // Relaciones
   donaciones Donacion[]
   adopciones Adopcion[]
+  solicitudesAdopcion SolicitudDeAdopcion[]
   chats      Chat[]     @relation("UsuarioChats")
   mensajes   Mensaje[]  @relation("UsuarioMensajes")
 }
@@ -95,7 +99,7 @@ model CasoAdopcion {
   caso         Caso     @relation(fields: [casoId], references: [id])
   casoId       String   @unique
   estado       EstadoAdopcion @default(PENDIENTE)
-
+  solicitudes  SolicitudDeAdopcion[]
 }
 
 model CasoDonacion {
@@ -105,10 +109,30 @@ model CasoDonacion {
   estadoDonacion Float   // Monto recaudado hasta el momento
   metaDonacion   Float   // Meta de la donación
 
-
   // Relacion inversa
   donaciones    Donacion[]  @relation("DonacionesPorCaso")
   estado        EstadoCasoDonacion  @default(ACTIVO)
+}
+
+model SolicitudDeAdopcion {
+  id               String   @id @default(uuid())
+  usuario          Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId        String
+  casoAdopcion     CasoAdopcion     @relation(fields: [casoAdopcionId], references: [id])
+  casoAdopcionId           String   @unique
+  estado           EstadoAdopcion @default(PENDIENTE)
+  tipoVivienda     String
+  conQuienVives    String
+  hijos            String?
+  otros            String?
+  hayOtrasMascotas           String
+  descripcionOtrasMascotas   String?
+  cubrirGastos               String
+  darAlimentoCuidados        String
+  darAmorTiempoEj            String
+  devolucionDeMascota        String
+  siNoPodesCuidarla          String
+  declaracionFinal           String
 }
 
 enum TipoCaso {
