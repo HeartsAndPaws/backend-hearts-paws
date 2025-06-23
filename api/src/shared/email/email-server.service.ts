@@ -41,4 +41,23 @@ export class MailerService {
             text,
         })
     }
+
+    async enviarConfirmacionRegistro(destinatario: string, nombreOrganizacion: string){
+        const subject = '¡ Gracias por registrar tu Organización !';
+        const text = `
+        ¡Gracias por registrar tu organización, ${nombreOrganizacion}!
+Hemos recibido la información de tu organización dedicada al cuidado, protección y difusión de animales en situación de calle.
+
+En las próximas 24 horas recibirás un correo electrónico con el estado de tu solicitud: APROBADA o RECHAZADA, en caso de que no se haya podido validar algún tipo de documentación.
+
+Si no recibís el correo dentro del plazo estipulado, recordá revisar la carpeta de correo no deseado.
+        `;
+
+        return this.enviarEMail({
+            to: destinatario,
+            subject,
+            text,
+        });
+    }
+
 }

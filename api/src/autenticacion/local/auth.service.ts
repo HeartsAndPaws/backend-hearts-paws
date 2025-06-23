@@ -8,12 +8,14 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { NuevoUsuarioDto } from 'src/autenticacion/dtos/NuevoUsuario.dto';
 import { NuevaOrganizacionDto } from '../dtos/NuevaOrganizacion';
+import { MailerService } from 'src/shared/email/email-server.service';
 
 @Injectable()
 export class ServicioAut {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService
   ) {}
 
   async registro(datosDeUsuario: NuevoUsuarioDto & 
@@ -176,6 +178,12 @@ export class ServicioAut {
         imagenPerfil: true,
       }
     });
+
+    // Enviar correo de confirmación de registro
+    await this.mailerService.enviarConfirmacionRegistro(
+      nuevaOrganizacion.email,
+      nuevaOrganizacion.nombre,
+    );
 
     return {
       ok: true,
