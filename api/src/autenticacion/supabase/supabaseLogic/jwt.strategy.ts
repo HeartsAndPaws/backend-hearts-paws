@@ -5,7 +5,6 @@ import { createClient } from '@supabase/supabase-js'
 import { PrismaService } from 'src/prisma/prisma.service';
 
 
-
 @Injectable()
 export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
   private supabase;
@@ -30,28 +29,56 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
       throw new UnauthorizedException('Token de Supabse inválido');
     }
 
-    const { id: sub, email, user_metadata } = data.user;
+    const user = data.user;
+    const sub = user?.id;
+    const email = user?.email;
+    const user_metadata = user?.user_metadata || {};
 
     if (!email || !sub) {
-      throw new UnauthorizedException('El token no contiene email o ID');
+      throw new UnauthorizedException('Token inválido: faltan campos obligatorios');
     }
 
-    const usuario = await this.prisma.usuario.findUnique({
-      where: { externalId: sub},
-      select: { id: true, rol: true},
+    try {
+      let usuario = await this.prisma.usuario.findUnique({
+      where: { email },
     });
 
+
+    if (usuario && !usuario.externalId) {
+      throw new UnauthorizedException('Este correo ya existe como usuario local')
+    }
+
     if (!usuario) {
-      throw new UnauthorizedException('Usuario externo no registrado en el sistema local');
+      const nombreSeguro = user_metadata?.full_name?.trim() || 'Usuario externo';
+      usuario = await this.prisma.usuario.create({
+        data: {
+          email,
+          nombre: nombreSeguro,
+          imagenPerfil: user_metadata?.avatar_url || null,
+          rol: 'USUARIO',
+          contrasena: null,
+          externalId: sub,
+        },
+      });
+    }
+
+    if (usuario.externalId !== sub) {
+      usuario = await this.prisma.usuario.update({
+        where: { email},
+        data: { externalId: sub },
+      });
     }
 
     return {
-      id: usuario.id,
-      email,
+      sub,
+      email: usuario.email,
       rol: usuario.rol,
-      name: user_metadata?.full_name || null,
-      picture: user_metadata?.avatar_url || null,
-      external: true,
+      name: usuario.nombre,
+      picture: usuario.imagenPerfil,
+      external: true
+    };
+    } catch (error) {
+      throw new UnauthorizedException('Error al validar usuario externo');
     }
-  }
+  } 
 }
