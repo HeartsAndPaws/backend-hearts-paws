@@ -18,13 +18,13 @@ model Usuario {
   nombre    String
   dni       String    @default("Incompleto")
   email     String    @unique
-  contrasena  String
-  ocupacion String    @default("Incompleto")
-  estadoCivil String  @default("Incompleto")
-  telefono  String
-  direccion String
-  ciudad    String
-  pais      String
+  contrasena  String?
+  ocupacion String?    @default("Incompleto")
+  estadoCivil String?  @default("Incompleto")
+  telefono  String?
+  direccion String?
+  ciudad    String?
+  pais      String?
   imagenPerfil String?
   rol       Rol       @default(USUARIO)
   creado_en DateTime  @default(now())
@@ -119,7 +119,7 @@ model SolicitudDeAdopcion {
   usuario          Usuario  @relation(fields: [usuarioId], references: [id])
   usuarioId        String
   casoAdopcion     CasoAdopcion     @relation(fields: [casoAdopcionId], references: [id])
-  casoAdopcionId           String   @unique
+  casoAdopcionId           String
   estado           EstadoAdopcion @default(PENDIENTE)
   tipoVivienda     String
   conQuienVives    String

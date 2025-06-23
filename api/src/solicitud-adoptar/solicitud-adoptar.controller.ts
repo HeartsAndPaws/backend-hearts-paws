@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { SolicitudAdoptarService } from './solicitud-adoptar.service';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
-import { UpdateSolicitudAdoptarDto } from './dtos/update-solicitud-adoptar.dto';
+import { CambiarEstadoDto } from './dtos/cambiar-estado.dto';
 
 @Controller('solicitud-adoptar')
 export class SolicitudAdoptarController {
@@ -13,22 +13,23 @@ export class SolicitudAdoptarController {
   }
 
   @Get()
-  verSolicitdesDeAdopcion() {
-    return this.solicitudAdoptarService.verSolicitudes();
+  verTodasLasSolicitudes() {
+    return this.solicitudAdoptarService.verTodasLasSolicitudes();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.solicitudAdoptarService.findOne(+id);
+  @Get('solicitudesDeCadaAdopcion/:id')
+  verSolicitudesPorCaso(@Param('id') id: string) {
+    return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSolicitudAdoptarDto: UpdateSolicitudAdoptarDto) {
-    return this.solicitudAdoptarService.update(+id, updateSolicitudAdoptarDto);
+  @Patch()
+  cambiarEstado(@Body() datos: CambiarEstadoDto) {
+    const { id, estadoNuevo } = datos
+    return this.solicitudAdoptarService.cambiarEstado(id, estadoNuevo);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.solicitudAdoptarService.remove(+id);
+  borrarSolicitud(@Param('id') id: string) {
+    return this.solicitudAdoptarService.borrarSolicitud(id);
   }
 }

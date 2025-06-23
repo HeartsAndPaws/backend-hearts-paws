@@ -14,10 +14,7 @@ import { CasosModule } from './casos/casos.module';
 import { ChatModule } from './chat/chat.module';
 import { StripeModule } from './stripe/stripe.module';
 import { SupabaseModule } from './autenticacion/supabase/supabase.module';
-import { AdopcionModule } from './adopcion/adopcion.module';
 import { SolicitudAdoptarModule } from './solicitud-adoptar/solicitud-adoptar.module';
-import { AdopcionModule } from './adopcion/adopcion.module';
-
 
 @Module({
   imports: [
@@ -37,7 +34,6 @@ import { AdopcionModule } from './adopcion/adopcion.module';
     StripeModule,
     SupabaseModule,
     ChatModule,
-    AdopcionModule,
     SolicitudAdoptarModule
   ],
   controllers: [AppController],
