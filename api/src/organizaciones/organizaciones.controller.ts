@@ -12,8 +12,6 @@ import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiParam, ApiConsume
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 
-
-
 @ApiTags('Organizaciones')
 @Controller('organizaciones')
 export class OrganizacionesController {
@@ -49,15 +47,6 @@ export class OrganizacionesController {
     return this.organizacionesService.buscarPorId(id);
   }
 
-<<<<<<< HEAD
-  @Get('casosPorOng/:id')
-  async casosPorOng(@Param('id') id: string){
-    return this.organizacionesService.buscarCasosPorOng(id)
-  }
-
-=======
-  
->>>>>>> b6a68598644e760da79fac4c4e112a4a9b7678b2
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de una organización' })
   @ApiParam({ name: 'id', type: 'string' })
@@ -72,13 +61,8 @@ export class OrganizacionesController {
 
   @Patch(':id/estado')
   @UseInterceptors(AnyFilesInterceptor())
-<<<<<<< HEAD
-  // @UseGuards(JwtAutCookiesGuardia, RolesGuard)
-  // @Roles('ADMIN')
-=======
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Roles('ADMIN')
->>>>>>> b6a68598644e760da79fac4c4e112a4a9b7678b2
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cambiar estado de una organización (solo ADMIN)' })
   @ApiParam({ name: 'id', type: 'string' })
