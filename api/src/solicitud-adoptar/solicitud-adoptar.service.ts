@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
-import { UpdateSolicitudAdoptarDto } from './dtos/update-solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -26,23 +25,50 @@ export class SolicitudAdoptarService {
     devolucionDeMascota, siNoPodesCuidarla, declaracionFinal
       },
     });
+  
     return nuevaSolicitud
   }
 
-  async verSolicitudes() {
+  async verTodasLasSolicitudes() {
     return await this.prisma.solicitudDeAdopcion.findMany();
 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} solicitudAdoptar`;
+  async verSolicitudesPorCasoDeAdopcion(id: string) {
+  return await this.prisma.casoAdopcion.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      solicitudes: {
+        include: {
+          usuario: true,
+        },
+      },
+    },
+  });
+}
+
+  async cambiarEstado(id: string, estadoNuevo) {
+    const adopcionActualizada = await this.prisma.casoAdopcion.update({
+  where: {
+    id
+  },
+  data: {
+    estado: estadoNuevo
+  },
+})
+    return adopcionActualizada
+;
+
   }
 
-  update(id: number, updateSolicitudAdoptarDto: UpdateSolicitudAdoptarDto) {
-    return `This action updates a #${id} solicitudAdoptar`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} solicitudAdoptar`;
+  async borrarSolicitud(id: string) {
+    await this.prisma.solicitudDeAdopcion.delete({
+  where: {
+    id
+  },
+});
+  return { mensaje: `Solicitud borrada id: ${id}`}
   }
 }
