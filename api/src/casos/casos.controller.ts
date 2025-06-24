@@ -37,7 +37,7 @@ export class CasosController {
   @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
 @ApiOperation({ summary: 'Buscar casos de donación por tipo de mascota' })
   busquedaDonacion(@Query('tipo') tipo: string){
-    return this.casosService.filtroParaDonacionesPorMascota(tipo)
+    return this.casosService.buscarCasosDeDonacionPorTipoDeMascota(tipo)
   }
 
   @Post()

@@ -12,8 +12,6 @@ import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiParam, ApiConsume
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 
-
-
 @ApiTags('Organizaciones')
 @Controller('organizaciones')
 export class OrganizacionesController {
@@ -49,7 +47,6 @@ export class OrganizacionesController {
     return this.organizacionesService.buscarPorId(id);
   }
 
-  
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de una organización' })
   @ApiParam({ name: 'id', type: 'string' })
