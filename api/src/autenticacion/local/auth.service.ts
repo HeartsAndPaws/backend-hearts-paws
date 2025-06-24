@@ -99,6 +99,7 @@ export class ServicioAut {
         ciudad: usuarioEncontrado.ciudad,
         pais: usuarioEncontrado.pais,
         imagenPerfil: usuarioEncontrado.imagenPerfil,
+        rol: usuarioEncontrado.rol,
       }
     };
   }
