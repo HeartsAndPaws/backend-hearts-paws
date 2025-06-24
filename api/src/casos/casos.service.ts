@@ -223,6 +223,7 @@ async buscarCasosDeDonacionPorTipoDeMascota(tipo: string) {
       mascota: {
         include: {
           tipo: true, // Incluye el tipo de mascota
+          imagenes: true
         },
       },
       ong: true,       // Incluye la organización
