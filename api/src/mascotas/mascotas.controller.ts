@@ -44,6 +44,14 @@ export class MascotasController {
       return this.mascotasService.CreateMascota(createMascotaDto);
     }
 
+@Post('tipo')
+crearTipoDeMascota(@Body() datos: TipoMascotaDto) {
+  const { nombre } = datos;
+  return this.mascotasService.crearTipoDeMascota(nombre);
+}
+
+
+
     @Post(':id/imagenes')
     @UseInterceptors(FilesInterceptor('imagenes'))
     @ApiConsumes('multipart/form-data')

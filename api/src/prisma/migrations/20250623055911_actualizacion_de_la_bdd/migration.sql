@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Usuario" ALTER COLUMN "ciudad" DROP NOT NULL,
+ALTER COLUMN "pais" DROP NOT NULL;
