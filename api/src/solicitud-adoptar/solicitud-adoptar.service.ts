@@ -6,7 +6,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SolicitudAdoptarService {
   constructor(private readonly prisma: PrismaService) {}
   async crearSolicitud(solicitud: SolicitudParaAdoptarDto) {
-    const { usuarioId, casoId, estado, tipoVivienda, conQuienVives, hijos, otros, hayOtrasMascotas,
+    const { 
+      usuarioId, 
+      casoAdopcionId, 
+      estado, 
+      tipoVivienda, 
+      integrantesFlia, 
+      hijos,  
+      hayOtrasMascotas,
     descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
     devolucionDeMascota, siNoPodesCuidarla, declaracionFinal} = solicitud
 
@@ -20,7 +27,7 @@ export class SolicitudAdoptarService {
     }
     const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
       data: {
-        usuarioId, casoAdopcionId: casoId, estado, tipoVivienda, conQuienVives, hijos, otros, hayOtrasMascotas,
+        usuarioId, casoAdopcionId: casoAdopcionId, estado, tipoVivienda, integrantesFlia, hijos, hayOtrasMascotas,
     descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
     devolucionDeMascota, siNoPodesCuidarla, declaracionFinal
       },

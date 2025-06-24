@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsUUID, IsEnum } from 'class-validator'
+import { IsString, IsOptional, IsUUID, IsEnum, IsInt } from 'class-validator'
 import { EstadoAdopcion } from '@prisma/client';
 
 export class SolicitudParaAdoptarDto {
@@ -6,7 +6,7 @@ export class SolicitudParaAdoptarDto {
   usuarioId: string;
 
   @IsUUID()
-  casoId: string;
+  casoAdopcionId: string;
 
   @IsEnum(EstadoAdopcion)
   @IsOptional() // ya que tiene valor por defecto en el modelo
@@ -15,16 +15,12 @@ export class SolicitudParaAdoptarDto {
   @IsString()
   tipoVivienda: string;
 
-  @IsString()
-  conQuienVives: string;
+  @IsInt()
+  integrantesFlia: number;
 
-  @IsString()
+  @IsInt()
   @IsOptional()
-  hijos?: string;
-
-  @IsString()
-  @IsOptional()
-  otros?: string;
+  hijos: number;
 
   @IsString()
   hayOtrasMascotas: string;
