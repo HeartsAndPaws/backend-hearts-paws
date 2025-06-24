@@ -3,13 +3,17 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-http-bearer';
 import { createClient } from '@supabase/supabase-js'
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SupabaseService } from '../supabase.service';
 
 
 @Injectable()
 export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
   private supabase;
 
-  constructor( private readonly prisma: PrismaService) {
+  constructor( 
+    private readonly prisma: PrismaService,
+    private readonly supabaseService: SupabaseService,
+  ) {
     super();
 
     const url = process.env.SUPABASE_URL;
@@ -32,53 +36,14 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
     const user = data.user;
     const sub = user?.id;
     const email = user?.email;
-    const user_metadata = user?.user_metadata || {};
+    const name = user.user_metadata?.full_name || 'Usuario Externo';
+    const picture = user.user_metadata?.avatar_url || null;
 
-    if (!email || !sub) {
-      throw new UnauthorizedException('Token inválido: faltan campos obligatorios');
-    }
-
-    try {
-      let usuario = await this.prisma.usuario.findUnique({
-      where: { email },
-    });
-
-
-    if (usuario && !usuario.externalId) {
-      throw new UnauthorizedException('Este correo ya existe como usuario local')
-    }
-
-    if (!usuario) {
-      const nombreSeguro = user_metadata?.full_name?.trim() || 'Usuario externo';
-      usuario = await this.prisma.usuario.create({
-        data: {
-          email,
-          nombre: nombreSeguro,
-          imagenPerfil: user_metadata?.avatar_url || null,
-          rol: 'USUARIO',
-          contrasena: null,
-          externalId: sub,
-        },
-      });
-    }
-
-    if (usuario.externalId !== sub) {
-      usuario = await this.prisma.usuario.update({
-        where: { email},
-        data: { externalId: sub },
-      });
-    }
-
-    return {
+    return await this.supabaseService.registrarOrSync({
       sub,
-      email: usuario.email,
-      rol: usuario.rol,
-      name: usuario.nombre,
-      picture: usuario.imagenPerfil,
-      external: true
-    };
-    } catch (error) {
-      throw new UnauthorizedException('Error al validar usuario externo');
-    }
+      email,
+      name,
+      picture,
+    });
   } 
 }
