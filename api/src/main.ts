@@ -23,10 +23,7 @@ async function bootstrap() {
   // Middleware especial para Stripe Webhook (RAW BODY)
   app.use((req, res, next) => {
     if (req.originalUrl === '/stripe/webhook') {
-      bodyParser.raw({ type: 'aplication/json'})(req, res, () => {
-        (req as any).rawBody = req.body;
-        next();
-      });
+      bodyParser.raw({ type: 'application/json'})(req, res, next);
     }else{
       bodyParser.json()(req, res, next);
     }

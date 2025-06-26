@@ -28,6 +28,15 @@ export class OrganizacionesController {
     return this.organizacionesService.listarTodas();
   }
 
+  @Get('aprobadas')
+  async obtenerAprobadas(){
+    return await this.organizacionesService.listarAprobadas();
+  }
+
+  @Get('rechazadas')
+  async obtenerRechazadas(){
+    return await this.organizacionesService.listarRechazadas();
+  }
 
   @UseGuards(JwtAutCookiesGuardia)
   @Get('me')

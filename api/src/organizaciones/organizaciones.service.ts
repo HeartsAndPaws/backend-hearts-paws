@@ -151,4 +151,32 @@ export class OrganizacionesService {
     }
   }
 
+  async listarAprobadas(){
+    return await this.prisma.organizacion.findMany({
+      where: { estado: EstadoOrganizacion.APROBADA},
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        imagenPerfil: true,
+        plan: true,
+        creado_en: true,
+      },
+    });
+  }
+
+  async listarRechazadas(){
+    return await this.prisma.organizacion.findMany({
+      where: { estado: EstadoOrganizacion.RECHAZADA},
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        imagenPerfil: true,
+        plan: true,
+        creado_en: true
+      },
+    });
+  }
+
 }

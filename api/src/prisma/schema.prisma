@@ -150,7 +150,7 @@ model Donacion {
   organizacionId String
 
   monto          Float
-  comprobante    String? // URL al archivo o imagen
+  comprobante    String?    @unique  
   fecha          DateTime     @default(now())
 
   // Para integrar Stripe
