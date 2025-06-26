@@ -85,7 +85,7 @@ export class StripeController {
 
         try {
             event = stripe.webhooks.constructEvent(
-                (req as any).rawBody,
+                req.body,
                 signature,
                 endpointSecret!,
             );
@@ -94,22 +94,31 @@ export class StripeController {
             return res.status(400).send(`Webhook Error: ${err.message}`);
         }
 
+        console.log('📩 Evento recibido de Stripe:', event.type);
+
+
         if (event.type === 'checkout.session.completed') {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        const casoId = session.metadata?.casoId;
-        const usuarioId = session.metadata?.usuarioId;
-        const organizacionId = session.metadata?.organizacionId;
-        const mascotaId = session.metadata?.mascotaId;
+        const { casoId, usuarioId, organizacionId, mascotaId } = session.metadata || {};
         const amount = session.amount_total! / 100;
 
         if (!casoId || !usuarioId || !organizacionId || !mascotaId) {
         return res.status(400).send('⚠️ Faltan metadatos en la sesión');
         }
 
-        const casoDonacion = await this.prisma.casoDonacion.findUnique({
-            where: { casoId },
+        const donacionExistente = await this.prisma.donacion.findUnique({
+            where: { comprobante: session.id},
         });
+
+        if (donacionExistente){
+            console.log('🔁 Webhook ya procesado');
+            return res.status(HttpStatus.OK).json({ received: true});
+        }
+
+        const casoDonacion = await this.prisma.casoDonacion.findUnique({
+            where: { casoId}
+        })
 
         if (!casoDonacion) {
             return res.status(404).send('⚠️ Caso no encontrado');
@@ -125,6 +134,12 @@ export class StripeController {
                 mascotaId,
                 monto: amount,
                 comprobante: session.id, 
+                estadoPago: session.payment_status ?? 'desconocido',
+                stripeSessionId: session.id,
+                referenciaPago: typeof session.payment_intent === 'string' 
+                ? session.payment_intent 
+                : session.payment_intent?.id ?? '',
+                casoDonacionId: casoDonacion.id,
             },
         });
 
@@ -133,6 +148,7 @@ export class StripeController {
             where: { casoId },
             data: {
                 estadoDonacion: nuevoTotal,
+                estado: nuevoTotal >= casoDonacion.metaDonacion ? 'COMPLETADO' : 'ACTIVO',
             },
         });
 
