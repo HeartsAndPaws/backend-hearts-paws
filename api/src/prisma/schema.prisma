@@ -123,8 +123,8 @@ model SolicitudDeAdopcion {
   casoAdopcionId           String
   estado           EstadoAdopcion @default(PENDIENTE)
   tipoVivienda     String
-  integrantesFlia    Int
-  hijos            Int
+  integrantesFlia    Int @default(1)
+  hijos            Int @default(0)
   hayOtrasMascotas           String
   descripcionOtrasMascotas   String?
   cubrirGastos               String
