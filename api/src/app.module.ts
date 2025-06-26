@@ -15,6 +15,7 @@ import { ChatModule } from './chat/chat.module';
 import { StripeModule } from './stripe/stripe.module';
 import { SupabaseModule } from './autenticacion/supabase/supabase.module';
 import { SolicitudAdoptarModule } from './solicitud-adoptar/solicitud-adoptar.module';
+import { DonacionModule } from './donacion/donacion.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { SolicitudAdoptarModule } from './solicitud-adoptar/solicitud-adoptar.mo
     StripeModule,
     SupabaseModule,
     ChatModule,
-    SolicitudAdoptarModule
+    SolicitudAdoptarModule,
+    DonacionModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
