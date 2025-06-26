@@ -4,6 +4,8 @@ import { CreateCasoDto } from './dto/create-caso.dto';
 import { UpdateCasoDto } from './dto/update-caso.dto';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { FiltrarPorCasosFechasDto } from './dto/filtro-por-caso-y-fecha.dto';
+import { TipoCaso } from '@prisma/client';
 
 @Controller('casos')
 export class CasosController {
@@ -39,6 +41,11 @@ export class CasosController {
   busquedaDonacion(@Query('tipo') tipo: string){
     return this.casosService.buscarCasosDeDonacionPorTipoDeMascota(tipo)
   }
+
+@Get('filtro-casos-fechas/buscar')
+buscarPorTipoYFechas(@Query() filtros: FiltrarPorCasosFechasDto) {
+  return this.casosService.buscarCasosPorTipoYFechas(filtros.tipo, filtros.fechaDesde, filtros.fechaHasta);
+}
 
   @Post()
   CreateCaso(@Body() createCasoDto: CreateCasoDto) {
