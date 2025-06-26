@@ -43,12 +43,8 @@ export class CasosController {
   }
 
 @Get('filtro-casos-fechas/buscar')
-buscarPorTipoYFechas(
-  @Query('tipo') tipo: TipoCaso,
-  @Query('fechaDesde') fechaDesde: string,
-  @Query('fechaHasta') fechaHasta: string,
-) {
-  return this.casosService.buscarCasosPorTipoYFechas(tipo, fechaDesde, fechaHasta);
+buscarPorTipoYFechas(@Query() filtros: FiltrarPorCasosFechasDto) {
+  return this.casosService.buscarCasosPorTipoYFechas(filtros.tipo, filtros.fechaDesde, filtros.fechaHasta);
 }
 
   @Post()
