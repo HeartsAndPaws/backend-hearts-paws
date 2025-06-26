@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCasoDto } from './dto/create-caso.dto';
 import { UpdateCasoDto } from './dto/update-caso.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TipoCaso } from '@prisma/client';
 
 @Injectable()
 export class CasosService {
@@ -187,6 +188,34 @@ async filtroParaAdopcionesPorMascota(tipo: string) {
     }
   })
 }
+
+async buscarCasosPorTipoYFechas(tipo: TipoCaso, fechaDesde: string, fechaHasta: string) {
+  const desde = new Date(fechaDesde);
+  const hasta = new Date(fechaHasta);
+
+  return this.prismaService.caso.findMany({
+    where: {
+      tipo: tipo as any, // o $Enums.TipoCaso si usás el enum de Prisma
+      creado_en: {
+        gte: desde,
+        lte: hasta,
+      },
+    },
+    include: {
+      mascota: {
+        include: {
+          tipo: true,
+          imagenes: true,
+        }
+      },
+      ong: true,
+      adopcion: true,
+      donacion: true,
+    }
+  });
+}
+
+
 
 async obtenerCasosPorOng(ongId: string){
   return await this.prismaService.caso.findMany({
