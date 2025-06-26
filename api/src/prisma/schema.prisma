@@ -14,13 +14,14 @@ datasource db {
 }
 
 model Usuario {
-  id        String    @id @default(uuid())
-  nombre    String
-  dni       String    @default("Incompleto")
-  email     String    @unique
+  id        String     @id @default(uuid())
+  nombre    String 
+  edad      Int?    
+  dni       String?    
+  email     String     @unique
   contrasena  String?
-  ocupacion String?    @default("Incompleto")
-  estadoCivil String?  @default("Incompleto")
+  ocupacion String?    
+  estadoCivil String?  
   telefono  String?
   direccion String?
   ciudad    String?
@@ -122,9 +123,8 @@ model SolicitudDeAdopcion {
   casoAdopcionId           String
   estado           EstadoAdopcion @default(PENDIENTE)
   tipoVivienda     String
-  conQuienVives    String
-  hijos            String?
-  otros            String?
+  integrantesFlia    Int
+  hijos            Int
   hayOtrasMascotas           String
   descripcionOtrasMascotas   String?
   cubrirGastos               String
