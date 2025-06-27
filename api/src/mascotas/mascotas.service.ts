@@ -1,7 +1,5 @@
-import { Result } from './../../node_modules/peberminta/lib/core.d';
 import { Injectable, Get } from '@nestjs/common';
 import { CreateMascotaDto } from './dto/create-mascota.dto';
-import { UpdateMascotaDto } from './dto/update-mascota.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { TipoMascotaDto } from './dto/tipoMascota.dto';
