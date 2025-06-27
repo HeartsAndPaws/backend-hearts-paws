@@ -53,6 +53,11 @@ buscarPorTipoYFechas(@Query() filtros: FiltrarPorCasosFechasDto) {
   return this.casosService.buscarCasosPorTipoYFechas(filtros.tipo, filtros.fechaDesde, filtros.fechaHasta);
 }
 
+@Get('filtro-tipo-mascota-orden-temporal')
+filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
+  return this.casosService.filtrarPorTipoYordenTemporal(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);
+}
+
   @Post()
   CreateCaso(@Body() createCasoDto: CreateCasoDto) {
     return this.casosService.CreateCaso(createCasoDto);
@@ -69,12 +74,18 @@ buscarPorTipoYFechas(@Query() filtros: FiltrarPorCasosFechasDto) {
     return this.casosService.GetCasoById(id);
   }
 
-  // @UseGuards(AuthGuard('jwt-local'))
+  @UseGuards(AuthGuard('jwt-local'))
   @Get('ong/mis-casos')
-  // @ApiParam({ name: 'id', description: 'ID de la organización' })
+  @ApiParam({ name: 'id', description: 'ID de la organización' })
   @ApiOperation({ summary: 'Obtener todos los casos de una ONG' })
   @ApiResponse({ status: 200, description: 'Casos obtenidos exitosamente' })
-  async obtenerCasosPorOng(@Query() filtros: FiltrarPorTipoViejoRecienteDto){
-    return this.casosService.obtenerCasosPorOngConFiltros(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);  
-}
+  async obtenerCasosPorOng(@Req() req){
+    const ongId = req.user.id;
+
+    if (req.user.tipo !== 'ONG') {
+      throw new UnauthorizedException('Solo una organizacion puede acceder a esta ruta.')
+    }
+    return await this.casosService.obtenerCasosPorOng(ongId);
+  }
+  
 }
