@@ -34,6 +34,7 @@ export class UsuariosService {
           nombre: true,
           email: true,
           rol: true,
+          imagenPerfil: true,
         },
       });
   
