@@ -6,6 +6,7 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FiltrarPorCasosFechasDto } from './dto/filtro-por-caso-y-fecha.dto';
 import { TipoCaso } from '@prisma/client';
+import { FiltrarPorTipoViejoRecienteDto } from './dto/filtro-tipo-viejo-reciente.dto';
 
 @Controller('casos')
 export class CasosController {
@@ -26,6 +27,11 @@ export class CasosController {
   @Get('donacion')
   GetCasosDonacion() {
     return this.casosService.GetCasosDonacion();
+  }
+
+  @Get('idAdopcion/:mascotaId')
+  obtenerIdAdopcion(@Param('mascotaId') mascotaId: string){
+    return this.casosService.obtenerIdDelCasoAdopcion(mascotaId)
   }
 
   @Get('adopcion/buscar')
@@ -63,18 +69,12 @@ buscarPorTipoYFechas(@Query() filtros: FiltrarPorCasosFechasDto) {
     return this.casosService.GetCasoById(id);
   }
 
-  @UseGuards(AuthGuard('jwt-local'))
+  // @UseGuards(AuthGuard('jwt-local'))
   @Get('ong/mis-casos')
-  @ApiParam({ name: 'id', description: 'ID de la organización' })
+  // @ApiParam({ name: 'id', description: 'ID de la organización' })
   @ApiOperation({ summary: 'Obtener todos los casos de una ONG' })
   @ApiResponse({ status: 200, description: 'Casos obtenidos exitosamente' })
-  async obtenerCasosPorOng(@Req() req){
-    const ongId = req.user.id;
-
-    if (req.user.tipo !== 'ONG') {
-      throw new UnauthorizedException('Solo una organizacion puede acceder a esta ruta.')
-    }
-    return await this.casosService.obtenerCasosPorOng(ongId);
-  }
-  
+  async obtenerCasosPorOng(@Query() filtros: FiltrarPorTipoViejoRecienteDto){
+    return this.casosService.obtenerCasosPorOngConFiltros(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);  
+}
 }
