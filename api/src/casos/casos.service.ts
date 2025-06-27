@@ -90,6 +90,8 @@ export class CasosService {
 
   return { casoAdopcionId: casoConAdopcion.adopcion!.id };
 }
+
+
   async CreateCaso(createCasoDto: CreateCasoDto) {
     
     const casoExistente = await this.prismaService.caso.findFirst({
@@ -115,16 +117,12 @@ export class CasosService {
 
     if(createCasoDto.tipo === 'ADOPCION') {
 
-    const casoAdopcion =  await this.prismaService.casoAdopcion.create({
+      await this.prismaService.casoAdopcion.create({
         data: {
           casoId: caso.id,
           estado: 'PENDIENTE',
         },
       });
-      const casoAdopcionEncontrado = await this.prismaService.casoAdopcion.findUnique({
-        where: { casoId: caso.id }
-      })
-      return casoAdopcionEncontrado
 
     } else if(createCasoDto.tipo === 'DONACION' && createCasoDto.donacion) {
       await this.prismaService.casoDonacion.create({
@@ -134,10 +132,10 @@ export class CasosService {
           estadoDonacion: 0,
         },
       });
-      const casoDonacionEncontrado = await this.prismaService.casoDonacion.findUnique({
-        where: { casoId: caso.id }
-      })
     }
+
+    return caso;
+
   }
 
   async buscarCasos(filtros: { tipoMascota?: string; nombreMascota?: string }) {
@@ -245,8 +243,8 @@ async buscarCasosPorTipoYFechas(tipo: TipoCaso, fechaDesde: string, fechaHasta: 
   });
 }
 
-async obtenerCasosPorOngConFiltros(ongId: string, orden?: string, tipoMascota?: string){
-    return this.prismaService.caso.findMany({
+async filtrarPorTipoYordenTemporal(ongId: string, orden?: string, tipoMascota?: string) {
+  return this.prismaService.caso.findMany({
     where: {
       ...(ongId && { ongId }),
       ...(tipoMascota && {
@@ -274,17 +272,34 @@ async obtenerCasosPorOngConFiltros(ongId: string, orden?: string, tipoMascota?: 
   });
 }
 
+
+async obtenerCasosPorOng(ongId: string){
+  return await this.prismaService.caso.findMany({
+    where: { ongId },
+    include: {
+      mascota: {
+        include: {
+          tipo: true,
+          imagenes: true,
+        },
+      },
+      adopcion: true,
+      donacion: true,
+    },
+  });
+}
+
 async buscarCasosDeDonacionPorTipoDeMascota(tipo: string) {
   return this.prismaService.caso.findMany({
     where: {
       donacion: {
-        isNot: null,
+        isNot: null, // Solo casos que tienen relación con CasoDonacion
       },
       mascota: {
         tipo: {
           nombre: {
             equals: tipo,
-            mode: 'insensitive',
+            mode: 'insensitive', // Ignora mayúsculas y minúsculas
           },
         },
       },
@@ -292,13 +307,15 @@ async buscarCasosDeDonacionPorTipoDeMascota(tipo: string) {
     include: {
       mascota: {
         include: {
-          tipo: true,
+          tipo: true, // Incluye el tipo de mascota
           imagenes: true
         },
       },
-      ong: true,
-      donacion: true,
+      ong: true,       // Incluye la organización
+      donacion: true,  // Incluye los datos del subtipo donación
     },
   });
 }
+
+
 }
