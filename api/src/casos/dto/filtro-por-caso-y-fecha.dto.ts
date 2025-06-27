@@ -1,4 +1,3 @@
-// src/caso/dto/filtrar-casos.dto.ts
 import { IsOptional, IsEnum, IsDateString, IsNotEmpty } from 'class-validator';
 import { TipoCaso } from '@prisma/client';
 
