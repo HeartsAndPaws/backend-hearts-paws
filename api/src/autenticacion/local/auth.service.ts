@@ -193,4 +193,8 @@ export class ServicioAut {
     }
   }
 
+  async logout(){
+    return { ok: true, mensaje: 'Sesión cerrada'}
+  }
+
 }

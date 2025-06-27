@@ -50,6 +50,7 @@ export class AuthController {
             sameSite: isProduction ? 'none' : 'lax',
             secure: isProduction,
             maxAge: 1000 * 60 * 60 * 24,
+            path: '/',
   });
         return { 
           ok: true,
@@ -62,9 +63,18 @@ export class AuthController {
 
 
   @Post('cerrarSesion')
-  logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('authToken');
-    return { message: 'Sesión cerrada' };
+  async logout (@Res() res: Response){
+    const isProduction = ['production', 'staging'].includes(process.env.NODE_ENV || '');
+
+
+    res.clearCookie('authToken', {
+      httpOnly: true,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
+      path: '/',
+    });
+
+    return res.status(200).json({ok: true, mensaje: 'Sesión cerrada'});
   }
 
 
