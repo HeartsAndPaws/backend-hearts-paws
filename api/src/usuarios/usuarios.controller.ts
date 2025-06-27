@@ -3,7 +3,6 @@ import { UsuariosService } from './usuarios.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
-import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { ActualizarUsuarioDTO } from 'src/usuarios/dto/ActualizarUsuario.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -31,8 +30,6 @@ export class UsuariosController {
 @ApiOperation({ summary: 'Obtener el usuario autenticado' })
 @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
 async getUsuarioActual(@Req() req){
-  const isExternal = req.user.picture !== undefined;
-  console.log('Decoded token info:', req.user);
   return await this.usuariosService.usuarioPorId(req.user.id, req.user.external)
 }
 

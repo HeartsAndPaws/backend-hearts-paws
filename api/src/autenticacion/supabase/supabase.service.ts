@@ -46,7 +46,7 @@ export class SupabaseService {
     }
 
     return {
-        sub: usuario.externalId,
+        id: usuario.id,
         email: usuario.email,
         rol: usuario.rol,
         name: usuario.nombre,
