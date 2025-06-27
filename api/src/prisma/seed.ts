@@ -7,28 +7,29 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-    // Limpieza (en orden de dependencias para evitar errores por FK)
-    await prisma.imagenMascota.deleteMany();
-    await prisma.casoAdopcion.deleteMany();
-    await prisma.casoDonacion.deleteMany();
-    await prisma.caso.deleteMany();
-    await prisma.mascota.deleteMany();
-    await prisma.tiposMascota.deleteMany();
-    await prisma.organizacion.deleteMany();
-    await prisma.usuario.deleteMany();
-
     // Hasheo de contraseñas
     const hashedPasswordUsuario = await bcrypt.hash('usuario123', 10);
     const hashedPasswordAdmin = await bcrypt.hash('admin123', 10);
     const hashedPasswordONG = await bcrypt.hash('ong123', 10);
 
-    // Crear tipos de mascota
-    const tipoPerro = await prisma.tiposMascota.create({ data: { nombre: 'Perro' } });
-    const tipoGato = await prisma.tiposMascota.create({ data: { nombre: 'Gato' } });
+    // === Crear tipos de mascota si no existen ===
+    const tipoPerro = await prisma.tiposMascota.upsert({
+        where: { nombre: 'Perro' },
+        update: {},
+        create: { nombre: 'Perro' },
+    });
 
-    // Crear usuarios
-    const usuario1 = await prisma.usuario.create({
-        data: {
+    const tipoGato = await prisma.tiposMascota.upsert({
+        where: { nombre: 'Gato' },
+        update: {},
+        create: { nombre: 'Gato' },
+    });
+
+    // === Crear usuarios si no existen ===
+    const usuario1 = await prisma.usuario.upsert({
+        where: { email: 'lucia@example.com' },
+        update: {},
+        create: {
             nombre: 'Lucía Fernández',
             email: 'lucia@example.com',
             contrasena: hashedPasswordUsuario,
@@ -40,8 +41,10 @@ async function main() {
         },
     });
 
-    const admin = await prisma.usuario.create({
-        data: {
+    const admin = await prisma.usuario.upsert({
+        where: { email: 'admin@heartsandpaws.com' },
+        update: {},
+        create: {
             nombre: 'Admin Hearts',
             email: 'admin@heartsandpaws.com',
             contrasena: hashedPasswordAdmin,
@@ -51,9 +54,11 @@ async function main() {
         },
     });
 
-    // Crear organizaciones
-    const ong1 = await prisma.organizacion.create({
-        data: {
+    // === Crear organizaciones si no existen ===
+    const ong1 = await prisma.organizacion.upsert({
+        where: { email: 'contacto@patitas.org' },
+        update: {},
+        create: {
             nombre: 'Patitas Callejeras',
             email: 'contacto@patitas.org',
             contrasena: hashedPasswordONG,
@@ -66,8 +71,10 @@ async function main() {
         },
     });
 
-    const ong2 = await prisma.organizacion.create({
-        data: {
+    const ong2 = await prisma.organizacion.upsert({
+        where: { email: 'info@huellas.org' },
+        update: {},
+        create: {
             nombre: 'Huellas de Amor',
             email: 'info@huellas.org',
             contrasena: hashedPasswordONG,
@@ -80,8 +87,14 @@ async function main() {
         },
     });
 
-    // Crear mascotas
-    const mascota1 = await prisma.mascota.create({
+    // === Crear mascotas si no existen ===
+const existingMascota = await prisma.mascota.findFirst({
+    where: { nombre: 'Luna' },
+});
+
+let mascota1;
+if (!existingMascota) {
+    mascota1 = await prisma.mascota.create({
         data: {
             nombre: 'Luna',
             edad: 2,
@@ -90,8 +103,20 @@ async function main() {
             tipoId: tipoPerro.id,
         },
     });
+    } else {
+        mascota1 = existingMascota;
+    }
 
-    const mascota2 = await prisma.mascota.create({
+
+let mascota2 = await prisma.mascota.findFirst({
+  where: {
+    nombre: 'Michi',
+    organizacionId: ong2.id,
+  },
+});
+
+if (!mascota2) {
+    mascota2 = await prisma.mascota.create({
         data: {
             nombre: 'Michi',
             edad: 1,
@@ -100,59 +125,69 @@ async function main() {
             tipoId: tipoGato.id,
         },
     });
+}
 
+    // === Agregar imágenes si no existen ===
+    const existingImages = await prisma.imagenMascota.findMany();
+    if (!existingImages.length) {
+        await prisma.imagenMascota.createMany({
+            data: [
+                { url: 'https://placedog.net/400/300', mascotaId: mascota1.id },
+                { url: 'https://comunidad.retorn.com/wp-content/uploads/cache/2018/09/gatitos/1583254719.jpg', mascotaId: mascota2.id },
+            ],
+        });
+    }
 
-
-    // Agregar imágenes de prueba
-    await prisma.imagenMascota.createMany({
-        data: [
-            { url: 'https://placedog.net/400/300', mascotaId: mascota1.id },
-            { url: 'https://comunidad.retorn.com/wp-content/uploads/cache/2018/09/gatitos/1583254719.jpg', mascotaId: mascota2.id },
-        ],
+    // === Crear casos solo si no existen ===
+    const existingCasoAdopcion = await prisma.caso.findFirst({
+        where: { titulo: 'Adopta a Luna' },
     });
 
-    // === Crear casos ===
+    if (!existingCasoAdopcion) {
+        const casoAdopcionLuna = await prisma.caso.create({
+            data: {
+                titulo: 'Adopta a Luna',
+                descripcion: 'Luna busca una familia amorosa.',
+                tipo: TipoCaso.ADOPCION,
+                mascotaId: mascota1.id,
+                ongId: ong1.id,
+            }
+        });
 
-    // Caso de adopción para Luna (mascota1, ONG1)
-    const casoAdopcionLuna = await prisma.caso.create({
-        data: {
-            titulo: 'Adopta a Luna',
-            descripcion: 'Luna busca una familia amorosa.',
-            tipo: TipoCaso.ADOPCION,
-            mascotaId: mascota1.id,
-            ongId: ong1.id,
-        }
+        await prisma.casoAdopcion.create({
+            data: {
+                casoId: casoAdopcionLuna.id,
+                estado: EstadoAdopcion.PENDIENTE,
+            }
+        });
+    }
+
+    const existingCasoDonacion = await prisma.caso.findFirst({
+        where: { titulo: 'Ayuda a Michi' },
     });
 
-    await prisma.casoAdopcion.create({
-        data: {
-            casoId: casoAdopcionLuna.id,
-            estado: EstadoAdopcion.PENDIENTE, // Enum del schema Prisma
-        }
-    });
+    if (!existingCasoDonacion) {
+        const casoDonacionMichi = await prisma.caso.create({
+            data: {
+                titulo: 'Ayuda a Michi',
+                descripcion: 'Recaudación para operación de Michi.',
+                tipo: TipoCaso.DONACION,
+                mascotaId: mascota2.id,
+                ongId: ong2.id,
+            }
+        });
 
-    // Caso de donación para Michi (mascota2, ONG2)
-    const casoDonacionMichi = await prisma.caso.create({
-        data: {
-            titulo: 'Ayuda a Michi',
-            descripcion: 'Recaudación para operación de Michi.',
-            tipo: TipoCaso.DONACION,
-            mascotaId: mascota2.id,
-            ongId: ong2.id,
-        }
-    });
+        await prisma.casoDonacion.create({
+            data: {
+                casoId: casoDonacionMichi.id,
+                metaDonacion: 250000,
+                estadoDonacion: 35000,
+            }
+        });
+    }
 
-    await prisma.casoDonacion.create({
-        data: {
-            casoId: casoDonacionMichi.id,
-            metaDonacion: 250000,
-            estadoDonacion: 35000,
-        }
-    });
-
-
-    console.log('Seed ejecutado correctamente');
-};
+    console.log('Seed ejecutado sin borrar datos previos');
+}
 
 main()
     .catch((e) => {
