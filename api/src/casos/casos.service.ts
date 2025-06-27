@@ -3,6 +3,7 @@ import { CreateCasoDto } from './dto/create-caso.dto';
 import { UpdateCasoDto } from './dto/update-caso.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TipoCaso } from '@prisma/client';
+import { FiltroViejoRecienteEnum } from './enums/filtro-tipo-reciente-antiguo.enum';
 
 @Injectable()
 export class CasosService {
@@ -195,7 +196,7 @@ async buscarCasosPorTipoYFechas(tipo: TipoCaso, fechaDesde: string, fechaHasta: 
 
   return this.prismaService.caso.findMany({
     where: {
-      tipo: tipo as any, // o $Enums.TipoCaso si usás el enum de Prisma
+      tipo: tipo as TipoCaso,
       creado_en: {
         gte: desde,
         lte: hasta,
@@ -215,6 +216,34 @@ async buscarCasosPorTipoYFechas(tipo: TipoCaso, fechaDesde: string, fechaHasta: 
   });
 }
 
+async filtrarPorTipoYordenTemporal(ongId: string, orden: string, tipoMascota: string) {
+  return this.prismaService.caso.findMany({
+    where: {
+      ...(ongId && { ongId }),
+      ...(tipoMascota && {
+        mascota: {
+          tipo: {
+            nombre: tipoMascota.toUpperCase(),
+          },
+        },
+      }),
+    },
+    orderBy: {
+      creado_en: orden === FiltroViejoRecienteEnum.Reciente ? 'desc' : 'asc',
+    },
+    include: {
+      mascota: {
+        include: {
+          tipo: true,
+          imagenes: true,
+        },
+      },
+      ong: true,
+      adopcion: true,
+      donacion: true,
+    },
+  });
+}
 
 
 async obtenerCasosPorOng(ongId: string){

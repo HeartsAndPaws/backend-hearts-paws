@@ -9,7 +9,7 @@ export class SolicitudParaAdoptarDto {
   casoAdopcionId: string;
 
   @IsEnum(EstadoAdopcion)
-  @IsOptional() // ya que tiene valor por defecto en el modelo
+  @IsOptional()
   estado?: EstadoAdopcion;
 
   @IsString()
