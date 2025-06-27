@@ -27,6 +27,7 @@ export class JwtLocalStrategy extends PassportStrategy(Strategy, 'jwt-local') {
       email: payload.email,
       tipo: payload.tipo,
       rol: payload.rol,
+      external: false,
     };
   }
 }
