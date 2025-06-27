@@ -6,6 +6,7 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FiltrarPorCasosFechasDto } from './dto/filtro-por-caso-y-fecha.dto';
 import { TipoCaso } from '@prisma/client';
+import { FiltrarPorTipoViejoRecienteDto } from './dto/filtro-tipo-viejo-reciente.dto';
 
 @Controller('casos')
 export class CasosController {
@@ -45,6 +46,11 @@ export class CasosController {
 @Get('filtro-casos-fechas/buscar')
 buscarPorTipoYFechas(@Query() filtros: FiltrarPorCasosFechasDto) {
   return this.casosService.buscarCasosPorTipoYFechas(filtros.tipo, filtros.fechaDesde, filtros.fechaHasta);
+}
+
+@Get('filtro-tipo-mascota-orden-temporal')
+filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
+  return this.casosService.filtrarPorTipoYordenTemporal(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);
 }
 
   @Post()
