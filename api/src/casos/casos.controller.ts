@@ -73,7 +73,7 @@ filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
   GetCasoById(@Param('id') id: string) {
     return this.casosService.GetCasoById(id);
   }
-
+  
   @UseGuards(AuthGuard('jwt-local'))
   @Get('ong/mis-casos')
   @ApiParam({ name: 'id', description: 'ID de la organización' })
