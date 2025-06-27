@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { FiltroViejoRecienteEnum, TipoMascotaEnum } from '../enums/filtro-tipo-reciente-antiguo.enum';
 
 export class FiltrarPorTipoViejoRecienteDto {
@@ -6,11 +6,11 @@ export class FiltrarPorTipoViejoRecienteDto {
   @IsNotEmpty()
   ongId: string
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(FiltroViejoRecienteEnum)
-  viejoReciente: FiltroViejoRecienteEnum
+  viejoReciente?: FiltroViejoRecienteEnum
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(TipoMascotaEnum)
-  tipoMascota: TipoMascotaEnum
+  tipoMascota?: TipoMascotaEnum
 }
