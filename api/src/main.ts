@@ -7,7 +7,6 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NuevoUsuarioDto } from './autenticacion/dtos/NuevoUsuario.dto';
 import { NuevaOrganizacionDto } from './autenticacion/dtos/NuevaOrganizacion';
 import { CustomSocketIoAdapter } from './chat/socket-io.adapter';
-import  express  from 'express';
 import * as bodyParser from 'body-parser';
 
 
