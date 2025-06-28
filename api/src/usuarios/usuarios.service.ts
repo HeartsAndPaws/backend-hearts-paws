@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { ActualizarUsuarioDTO } from './dto/ActualizarUsuario.dto';
+import { Rol } from '@prisma/client';
+import { contains } from 'class-validator';
 
 
 @Injectable()
@@ -45,18 +46,24 @@ export class UsuariosService {
       return usuario;
     }
 
-      async listaDeUsuarios() {
-    const usuarios = await this.prisma.usuario.findMany({
+      async listaDeUsuarios(filtros?: { rol?: Rol; pais?: string}) {
+        const { rol, pais } = filtros || {};
+
+    return await this.prisma.usuario.findMany({
+      where: {
+        ...( rol ? { rol } : {}),
+        ...( pais ? { pais: { contains: pais, mode: 'insensitive'}}: {}),
+      },
       select: {
         id: true,
         nombre: true,
         email: true,
         rol: true,
         imagenPerfil: true,
+        pais: true,
         // No incluir contraseñas ni otros campos sensibles
       },
     });
-    return usuarios;
   }
 
 
@@ -132,4 +139,9 @@ export class UsuariosService {
       throw new NotFoundException(`No se encontró el usuario con id ${id}`);
     }
   }
+
+  async totalUsuarios() {
+  return this.prisma.usuario.count();
+}
+
 }
