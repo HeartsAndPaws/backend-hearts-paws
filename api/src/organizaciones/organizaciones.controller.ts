@@ -38,6 +38,11 @@ export class OrganizacionesController {
     return await this.organizacionesService.listarRechazadas();
   }
 
+  @Get('aprobadas/total')
+  async contarOngsAprobadas(){
+    return await this.organizacionesService.contarAprobadas();
+  }
+
   @UseGuards(JwtAutCookiesGuardia)
   @Get('me')
   @ApiBearerAuth()

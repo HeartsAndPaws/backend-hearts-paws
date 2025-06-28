@@ -121,5 +121,10 @@ async mascotasEnAdopcionPorOng(ongId: string) {
 
     return imagenes;
   }
+
+  async contarMascotas(){
+    const total = await this.prismaService.mascota.count();
+    return { total };
+  }
   
 }
