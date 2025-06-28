@@ -18,8 +18,8 @@ export class MascotasController {
 
     }
 
-    @Get('mascotas-por-ong-adopcion')
-    listaDeMascotasEnAdopcionPorOng(ongId: string){
+    @Get('mascotas-por-ong-adopcion/:ongId')
+    listaDeMascotasEnAdopcionPorOng(@Param('ongId') ongId: string){
       return this.mascotasService.mascotasEnAdopcionPorOng(ongId)
     }
 
