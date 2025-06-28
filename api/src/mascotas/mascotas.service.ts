@@ -42,6 +42,30 @@ export class MascotasService {
     });
   }
 
+async mascotasEnAdopcionPorOng(ongId: string) {
+  return await this.prismaService.mascota.findMany({
+    where: {
+      organizacionId: ongId,
+      casos: {
+        some: {
+          tipo: 'ADOPCION',
+        },
+      },
+    },
+    include: {
+      imagenes: true,      // si querés mostrar imágenes
+      tipo: true,          // info del tipo de mascota (TiposMascota)
+      casos: {
+        where: { tipo: 'ADOPCION' },
+        include: {
+          adopcion: true,  // incluye info como estado del caso de adopción
+        },
+      },
+    },
+  });
+}
+
+
   async GetTipo(){
 
     return await this.prismaService.tiposMascota.findMany();
