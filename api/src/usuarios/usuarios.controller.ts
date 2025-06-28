@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UseInterceptors, UploadedFile, Get, ParseUUIDPipe, UseGuards, Req, Patch, Body, BadRequestException, Delete } from '@nestjs/common';
+import { Controller, Post, Param, UseInterceptors, UploadedFile, Get, ParseUUIDPipe, UseGuards, Req, Patch, Body, BadRequestException, Delete, Query } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -6,6 +6,7 @@ import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { ActualizarUsuarioDTO } from 'src/usuarios/dto/ActualizarUsuario.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Rol } from '@prisma/client';
 
 
 @ApiTags('Usuarios')
@@ -19,8 +20,15 @@ export class UsuariosController {
   @Get()
   @ApiOperation({ summary: 'Listar todos los usuarios' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios obtenida correctamente' })
-  async obtenerUsuarios() {
-  return await this.usuariosService.listaDeUsuarios();
+  async obtenerUsuarios(@Query('rol') rol: Rol, @Query('pais') pais: string) {
+  return await this.usuariosService.listaDeUsuarios( {rol, pais} );
+}
+
+@Get('estadisticas/total')
+@ApiOperation({ summary: 'Obtener total de usuarios' })
+async totalUsuarios() {
+  const total = await this.usuariosService.totalUsuarios();
+  return { total };
 }
 
 
