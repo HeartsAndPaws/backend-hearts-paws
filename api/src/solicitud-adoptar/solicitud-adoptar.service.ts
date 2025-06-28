@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EstadoAdopcion } from '@prisma/client';
 
 @Injectable()
 export class SolicitudAdoptarService {
@@ -104,5 +105,15 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   },
 });
   return { mensaje: `Solicitud borrada id: ${id}`}
+  }
+
+  async contarAdopcionesAceptadas(){
+    const total = await this.prisma.casoAdopcion.count({
+      where: {
+        estado: EstadoAdopcion.ACEPTADA,
+      },
+    });
+
+    return { total };
   }
 }

@@ -38,6 +38,11 @@ export class MascotasController {
       return this.mascotasService.GetMascotasByOngId(ongId);
     }
 
+    @Get('total')
+    async contarTotalMascotas(){
+      return await this.mascotasService.contarMascotas();
+    }
+
     @Post("crearTipo")
     CreateTipoMascota(@Body() createTipoMascotaDto: TipoMascotaDto) {
       return this.mascotasService.CreateTipoMascota(createTipoMascotaDto);
