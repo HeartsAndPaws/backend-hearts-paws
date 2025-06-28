@@ -41,6 +41,33 @@ export class SolicitudAdoptarService {
 
   }
 
+// En mascota.service.ts
+
+async obtenerMascotasConAdopcionPorOng(ongId: string) {
+  return await this.prisma.mascota.findMany({
+    where: {
+      organizacionId: ongId,
+      casos: {
+        some: {
+          tipo: 'ADOPCION',
+        },
+      },
+    },
+    include: {
+      casos: {
+        where: {
+          tipo: 'ADOPCION',
+        },
+        include: {
+          adopcion: true,
+        },
+      },
+    },
+  });
+}
+
+
+
   async verSolicitudesPorCasoDeAdopcion(id: string) {
   return await this.prisma.casoAdopcion.findUnique({
     where: {
