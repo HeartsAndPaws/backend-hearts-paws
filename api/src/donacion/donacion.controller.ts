@@ -9,20 +9,18 @@ export class DonacionController {
   constructor(private readonly donacionService: DonacionService) {}
 
   @Get()
-  getDetalleDonaciones(){
-    return this.donacionService.getDetalleDonaciones();
+  getAllDonaciones() {
+    return this.donacionService.getDonaciones();
   }
 
-  @Get('id')
-  getDetalleDonacionById(@Param('id') id: string) {
-    return this.donacionService.getDetalleDonacionById(id);
+  @Get('/ong/:ongId')
+  getDonacionesByOngId(@Param('ongId') ongId: string) {
+    return this.donacionService.getDonacionesByOngId(ongId);
   }
-  
 
-  @Get('detalle/:CasoId')
-  getEstadosMeta(@Param('CasoId') CasoId: string) {
-
-    return this.donacionService.getEstadosMeta(CasoId);
-
+  @Get(':id')
+  getDonacionById(@Param('id') id: string) {
+    return this.donacionService.getDonacionById(id);
   }
+
 }
