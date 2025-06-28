@@ -18,6 +18,11 @@ export class MascotasController {
 
     }
 
+    @Get('mascotas-por-ong-adopcion/:ongId')
+    listaDeMascotasEnAdopcionPorOng(@Param('ongId') ongId: string){
+      return this.mascotasService.mascotasEnAdopcionPorOng(ongId)
+    }
+
     @Get('tipo')
     GetTiposMascotas() {
       return this.mascotasService.GetTipo();
@@ -49,8 +54,6 @@ crearTipoDeMascota(@Body() datos: TipoMascotaDto) {
   const { nombre } = datos;
   return this.mascotasService.crearTipoDeMascota(nombre);
 }
-
-
 
     @Post(':id/imagenes')
     @UseInterceptors(FilesInterceptor('imagenes'))
