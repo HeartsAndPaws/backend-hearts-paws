@@ -8,34 +8,54 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class DonacionService {
   constructor(private readonly prismaService: PrismaService){}
 
-  getDetalleDonaciones(){
+  getDonaciones(){
 
-    return this.prismaService.casoDonacion.findMany()
-
-  }
-
-  getDetalleDonacionById(id: string){
-
-    return this.prismaService.casoDonacion.findMany({
-      where: {id: id}
-    })
-
-  }
-
-
-  getEstadosMeta(CasoId: string){
-
-    return this.prismaService.casoDonacion.findMany({
-      where: {
-        casoId: CasoId
+    return this.prismaService.donacion.findMany({
+      include: {
+        usuario: true,
+        organizacion: true,
+        mascota: true,
+        casoDonacion: true,
       },
-      select: {
-        estadoDonacion: true,
-        metaDonacion: true,
-        estado: true,
-        
-      }
     });
+
   }
+
+  getDonacionesByOngId(ongId: string){
+    return this.prismaService.donacion.findMany({
+      where: {
+        organizacionId: ongId
+      },
+      include: {
+        usuario: true,
+        organizacion: true,
+        mascota: true,
+        casoDonacion: true,
+      },
+    });
+
+  }
+
+  getDonacionById(id: string){
+
+    return this.prismaService.donacion.findUnique({
+      where: {id: id},
+      include: {
+        usuario: true,
+        organizacion: true,
+        mascota: true,
+        casoDonacion: true,
+      },
+    });
+
+  }
+
+ 
+
+ 
+
+
+  
+  
   
 }
