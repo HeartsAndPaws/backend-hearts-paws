@@ -13,6 +13,11 @@ export class DonacionController {
     return this.donacionService.getDonaciones();
   }
 
+  @Get('total')
+  async obtenerTotalDonado(){
+    return await this.donacionService.obtenerValorTotalDonaciones();
+  }
+
   @Get('/ong/:ongId')
   getDonacionesByOngId(@Param('ongId') ongId: string) {
     return this.donacionService.getDonacionesByOngId(ongId);

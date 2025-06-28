@@ -18,6 +18,6 @@ export class SupabaseController {
   @UseGuards(AuthGuard('supabase'))
   @Post('supabase/sync')
   async syncUser(@Req() req) {
-    return this.supabaseService.registrarOrSync(req.user);
+    return req.user;
   }
 }

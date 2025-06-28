@@ -50,12 +50,14 @@ export class DonacionService {
 
   }
 
- 
+  async obtenerValorTotalDonaciones(){
+    const resultado = await this.prismaService.donacion.aggregate({
+      _sum: {
+        monto: true,
+      },
+    });
 
- 
-
-
-  
-  
+    return { total: resultado._sum.monto ?? 0 };
+  }
   
 }
