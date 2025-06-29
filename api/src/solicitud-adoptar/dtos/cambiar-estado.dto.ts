@@ -4,7 +4,11 @@ import { EstadoAdopcion } from '@prisma/client';
 export class CambiarEstadoDto {
   @IsNotEmpty()
   @IsUUID()
-  id: string
+  idDelCasoAdopcion: string
+
+  @IsNotEmpty()
+  @IsUUID()
+  idDeSolicitudAceptada: string
 
   @IsEnum(EstadoAdopcion)
   estadoNuevo: EstadoAdopcion

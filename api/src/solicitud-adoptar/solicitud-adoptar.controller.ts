@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { SolicitudAdoptarService } from './solicitud-adoptar.service';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { CambiarEstadoDto } from './dtos/cambiar-estado.dto';
+import { filtroViviendaQdeMascotasDto } from './dtos/filtroViviendaQdeMascotas.dto';
 
 @Controller('solicitud-adoptar')
 export class SolicitudAdoptarController {
@@ -22,10 +23,16 @@ export class SolicitudAdoptarController {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
   }
 
+//   @Get('filtrar')
+// filtrarSolicitudes(@Query() filtro: filtroViviendaQdeMascotasDto) {
+//   return this.solicitudAdoptarService.filtroViviendaQdeMascotas(filtro.tipoVivienda, filtro.hayOtrasMascotas);
+// }
+
+
   @Patch()
   cambiarEstado(@Body() datos: CambiarEstadoDto) {
-    const { id, estadoNuevo } = datos
-    return this.solicitudAdoptarService.cambiarEstado(id, estadoNuevo);
+    const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos
+    return this.solicitudAdoptarService.cambiarEstado(idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo);
   }
 
   @Delete(':id')
