@@ -131,4 +131,14 @@ async cambiarEstado(idDelCasoAdopcion: string, idDeSolicitudAceptada, estadoNuev
 });
   return { mensaje: `Solicitud borrada id: ${id}`}
   }
+
+  async contarAdopcionesAceptadas(){
+    const total = await this.prisma.casoAdopcion.count({
+      where: {
+        estado: EstadoAdopcion.ACEPTADA,
+      },
+    });
+
+    return { total };
+  }
 }

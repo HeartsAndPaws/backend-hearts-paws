@@ -121,5 +121,10 @@ async CreateMascota(createMascotaDto: CreateMascotaDto) {
 
     return imagenes;
   }
+
+  async contarMascotas(){
+    const total = await this.prismaService.mascota.count();
+    return { total };
+  }
   
 }

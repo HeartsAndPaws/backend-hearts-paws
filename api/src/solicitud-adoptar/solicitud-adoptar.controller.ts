@@ -18,6 +18,11 @@ export class SolicitudAdoptarController {
     return this.solicitudAdoptarService.verTodasLasSolicitudes();
   }
 
+  @Get('aceptadas/total')
+  async contarAceptadas(){
+    return await this.solicitudAdoptarService.contarAdopcionesAceptadas();
+  }
+
   @Get('solicitudesDeCadaAdopcion/:id')
   verSolicitudesPorCaso(@Param('id') id: string) {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)

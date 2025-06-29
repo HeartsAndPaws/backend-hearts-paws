@@ -179,4 +179,11 @@ export class OrganizacionesService {
     });
   }
 
+  async contarAprobadas(){
+    const total = await this.prisma.organizacion.count({
+      where: {estado: EstadoOrganizacion.APROBADA},
+    });
+    return { total };
+  }
+
 }
