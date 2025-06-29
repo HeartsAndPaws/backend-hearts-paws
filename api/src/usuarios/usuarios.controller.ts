@@ -7,9 +7,14 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, A
 import { ActualizarUsuarioDTO } from 'src/usuarios/dto/ActualizarUsuario.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Rol } from '@prisma/client';
+import { Request } from 'express';
+import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
+import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 
 
 @ApiTags('Usuarios')
+@UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+@ApiBearerAuth()
 @Controller('usuarios')
 export class UsuariosController {
   constructor(
@@ -18,59 +23,71 @@ export class UsuariosController {
   ) {}
 
   @Get()
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Listar todos los usuarios' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios obtenida correctamente' })
   async obtenerUsuarios(@Query('rol') rol: Rol, @Query('pais') pais: string) {
   return await this.usuariosService.listaDeUsuarios( {rol, pais} );
 }
 
-@Get('estadisticas/total')
-@ApiOperation({ summary: 'Obtener total de usuarios' })
-async totalUsuarios() {
-  const total = await this.usuariosService.totalUsuarios();
-  return { total };
-}
+
+  @Get('estadisticas/total')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Obtener total de usuarios' })
+  async totalUsuarios() {
+    const total = await this.usuariosService.totalUsuarios();
+    return { total };
+  }
 
 
-@UseGuards(AuthGuard(['jwt-local', 'supabase']))
-@Get('me')
-@ApiBearerAuth()
-@ApiOperation({ summary: 'Obtener el usuario autenticado' })
-@ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
-async getUsuarioActual(@Req() req){
-  return await this.usuariosService.usuarioPorId(req.user.id, req.user.external)
-}
+  @Get('mis-donaciones')
+  @ApiOperation({summary: 'ver mis donaciones'})
+  async obtenerMisDonaciones(@Req() req: Request){
+    const usuario = req.user as any;
+    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(usuario.id);
+  }
 
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Get('mis-solicitudes')
+  @ApiOperation({ summary: 'Ver mis solicitudes de adopción'})
+  async obtenerMisSolicitudes(@Req() req: Request){
+    const usuario = req.user as any;
+    return await this.usuariosService.obtenerSolicitudesDelUsuario(usuario.id);
+  }
+
+
+  @Get('me')
+  @ApiOperation({ summary: 'Obtener el usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
+  async getUsuarioActual(@Req() req){
+    return await this.usuariosService.usuarioPorId(req.user.id, req.user.external)
+  }
+
+
   @Get(':id')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Obtener usuario por ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'UUID del usuario' })
   @ApiResponse({ status: 200, description: 'Usuario encontrado' })
   async obtenerUsuarioPorId(@Param('id', ParseUUIDPipe) id: string) {
-    const usuario = await this.usuariosService.usuarioPorId(id);
-    return usuario; // ya lanza NotFoundException si no existe
+    return await this.usuariosService.usuarioPorId(id);
   }
 
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cambia los datos del usuario' })
   @ApiParam({ name: 'id', type: 'string' })
-  @ApiBody({
-    type: ActualizarUsuarioDTO
-  })
+  @ApiBody({ type: ActualizarUsuarioDTO })
   @ApiResponse({ status: 200, description: 'Datos actualizados' })
   async actualizarUsuario(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() datosDeUsuario: ActualizarUsuarioDTO,
   ) {
-    const resultado = await this.usuariosService.actualizarUsuario(id, datosDeUsuario);
-    return resultado;
+    return await this.usuariosService.actualizarUsuario(id, datosDeUsuario);
   }
 
 
-
   @Delete(':id')
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiResponse({ status: 200, description: 'Usuario eliminado correctamente' })
