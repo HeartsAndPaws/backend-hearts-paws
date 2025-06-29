@@ -1,8 +1,9 @@
-import { IsEmail, IsString, IsStrongPassword, IsNotEmpty, MinLength, MaxLength, Matches, IsOptional } from "class-validator";
+import { IsEmail, IsString, IsStrongPassword, IsNotEmpty, MinLength, MaxLength, Matches, IsOptional, IsEnum } from "class-validator";
 import { Transform } from "class-transformer";
 const xss = require('xss');
 import { Trim } from "src/autenticacion/decoradores/trim.decorator";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { Rol } from "@prisma/client";
 
 export class ActualizarUsuarioDTO {
     @IsOptional()
@@ -91,4 +92,8 @@ export class ActualizarUsuarioDTO {
     message: 'Pais: solo se permiten letras y números',
 })
     pais?: string;
+
+    @IsOptional()
+    @IsEnum(Rol)
+    rol?: Rol;
 }
