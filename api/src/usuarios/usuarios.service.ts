@@ -144,4 +144,49 @@ export class UsuariosService {
   return this.prisma.usuario.count();
 }
 
+async obtenerDonacionesDelUsuarioAutenticado( usuarioId: string){
+  return await this.prisma.donacion.findMany({
+    where: { usuarioId },
+    include: {
+      organizacion: {
+        select: { nombre: true},
+      },
+      mascota: {
+        select: { nombre: true,
+          casos: {
+            select: { descripcion: true,}
+          },
+        },
+      },
+    },
+  });
+}
+
+async obtenerSolicitudesDelUsuario(usuarioId: string){
+  return await this.prisma.solicitudDeAdopcion.findMany({
+    where: { usuarioId },
+    include: {
+      casoAdopcion: {
+        include: {
+          caso: {
+            include: {
+              mascota: {
+                select: {
+                  nombre: true,
+                  imagenes: {
+                    select: { url: true,}
+                  },
+                },
+              },
+              ong: {
+                select: { nombre: true,}
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 }
