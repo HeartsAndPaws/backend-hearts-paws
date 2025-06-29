@@ -67,7 +67,18 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   });
 }
 
-
+  // async filtroViviendaQdeMascotas(tipoVivienda: string, hayOtrasMascotas: string) {
+  //     return await this.prisma.solicitudDeAdopcion.findMany({
+  //   where: {
+  //     tipoVivienda,
+  //     hayOtrasMascotas,
+  //   },
+  //   include: {
+  //     usuario: true,
+  //     casoAdopcion: true,
+  //   },
+  // });
+  // }
 
   async verSolicitudesPorCasoDeAdopcion(id: string) {
   return await this.prisma.casoAdopcion.findUnique({
@@ -84,19 +95,33 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   });
 }
 
-  async cambiarEstado(id: string, estadoNuevo) {
-    const adopcionActualizada = await this.prisma.casoAdopcion.update({
-  where: {
-    id
-  },
-  data: {
-    estado: estadoNuevo
-  },
-})
-    return adopcionActualizada
-;
+async cambiarEstado(idDelCasoAdopcion: string, idDeSolicitudAceptada, estadoNuevo: EstadoAdopcion) {
+  // 1. Cambiar estado del CasoAdopcion
+  const adopcionActualizada = await this.prisma.casoAdopcion.update({
+    where: { id: idDelCasoAdopcion },
+    data: { estado: estadoNuevo },
+  });
 
+  // 2. Si se acepta, actualizar el resto de las solicitudes a RECHAZADA
+  if (estadoNuevo === 'ACEPTADA') {
+    await this.prisma.solicitudDeAdopcion.updateMany({
+      where: {
+        casoAdopcionId: idDelCasoAdopcion,
+        estado: 'PENDIENTE',
+      },
+      data: {
+        estado: 'RECHAZADA',
+      },
+    });
+          await this.prisma.solicitudDeAdopcion.update({
+          where: {id: idDeSolicitudAceptada},
+          data: {estado: 'ACEPTADA'}
+  })
   }
+
+  return adopcionActualizada;
+}
+
 
   async borrarSolicitud(id: string) {
     await this.prisma.solicitudDeAdopcion.delete({

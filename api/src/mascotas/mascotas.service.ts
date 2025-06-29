@@ -18,7 +18,7 @@ export class MascotasService {
         imagenes: true,
       },
     });
-
+    
     
   }
 
@@ -53,12 +53,12 @@ async mascotasEnAdopcionPorOng(ongId: string) {
       },
     },
     include: {
-      imagenes: true,      // si querés mostrar imágenes
-      tipo: true,          // info del tipo de mascota (TiposMascota)
+      imagenes: true,
+      tipo: true,
       casos: {
         where: { tipo: 'ADOPCION' },
         include: {
-          adopcion: true,  // incluye info como estado del caso de adopción
+          adopcion: true,
         },
       },
     },
@@ -67,9 +67,9 @@ async mascotasEnAdopcionPorOng(ongId: string) {
 
 
   async GetTipo(){
-
+    
     return await this.prismaService.tiposMascota.findMany();
-
+    
   }
   async CreateTipoMascota(createTipoMascotaDto: TipoMascotaDto) {
     return this.prismaService.tiposMascota.create({
@@ -87,11 +87,11 @@ async mascotasEnAdopcionPorOng(ongId: string) {
   });
 }
 
-  async CreateMascota(createMascotaDto: CreateMascotaDto) {
-    
-    return this.prismaService.mascota.create({
-      data: createMascotaDto,
-      include: {
+async CreateMascota(createMascotaDto: CreateMascotaDto) {
+  
+  return this.prismaService.mascota.create({
+    data: createMascotaDto,
+    include: {
         imagenes: true,
         tipo: true
       },
@@ -111,7 +111,7 @@ async mascotasEnAdopcionPorOng(ongId: string) {
 
           url: result.secure_url,
           mascotaId,
-
+          
         },
       });
 
