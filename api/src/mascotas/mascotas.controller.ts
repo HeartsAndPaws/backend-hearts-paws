@@ -5,6 +5,7 @@ import { UpdateMascotaDto } from './dto/update-mascota.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { TipoMascotaDto } from './dto/tipoMascota.dto';
+import { filtroViviendaQdeMascotasDto } from '../solicitud-adoptar/dtos/filtroViviendaQdeMascotas.dto';
 
 @Controller('mascotas')
 export class MascotasController {
