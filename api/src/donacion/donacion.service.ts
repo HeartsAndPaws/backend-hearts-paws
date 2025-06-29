@@ -59,5 +59,16 @@ export class DonacionService {
 
     return { total: resultado._sum.monto ?? 0 };
   }
+
+  async getDetalleDonacionByCasoId(CasoId: string) {
+    return this.prismaService.casoDonacion.findMany({
+      where: {casoId: CasoId},
+    })
+  }
+
+  async getDetallesDonacion(){
+    return this.prismaService.casoDonacion.findMany()
+  }
+   
   
 }
