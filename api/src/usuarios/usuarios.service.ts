@@ -187,6 +187,45 @@ async obtenerSolicitudesDelUsuario(usuarioId: string){
       },
     },
   });
+
 }
 
+  async toggleFavorito(userId: string, casoId: string) {
+
+    const favorito = await this.prisma.favorito.findUnique({
+      where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } },
+    })
+
+    if(favorito){
+
+      await this.prisma.favorito.delete({where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } }})
+
+      return { message: 'Eliminado de favoritos' };
+    }
+
+    await this.prisma.favorito.create({
+      data: {usuarioId: userId, casoId: casoId}
+    })
+
+    return { message: 'Agregado a favoritos' };
+
+  }
+
+  async obtenerFavoritosDelUsuario(usuarioId: string) {
+    return await this.prisma.favorito.findMany({
+      where: { usuarioId },
+      include: {
+        caso: {
+          include: {
+            mascota: {
+              select: { nombre: true, imagenes: { select: { url: true } } },
+            },
+            ong: {
+              select: { nombre: true },
+            },
+          },
+        },
+      },
+    });
+  }
 }
