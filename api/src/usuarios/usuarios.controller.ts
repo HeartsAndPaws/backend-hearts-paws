@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UseInterceptors, UploadedFile, Get, ParseUUIDPipe, UseGuards, Req, Patch, Body, BadRequestException, Delete, Query } from '@nestjs/common';
+import { Controller, Post, Param, UseInterceptors, UploadedFile, Get, ParseUUIDPipe, UseGuards, Req, Patch, Body, BadRequestException, Delete, Query, Put } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -13,7 +13,7 @@ import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 
 
 @ApiTags('Usuarios')
-@UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+//@UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
 @ApiBearerAuth()
 @Controller('usuarios')
 export class UsuariosController {
@@ -72,6 +72,13 @@ export class UsuariosController {
     return await this.usuariosService.usuarioPorId(id);
   }
 
+  @Get('favoritos/:usuarioId')
+  obetnerFavoritos(@Param('usuarioId') usuarioId: string){
+
+    return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId)
+
+  }
+
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cambia los datos del usuario' })
@@ -124,4 +131,9 @@ export class UsuariosController {
     return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url)
   }
 
+  @Put(':userId/favoritos/:casoId')
+  toggleFavorito(@Param('userId', ParseUUIDPipe) userId: string, @Param('casoId', ParseUUIDPipe) casoId: string) {
+    return this.usuariosService.toggleFavorito(userId, casoId);
+
+  }
 }
