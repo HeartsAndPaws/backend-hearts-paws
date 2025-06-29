@@ -41,22 +41,6 @@ async function main() {
         },
     });
 
-    // Usuario adicional para variedad
-    const usuario2 = await prisma.usuario.upsert({
-        where: { email: 'carlos@example.com' },
-        update: {},
-        create: {
-            nombre: 'Carlos Gómez',
-            email: 'carlos@example.com',
-            contrasena: await bcrypt.hash('carlos123', 10),
-            telefono: '+5491166778899',
-            direccion: 'Calle Flores 456',
-            ciudad: 'Rosario',
-            pais: 'Argentina',
-            rol: Rol.USUARIO,
-        },
-    });
-
     const admin = await prisma.usuario.upsert({
         where: { email: 'admin@heartsandpaws.com' },
         update: {},
@@ -207,89 +191,35 @@ async function main() {
         casoDonacionMichi = existingCasoDonacion;
     }
 
-    // Agrega caso de donación para Luna si no existe
-    let casoDonacionLuna = await prisma.caso.findFirst({
-        where: { titulo: 'Ayuda a Luna' },
-    });
-
-    if (!casoDonacionLuna) {
-        casoDonacionLuna = await prisma.caso.create({
-            data: {
-                titulo: 'Ayuda a Luna',
-                descripcion: 'Luna necesita ayuda médica.',
-                tipo: TipoCaso.DONACION,
-                mascotaId: mascota1.id,
-                ongId: ong1.id,
-            }
-        });
-
-        await prisma.casoDonacion.create({
-            data: {
-                casoId: casoDonacionLuna.id,
-                metaDonacion: 80000,
-                estadoDonacion: 12000,
-            }
-        });
-    }
-
-    // === DONACIONES DE PRUEBA (Stripe-like) ===
+    // === Favoritos ESENCIALES (sin variedad) ===
+    // Caso Donación de Michi
     const casoDonacionMichiObj = await prisma.casoDonacion.findFirst({
         where: { casoId: casoDonacionMichi.id }
     });
-    const casoDonacionLunaObj = await prisma.casoDonacion.findFirst({
-        where: { casoId: casoDonacionLuna.id }
-    });
 
-    // 1. Donación a Michi (ONG2) por usuario1
     if (casoDonacionMichiObj) {
-        await prisma.donacion.upsert({
-            where: { comprobante: 'cs_test_1234567890A' },
+        await prisma.favorito.upsert({
+            where: {
+                usuarioId_casoId: { usuarioId: usuario1.id, casoId: casoDonacionMichi.id }
+            },
             update: {},
             create: {
                 usuarioId: usuario1.id,
-                organizacionId: ong2.id,
-                mascotaId: mascota2.id,
-                monto: 10000,
-                comprobante: 'cs_test_1234567890A',
-                estadoPago: 'paid',
-                stripeSessionId: 'cs_test_1234567890A',
-                referenciaPago: 'pi_test_abc123',
-                casoDonacionId: casoDonacionMichiObj.id,
-            }
-        });
-        // 2. Donación a Michi (ONG2) por usuario2
-        await prisma.donacion.upsert({
-            where: { comprobante: 'cs_test_1234567890B' },
-            update: {},
-            create: {
-                usuarioId: usuario2.id,
-                organizacionId: ong2.id,
-                mascotaId: mascota2.id,
-                monto: 20000,
-                comprobante: 'cs_test_1234567890B',
-                estadoPago: 'paid',
-                stripeSessionId: 'cs_test_1234567890B',
-                referenciaPago: 'pi_test_def456',
-                casoDonacionId: casoDonacionMichiObj.id,
+                casoId: casoDonacionMichi.id
             }
         });
     }
 
-    // 3. Donación a Luna (ONG1) por usuario2
-    if (casoDonacionLunaObj) {
-        await prisma.donacion.upsert({
-            where: { comprobante: 'cs_test_1234567890C' },
+    // Si quieres probar con el de adopción también (opcional)
+    if (casoAdopcionLuna) {
+        await prisma.favorito.upsert({
+            where: {
+                usuarioId_casoId: { usuarioId: usuario1.id, casoId: casoAdopcionLuna.id }
+            },
             update: {},
             create: {
-                usuarioId: usuario2.id,
-                organizacionId: ong1.id,
-                mascotaId: mascota1.id,
-                monto: 6000,
-                comprobante: 'cs_test_1234567890C',
-                estadoPago: 'paid',
-                stripeSessionId: 'cs_test_1234567890C',
-                referenciaPago: 'pi_test_ghi789',
-                casoDonacionId: casoDonacionLunaObj.id,
+                usuarioId: usuario1.id,
+                casoId: casoAdopcionLuna.id
             }
         });
     }

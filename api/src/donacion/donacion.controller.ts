@@ -28,4 +28,16 @@ export class DonacionController {
     return this.donacionService.getDonacionById(id);
   }
 
+  @Get('detalleDonacion/:CasoId')
+  getDetalleDonacionByCasoId(@Param('CasoId') CasoId: string) {
+    return this.donacionService.getDetalleDonacionByCasoId(CasoId);
+  }
+
+  @Get('detalle/donaciones')
+  getDetallesDonacion(){
+
+    return this.donacionService.getDetallesDonacion();
+
+  }
+
 }
