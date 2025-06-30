@@ -45,10 +45,13 @@ export class AuthController {
 
         const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
 
+        const origin = res.req.headers.origin || '';
+        const isLocal = origin.includes('localhost')
+
           res.cookie('authToken', token, {
             httpOnly: true, 
-            sameSite: isProduction ? 'none' : 'lax',
-            secure: isProduction,
+            sameSite: isLocal ? 'lax' : 'none',
+            secure: !isLocal,
             maxAge: 1000 * 60 * 60 * 24,
             path: '/',
   });
