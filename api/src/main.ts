@@ -18,7 +18,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const corsOrigins = configService.get<string>('CORS_ORIGINS')?.split('') || [];
+  const corsOrigins = configService.get<string>('CORS_ORIGINS')?.split(',') || [];
 
   // Middleware especial para Stripe Webhook (RAW BODY)
   app.use((req, res, next) => {
