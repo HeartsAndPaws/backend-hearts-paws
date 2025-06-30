@@ -17,7 +17,12 @@ async function bootstrap() {
   app.useWebSocketAdapter(new CustomSocketIoAdapter(app));
 
   const configService = app.get(ConfigService);
-  const corsOrigins = configService.get<string>('CORS_ORIGINS')?.split(',') || [];
+
+  const rawCorsOrigins = configService.get<string>('CORS_ORIGINS') || '';
+  const corsOrigins = rawCorsOrigins
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
 
   // Middleware especial para Stripe Webhook (RAW BODY)
   app.use((req, res, next) => {
@@ -40,10 +45,16 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: corsOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    origin: (origin, callback) => {
+      if (!origin || corsOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback( new Error(`Origen no permitido por CORS: ${origin}`));
+      }
+    },
     credentials: true,
-  });
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+  })
 
 
   // Swagger
