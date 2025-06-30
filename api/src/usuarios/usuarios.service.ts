@@ -36,6 +36,11 @@ export class UsuariosService {
           email: true,
           rol: true,
           imagenPerfil: true,
+          telefono: true,
+          direccion: true,
+          ciudad: true,
+          pais: true,
+          creado_en: true,
         },
       });
   
@@ -152,7 +157,11 @@ async obtenerDonacionesDelUsuarioAutenticado( usuarioId: string){
         select: { nombre: true},
       },
       mascota: {
-        select: { nombre: true,
+        select: { 
+          nombre: true,
+          imagenes: {
+            select: { url: true},
+          },
           casos: {
             select: { descripcion: true,}
           },
