@@ -61,13 +61,21 @@ export class ServicioAut {
 
 
   async ingreso(email: string, contrasena: string) {
+    console.log('📥 Email recibido:', email);
+    console.log('🔑 Contraseña recibida:', contrasena);
+
     const usuarioEncontrado = await this.prisma.usuario.findUnique({
       where: { email },
     });
 
+    console.log('👤 Usuario encontrado:', usuarioEncontrado);
+
     if (!usuarioEncontrado) {
+      console.log('❌ No se encontró el usuario con ese email.');
       throw new UnauthorizedException('Credenciales incorrectas');
     }
+
+    console.log('🧂 Contraseña hasheada en BD:', usuarioEncontrado.contrasena);
 
     const isValidPassword = await bcrypt.compare(
       contrasena,
@@ -75,6 +83,7 @@ export class ServicioAut {
     );
 
     if (!isValidPassword) {
+      console.log('❌ Contraseña incorrecta')
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
@@ -87,6 +96,8 @@ export class ServicioAut {
     };
 
     const token = this.jwtService.sign(userPayload);
+
+    console.log('✅ Login exitoso, generando token:', token);
 
     return { 
       ok: 'Usuario logueado exitosamente', 
