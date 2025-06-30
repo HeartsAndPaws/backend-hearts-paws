@@ -38,6 +38,8 @@ export class OrganizacionesController {
     return await this.organizacionesService.listarRechazadas();
   }
 
+  @UseGuards(AuthGuard('jwt-local'), RolesGuard)
+  @Roles('ADMIN')
   @Get('aprobadas/total')
   async contarOngsAprobadas(){
     return await this.organizacionesService.contarAprobadas();
