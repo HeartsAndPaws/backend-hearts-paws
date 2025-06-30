@@ -18,15 +18,13 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-
 @ApiTags('Autenticación')
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private readonly servicioAuth: ServicioAut,
-        private readonly cloudinaryService: CloudinaryService
-    ) {}
-
+  constructor(
+    private readonly servicioAuth: ServicioAut,
+    private readonly cloudinaryService: CloudinaryService
+  ) {}
 
   @Post('ingreso')
   @HttpCode(200)
@@ -34,48 +32,47 @@ export class AuthController {
   @ApiOperation({ summary: 'Ingreso de usuario' })
   @ApiOkResponse({ description: 'Usuario autenticado exitosamente' })
   @ApiBody({ type: DatosDeIngresoDto })
-
   async ingreso(
-    @Res({ passthrough: true }) res: Response, 
-    @Body() credenciales: DatosDeIngresoDto){
-      const { email, contrasena } = credenciales
+    @Res({ passthrough: true }) res: Response,
+    @Body() credenciales: DatosDeIngresoDto
+  ) {
+    const { email, contrasena } = credenciales;
+    if (!email || !contrasena) {
+      return 'Las credenciales son necesarias';
+    } else {
+      const respuesta = await this.servicioAuth.ingreso(email, contrasena);
+      const token = respuesta.token;
+      const origin = res.req.headers.origin || '';
+      const isLocal = origin.includes('localhost');
 
-      if(!email || !contrasena){
-        return 'Las credenciales son necesarias'
-      }else{
-        const respuesta = await this.servicioAuth.ingreso(email, contrasena)
-        const token = respuesta.token
-
-          res.cookie('authToken', token, {
-            httpOnly: true, 
-            sameSite:'lax',
-            secure: process.env.NODE_ENV === 'staging',
-            maxAge: 1000 * 60 * 60 * 24,
-            path: '/',
-  });
-        return { 
-          ok: true,
-          mensaje: respuesta.ok,
-          usuario: respuesta.usuario,
-        }
-
+      res.cookie('authToken', token, {
+        httpOnly: true,
+        sameSite: isLocal ? 'lax' : 'none',
+        secure: !isLocal,
+        maxAge: 1000 * 60 * 60 * 24,
+        path: '/',
+      });
+      return {
+        ok: true,
+        mensaje: respuesta.ok,
+        usuario: respuesta.usuario,
+      };
     }
   }
 
-
   @Post('cerrarSesion')
-  async logout (@Res({ passthrough: true}) res: Response){
+  async logout(@Res({ passthrough: true }) res: Response) {
+    const origin = res.req.headers.origin || '';
+    const isLocal = origin.includes('localhost');
 
     res.clearCookie('authToken', {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'staging',
+      sameSite: isLocal ? 'lax' : 'none',
+      secure: !isLocal,
       path: '/',
     });
-
-    return {ok: true, mensaje: 'Sesión cerrada'};
+    return { ok: true, mensaje: 'Sesión cerrada' };
   }
-
 
   @Post('organizaciones/ingreso')
   @HttpCode(200)
@@ -84,77 +81,75 @@ export class AuthController {
   @ApiOkResponse({ description: 'Organización autenticada exitosamente' })
   @ApiBody({ type: DatosIngresoOrganizacionDto })
   async ingresoOrganizacion(
-    @Res({passthrough: true}) res: Response,
+    @Res({ passthrough: true }) res: Response,
     @Body() datos: DatosIngresoOrganizacionDto
-  ){
+  ) {
     const { email, contrasena } = datos;
-
     if (!email || !contrasena) {
       throw new BadRequestException('Las credenciales son necesarias');
     }
-
     const respuesta = await this.servicioAuth.ingresoOrganizacion(email, contrasena);
-    const token = respuesta.token
-
+    const token = respuesta.token;
+    const origin = res.req.headers.origin || '';
+    const isLocal = origin.includes('localhost');
 
     res.cookie('authToken', token, {
-      httpOnly:true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'staging',
+      httpOnly: true,
+      sameSite: isLocal ? 'lax' : 'none',
+      secure: !isLocal,
       maxAge: 1000 * 60 * 60 * 24,
       path: '/',
     });
-
     return {
-      ok:true,
+      ok: true,
       mensaje: respuesta.ok,
-      organizacion: respuesta.organizacion
-    }
-  
+      organizacion: respuesta.organizacion,
+    };
   }
-
 
   @Post('registro')
   @HttpCode(201)
   @ApiOperation({ summary: 'Registro de nuevo usuario' })
-
   @ApiCreatedResponse({ description: 'Usuario creado exitosamente' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-  description: 'Formulario con datos del usuario y una imagen opcional',
-  schema: {
-    type: 'object',
-    properties: {
-      nombre: { type: 'string', example: 'Juan Pérez' },
-      email: { type: 'string', format: 'email', example: 'juan@example.com' },
-      contrasena: { type: 'string', minLength: 8, example: 'Contrasena123!' },
-      telefono: { type: 'string', example: '3201234567' },
-      direccion: { type: 'string', example: 'Calle 123 #45-67' },
-      ciudad: { type: 'string', example: 'Bogotá' },
-      pais: { type: 'string', example: 'Colombia' },
-      imagenPerfil: {
-        type: 'string',
-        format: 'binary',
+    description: 'Formulario con datos del usuario y una imagen opcional',
+    schema: {
+      type: 'object',
+      properties: {
+        nombre: { type: 'string', example: 'Juan Pérez' },
+        email: { type: 'string', format: 'email', example: 'juan@example.com' },
+        contrasena: { type: 'string', minLength: 8, example: 'Contrasena123!' },
+        telefono: { type: 'string', example: '3201234567' },
+        direccion: { type: 'string', example: 'Calle 123 #45-67' },
+        ciudad: { type: 'string', example: 'Bogotá' },
+        pais: { type: 'string', example: 'Colombia' },
+        imagenPerfil: { type: 'string', format: 'binary' },
       },
+      required: [
+        'nombre',
+        'email',
+        'contrasena',
+        'telefono',
+        'direccion',
+        'ciudad',
+        'pais',
+      ],
     },
-    required: ['nombre', 'email', 'contrasena', 'telefono', 'direccion', 'ciudad', 'pais'],
-  },
-})
+  })
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'imagenPerfil', maxCount: 1 }]),
   )
   async registro(
-    @UploadedFiles() files: {
-      imagenPerfil?: Express.Multer.File[],
-    },
-    @Body() datosDeUsuario: NuevoUsuarioDto) {
-      
-      const imagenPerfil = files?.imagenPerfil?.[0];
-      let imagenPerfilUrl: string | undefined = undefined;
+    @UploadedFiles() files: { imagenPerfil?: Express.Multer.File[] },
+    @Body() datosDeUsuario: NuevoUsuarioDto
+  ) {
+    const imagenPerfil = files?.imagenPerfil?.[0];
+    let imagenPerfilUrl: string | undefined = undefined;
 
-      if (imagenPerfil) {
-        imagenPerfilUrl = (await this.cloudinaryService.subirIamgen(imagenPerfil)).secure_url;
-      }
+    if (imagenPerfil) {
+      imagenPerfilUrl = (await this.cloudinaryService.subirIamgen(imagenPerfil)).secure_url;
+    }
 
     if (!datosDeUsuario) {
       throw new BadRequestException('Faltan datos');
@@ -162,62 +157,58 @@ export class AuthController {
 
     return this.servicioAuth.registro({
       ...datosDeUsuario,
-      imagenPerfil: imagenPerfilUrl
-    })
+      imagenPerfil: imagenPerfilUrl,
+    });
   }
 
   @Post('registro-ong')
-  @UseInterceptors(FileFieldsInterceptor([
-    {name: 'archivoVerificacionUrl', maxCount: 1},
-    {name: 'imagenPerfil', maxCount: 1},
-  ]))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'archivoVerificacionUrl', maxCount: 1 },
+      { name: 'imagenPerfil', maxCount: 1 },
+    ]),
+  )
   @ApiOperation({ summary: 'Registro de organización con archivo y foto' })
   @ApiCreatedResponse({ description: 'Organización creada exitosamente' })
   @ApiBody({
-  description: 'Formulario con datos de la organización, PDF y una imagen opcional',
-  type: 'object',
-  required: true,
-  schema: {
+    description: 'Formulario con datos de la organización, PDF y una imagen opcional',
     type: 'object',
-    properties: {
-      nombre: { type: 'string' },
-      email: { type: 'string', format: 'email' },
-      contrasena: { type: 'string', minLength: 6 },
-      descripcion: { type: 'string' },
-      telefono: { type: 'string' },
-      direccion: { type: 'string' },
-      ciudad: { type: 'string' },
-      pais: { type: 'string' },
-      archivoVerificacionUrl: {
-        type: 'string',
-        format: 'binary',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        nombre: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        contrasena: { type: 'string', minLength: 6 },
+        descripcion: { type: 'string' },
+        telefono: { type: 'string' },
+        direccion: { type: 'string' },
+        ciudad: { type: 'string' },
+        pais: { type: 'string' },
+        archivoVerificacionUrl: { type: 'string', format: 'binary' },
+        imagenPerfil: { type: 'string', format: 'binary' },
       },
-      imagenPerfil: {
-        type: 'string',
-        format: 'binary',
-      },
+      required: [
+        'nombre',
+        'email',
+        'contrasena',
+        'descripcion',
+        'telefono',
+        'direccion',
+        'ciudad',
+        'pais',
+        'archivoVerificacionUrl',
+      ],
     },
-    required: [
-      'nombre',
-      'email',
-      'contrasena',
-      'descripcion',
-      'telefono',
-      'direccion',
-      'ciudad',
-      'pais',
-      'archivoVerificacionUrl',
-    ],
-  },
-})
+  })
   @ApiConsumes('multipart/form-data')
   async crearOrganizacion(
     @UploadedFiles() files: {
-      archivoVerificacionUrl?: Express.Multer.File[],
-      imagenPerfil?: Express.Multer.File[],
+      archivoVerificacionUrl?: Express.Multer.File[];
+      imagenPerfil?: Express.Multer.File[];
     },
-    @Body() data: NuevaOrganizacionDto,
-  ){
+    @Body() data: NuevaOrganizacionDto
+  ) {
     const archivoVerificacion = files?.archivoVerificacionUrl?.[0];
     const imagenPerfil = files?.imagenPerfil?.[0];
 
@@ -226,7 +217,7 @@ export class AuthController {
     }
 
     if (archivoVerificacion.mimetype !== 'application/pdf') {
-      throw new BadRequestException('El archivo debe ser PDF')
+      throw new BadRequestException('El archivo debe ser PDF');
     }
 
     const uploadResult = await this.cloudinaryService.subirPdf(archivoVerificacion);
@@ -238,11 +229,10 @@ export class AuthController {
       imagenPerfilUrl = (await this.cloudinaryService.subirIamgen(imagenPerfil)).secure_url;
     }
 
-
     return this.servicioAuth.crearOrganizacion({
       ...data,
       archivoVerificacionUrl,
-      imagenPerfil: imagenPerfilUrl
-    })
+      imagenPerfil: imagenPerfilUrl,
+    });
   }
 }
