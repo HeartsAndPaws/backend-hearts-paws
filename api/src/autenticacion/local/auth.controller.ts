@@ -49,7 +49,7 @@ export class AuthController {
           res.cookie('authToken', token, {
             httpOnly: true, 
             sameSite:'lax',
-            secure: false,
+            secure: process.env.NODE_ENV === 'staging',
             maxAge: 1000 * 60 * 60 * 24,
             path: '/',
   });
@@ -69,7 +69,7 @@ export class AuthController {
     res.clearCookie('authToken', {
       httpOnly: true,
       sameSite: 'lax',
-      secure: false,
+      secure: process.env.NODE_ENV === 'staging',
       path: '/',
     });
 
@@ -100,7 +100,7 @@ export class AuthController {
     res.cookie('authToken', token, {
       httpOnly:true,
       sameSite: 'lax',
-      secure: false,
+      secure: process.env.NODE_ENV === 'staging',
       maxAge: 1000 * 60 * 60 * 24,
       path: '/',
     });

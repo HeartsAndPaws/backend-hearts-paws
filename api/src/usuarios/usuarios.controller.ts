@@ -72,11 +72,10 @@ export class UsuariosController {
     return await this.usuariosService.usuarioPorId(id);
   }
 
+
   @Get('favoritos/casos/:usuarioId')
   obetnerFavoritos(@Param('usuarioId') usuarioId: string){
-
     return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId)
-
   }
 
 
