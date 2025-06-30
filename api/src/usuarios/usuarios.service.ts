@@ -3,7 +3,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { ActualizarUsuarioDTO } from './dto/ActualizarUsuario.dto';
 import { Rol } from '@prisma/client';
-import { contains } from 'class-validator';
 
 
 @Injectable()
