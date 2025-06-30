@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EstadoAdopcion } from '@prisma/client';
@@ -81,18 +81,22 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   // }
 
   async verSolicitudesPorCasoDeAdopcion(id: string) {
-  return await this.prisma.casoAdopcion.findUnique({
+  const casoAdopcion = await this.prisma.casoAdopcion.findUnique({
     where: {
       id,
     },
     include: {
       solicitudes: {
-        include: {
-          usuario: true,
-        },
+        include: { usuario: true,},
       },
     },
   });
+
+  if (!casoAdopcion) {
+    throw new NotFoundException(`No se encontró el caso de adopción para el caso con ID ${id}`);
+  }
+  
+  return casoAdopcion.solicitudes;
 }
 
 async cambiarEstado(idDelCasoAdopcion: string, idDeSolicitudAceptada, estadoNuevo: EstadoAdopcion) {

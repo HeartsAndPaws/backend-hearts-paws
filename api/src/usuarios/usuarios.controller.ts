@@ -13,7 +13,7 @@ import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 
 
 @ApiTags('Usuarios')
-@UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+@UseGuards(AuthGuard(['jwt-local', 'supabase']) ,RolesGuard)
 @ApiBearerAuth()
 @Controller('usuarios')
 export class UsuariosController {
@@ -72,11 +72,10 @@ export class UsuariosController {
     return await this.usuariosService.usuarioPorId(id);
   }
 
+
   @Get('favoritos/casos/:usuarioId')
   obetnerFavoritos(@Param('usuarioId') usuarioId: string){
-
     return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId)
-
   }
 
 

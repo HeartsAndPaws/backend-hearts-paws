@@ -35,8 +35,11 @@ export class AuthController {
   @ApiOkResponse({ description: 'Usuario autenticado exitosamente' })
   @ApiBody({ type: DatosDeIngresoDto })
 
-  async ingreso(@Res({ passthrough: true }) res: Response, @Body() credenciales: DatosDeIngresoDto){
+  async ingreso(
+    @Res({ passthrough: true }) res: Response, 
+    @Body() credenciales: DatosDeIngresoDto){
       const { email, contrasena } = credenciales
+
       if(!email || !contrasena){
         return 'Las credenciales son necesarias'
       }else{
@@ -66,18 +69,16 @@ export class AuthController {
 
 
   @Post('cerrarSesion')
-  async logout (@Res() res: Response){
-    const isProduction = ['production', 'staging'].includes(process.env.NODE_ENV || '');
-
+  async logout (@Res({ passthrough: true}) res: Response){
 
     res.clearCookie('authToken', {
       httpOnly: true,
-      sameSite: isProduction ? 'none' : 'lax',
-      secure: isProduction,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'staging',
       path: '/',
     });
 
-    return res.status(200).json({ok: true, mensaje: 'Sesión cerrada'});
+    return {ok: true, mensaje: 'Sesión cerrada'};
   }
 
 
@@ -100,13 +101,13 @@ export class AuthController {
     const respuesta = await this.servicioAuth.ingresoOrganizacion(email, contrasena);
     const token = respuesta.token
 
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
 
     res.cookie('authToken', token, {
       httpOnly:true,
-      sameSite: isProduction ? 'none' : 'lax',
-      secure: isProduction,
-      maxAge: 1000 * 60 * 60 * 24
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'staging',
+      maxAge: 1000 * 60 * 60 * 24,
+      path: '/',
     });
 
     return {

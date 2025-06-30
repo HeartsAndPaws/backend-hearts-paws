@@ -17,6 +17,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new CustomSocketIoAdapter(app));
 
   const configService = app.get(ConfigService);
+
   const corsOrigins = configService.get<string>('CORS_ORIGINS')?.split(',') || [];
 
   // Middleware especial para Stripe Webhook (RAW BODY)
@@ -43,7 +44,7 @@ async function bootstrap() {
     origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
-  });
+  })
 
 
   // Swagger
