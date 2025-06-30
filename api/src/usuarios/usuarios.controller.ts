@@ -13,7 +13,7 @@ import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 
 
 @ApiTags('Usuarios')
-@UseGuards(RolesGuard)
+@UseGuards(AuthGuard(['jwt-local', 'supabase']) ,RolesGuard)
 @ApiBearerAuth()
 @Controller('usuarios')
 export class UsuariosController {
