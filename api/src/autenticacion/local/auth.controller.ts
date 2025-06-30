@@ -35,21 +35,20 @@ export class AuthController {
   @ApiOkResponse({ description: 'Usuario autenticado exitosamente' })
   @ApiBody({ type: DatosDeIngresoDto })
 
-  async ingreso(
-    @Res({ passthrough: true }) res: Response, 
-    @Body() credenciales: DatosDeIngresoDto){
+  async ingreso(@Res({ passthrough: true }) res: Response, @Body() credenciales: DatosDeIngresoDto){
       const { email, contrasena } = credenciales
-
       if(!email || !contrasena){
         return 'Las credenciales son necesarias'
       }else{
         const respuesta = await this.servicioAuth.ingreso(email, contrasena)
         const token = respuesta.token
 
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
+
           res.cookie('authToken', token, {
             httpOnly: true, 
-            sameSite:'lax',
-            secure: process.env.NODE_ENV === 'staging',
+            sameSite: isProduction ? 'none' : 'lax',
+            secure: isProduction,
             maxAge: 1000 * 60 * 60 * 24,
             path: '/',
   });
@@ -64,16 +63,18 @@ export class AuthController {
 
 
   @Post('cerrarSesion')
-  async logout (@Res({ passthrough: true}) res: Response){
+  async logout (@Res() res: Response){
+    const isProduction = ['production', 'staging'].includes(process.env.NODE_ENV || '');
+
 
     res.clearCookie('authToken', {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'staging',
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
       path: '/',
     });
 
-    return {ok: true, mensaje: 'Sesión cerrada'};
+    return res.status(200).json({ok: true, mensaje: 'Sesión cerrada'});
   }
 
 
@@ -96,13 +97,13 @@ export class AuthController {
     const respuesta = await this.servicioAuth.ingresoOrganizacion(email, contrasena);
     const token = respuesta.token
 
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging'
 
     res.cookie('authToken', token, {
       httpOnly:true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'staging',
-      maxAge: 1000 * 60 * 60 * 24,
-      path: '/',
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
+      maxAge: 1000 * 60 * 60 * 24
     });
 
     return {
