@@ -69,10 +69,10 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
 
 
 
-  async verSolicitudesPorCasoDeAdopcion(casoId: string) {
+  async verSolicitudesPorCasoDeAdopcion(id: string) {
   const casoAdopcion = await this.prisma.casoAdopcion.findUnique({
     where: {
-      casoId,
+      id,
     },
     include: {
       solicitudes: {
@@ -82,8 +82,9 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   });
 
   if (!casoAdopcion) {
-    throw new NotFoundException(`No se encontró el caso de adopción para el caso con ID ${casoId}`);
+    throw new NotFoundException(`No se encontró el caso de adopción para el caso con ID ${id}`);
   }
+  
   return casoAdopcion.solicitudes;
 }
 
