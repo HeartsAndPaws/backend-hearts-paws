@@ -20,7 +20,8 @@ export class OrganizacionesController {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-
+  @UseGuards(AuthGuard('jwt-local'), RolesGuard)
+  @Roles('ADMIN')
   @Get()
   @ApiOperation({ summary: 'Obtener todas las organizaciones' })
   @ApiResponse({ status: 200, description: 'Lista de organizaciones' })
@@ -38,6 +39,8 @@ export class OrganizacionesController {
     return await this.organizacionesService.listarRechazadas();
   }
 
+  @UseGuards(AuthGuard('jwt-local'), RolesGuard)
+  @Roles('ADMIN')
   @Get('aprobadas/total')
   async contarOngsAprobadas(){
     return await this.organizacionesService.contarAprobadas();

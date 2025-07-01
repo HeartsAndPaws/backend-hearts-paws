@@ -29,10 +29,21 @@ model Usuario {
   externalId   String?  @unique 
 
   // Relaciones
+  favoritos Favorito[]
   donaciones Donacion[]
   solicitudesAdopcion SolicitudDeAdopcion[]
   chats      Chat[]     @relation("UsuarioChats")
   mensajes   Mensaje[]  @relation("UsuarioMensajes")
+}
+
+model Favorito {
+  id         String   @id @default(uuid())
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId  String
+  caso       Caso     @relation(fields: [casoId], references: [id])
+  casoId     String
+
+  @@unique([usuarioId, casoId]) 
 }
 
 model Organizacion {
@@ -85,6 +96,7 @@ model Caso {
   creado_en DateTime @default(now())
 
   // Relaciones con subtipos
+  favoritos   Favorito[]
   adopcion    CasoAdopcion?
   donacion    CasoDonacion?
 }
