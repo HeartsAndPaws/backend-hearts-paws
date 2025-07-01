@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UseInterceptors, UploadedFile, UploadedFiles, Body, BadRequestException, Get, Patch, Delete, UseGuards, Req, ParseUUIDPipe, Res } from '@nestjs/common';
+import { Controller, Post, Param, UseInterceptors, UploadedFile, Body, Get, Patch, UseGuards, Req, ParseUUIDPipe, Res, Query } from '@nestjs/common';
 import { OrganizacionesService } from './organizaciones.service';
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
@@ -10,7 +10,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
 import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiParam, ApiConsumes, ApiBody, ApiExtraModels } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 @ApiTags('Organizaciones')
 @Controller('organizaciones')
@@ -20,23 +20,30 @@ export class OrganizacionesController {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+
   @UseGuards(AuthGuard('jwt-local'), RolesGuard)
   @Roles('ADMIN')
   @Get()
   @ApiOperation({ summary: 'Obtener todas las organizaciones' })
   @ApiResponse({ status: 200, description: 'Lista de organizaciones' })
-  async obtenerTodas() {
-    return this.organizacionesService.listarTodas();
+  async obtenerTodas(@Query() query: any) {
+    return this.organizacionesService.listarTodas(query);
   }
 
+
+  @UseGuards(AuthGuard('jwt-local'), RolesGuard)
+  @Roles('ADMIN')
   @Get('aprobadas')
-  async obtenerAprobadas(){
-    return await this.organizacionesService.listarAprobadas();
+  async obtenerAprobadas(@Query() query: any){
+    return await this.organizacionesService.listarAprobadas(query);
   }
 
+
+  @UseGuards(AuthGuard('jwt-local'), RolesGuard)
+  @Roles('ADMIN')
   @Get('rechazadas')
-  async obtenerRechazadas(){
-    return await this.organizacionesService.listarRechazadas();
+  async obtenerRechazadas(@Query() query: any){
+    return await this.organizacionesService.listarRechazadas(query);
   }
 
   @UseGuards(AuthGuard('jwt-local'), RolesGuard)
@@ -56,6 +63,8 @@ export class OrganizacionesController {
   }
 
 
+  @UseGuards(AuthGuard('jwt-local'), RolesGuard)
+  @Roles('ADMIN')
   @Get(':id')
   @ApiOperation({ summary: 'Obtener organización por ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'UUID de la organización' })
@@ -64,6 +73,8 @@ export class OrganizacionesController {
     return this.organizacionesService.buscarPorId(id);
   }
 
+
+  @UseGuards(JwtAutCookiesGuardia)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de una organización' })
   @ApiParam({ name: 'id', type: 'string' })
@@ -71,15 +82,19 @@ export class OrganizacionesController {
   async actualizar(
     @Param('id') id: string,
     @Body() data: UpdateOrganizacioneDto,
+    @Req() req,
   ) {
+    if (req.user.id !== id) {
+      return { error: 'No autorizado'};
+    }
     return this.organizacionesService.actualizarDatosOng(id, data);
   }
 
 
   @Patch(':id/estado')
   @UseInterceptors(AnyFilesInterceptor())
-  // @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
-  // @Roles('ADMIN')
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cambiar estado de una organización (solo ADMIN)' })
   @ApiParam({ name: 'id', type: 'string' })
@@ -91,7 +106,8 @@ export class OrganizacionesController {
     return this.organizacionesService.actualizarEstado(id, estado);
   }
 
-
+  
+  @UseGuards(JwtAutCookiesGuardia)
   @Post(':id/foto')
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: filtroArchivoImagen,
@@ -115,11 +131,19 @@ export class OrganizacionesController {
   async subirFotoPerfil(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
+    @Req() req,
   ){
+    if (req.user.id !== id) {
+      return { error: 'No autorizado'};
+    }
+
     const subirImagen = await this.cloudinaryService.subirIamgen(file);
     return this.organizacionesService.actualizarFotoPerfil(id, subirImagen.secure_url);
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+  @Roles('ADMIN')
   @Get(':id/archivo-verificacion')
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Roles('ADMIN')
