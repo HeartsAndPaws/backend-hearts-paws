@@ -26,8 +26,13 @@ export class UsuariosController {
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Listar todos los usuarios' })
   @ApiResponse({ status: 200, description: 'Lista de usuarios obtenida correctamente' })
-  async obtenerUsuarios(@Query('rol') rol: Rol, @Query('pais') pais: string) {
-  return await this.usuariosService.listaDeUsuarios( {rol, pais} );
+  async obtenerUsuarios(
+    @Query('rol') rol: Rol, 
+    @Query('pais') pais: string,
+    @Query('email') email: string,
+    @Query('nombre') nombre: string
+  ) {
+  return await this.usuariosService.listaDeUsuarios( {rol, pais, email, nombre} );
 }
 
 
