@@ -33,12 +33,16 @@ export class SolicitudAdoptarController {
 //   return this.solicitudAdoptarService.filtroViviendaQdeMascotas(filtro.tipoVivienda, filtro.hayOtrasMascotas);
 // }
 
+@Patch()
+async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
+  const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;
 
-  @Patch()
-  cambiarEstado(@Body() datos: CambiarEstadoDto) {
-    const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos
-    return this.solicitudAdoptarService.cambiarEstado(idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo);
-  }
+  return this.solicitudAdoptarService.aceptarSolicitud(
+    idDelCasoAdopcion,
+    idDeSolicitudAceptada,
+    estadoNuevo,
+  );
+}
 
   @Delete(':id')
   borrarSolicitud(@Param('id') id: string) {
