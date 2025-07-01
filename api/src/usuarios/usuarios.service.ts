@@ -50,13 +50,20 @@ export class UsuariosService {
       return usuario;
     }
 
-      async listaDeUsuarios(filtros?: { rol?: Rol; pais?: string}) {
-        const { rol, pais } = filtros || {};
+    async listaDeUsuarios(filtros?: { 
+      rol?: Rol; 
+      pais?: string;
+      email?: string;
+      nombre?: string;
+    }) {
+      const { rol, pais, email, nombre } = filtros || {};
 
     return await this.prisma.usuario.findMany({
       where: {
         ...( rol ? { rol } : {}),
         ...( pais ? { pais: { contains: pais, mode: 'insensitive'}}: {}),
+        ...( email && { email: {contains: email, mode: 'insensitive'} }),
+        ...( nombre && { nombre: {contains: nombre, mode: 'insensitive'}}),
       },
       select: {
         id: true,
