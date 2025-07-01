@@ -3,7 +3,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { ActualizarUsuarioDTO } from './dto/ActualizarUsuario.dto';
 import { Rol } from '@prisma/client';
-import { contains } from 'class-validator';
 
 
 @Injectable()
@@ -36,6 +35,11 @@ export class UsuariosService {
           email: true,
           rol: true,
           imagenPerfil: true,
+          telefono: true,
+          direccion: true,
+          ciudad: true,
+          pais: true,
+          creado_en: true,
         },
       });
   
@@ -46,13 +50,20 @@ export class UsuariosService {
       return usuario;
     }
 
-      async listaDeUsuarios(filtros?: { rol?: Rol; pais?: string}) {
-        const { rol, pais } = filtros || {};
+    async listaDeUsuarios(filtros?: { 
+      rol?: Rol; 
+      pais?: string;
+      email?: string;
+      nombre?: string;
+    }) {
+      const { rol, pais, email, nombre } = filtros || {};
 
     return await this.prisma.usuario.findMany({
       where: {
         ...( rol ? { rol } : {}),
         ...( pais ? { pais: { contains: pais, mode: 'insensitive'}}: {}),
+        ...( email && { email: {contains: email, mode: 'insensitive'} }),
+        ...( nombre && { nombre: {contains: nombre, mode: 'insensitive'}}),
       },
       select: {
         id: true,
@@ -152,7 +163,11 @@ async obtenerDonacionesDelUsuarioAutenticado( usuarioId: string){
         select: { nombre: true},
       },
       mascota: {
-        select: { nombre: true,
+        select: { 
+          nombre: true,
+          imagenes: {
+            select: { url: true},
+          },
           casos: {
             select: { descripcion: true,}
           },
@@ -187,6 +202,45 @@ async obtenerSolicitudesDelUsuario(usuarioId: string){
       },
     },
   });
+
 }
 
+  async toggleFavorito(userId: string, casoId: string) {
+
+    const favorito = await this.prisma.favorito.findUnique({
+      where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } },
+    })
+
+    if(favorito){
+
+      await this.prisma.favorito.delete({where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } }})
+
+      return { message: 'Eliminado de favoritos' };
+    }
+
+    await this.prisma.favorito.create({
+      data: {usuarioId: userId, casoId: casoId}
+    })
+
+    return { message: 'Agregado a favoritos' };
+
+  }
+
+  async obtenerFavoritosDelUsuario(usuarioId: string) {
+    return await this.prisma.favorito.findMany({
+      where: { usuarioId },
+      include: {
+        caso: {
+          include: {
+            mascota: {
+              select: { nombre: true, imagenes: { select: { url: true } } },
+            },
+            ong: {
+              select: { nombre: true },
+            },
+          },
+        },
+      },
+    });
+  }
 }
