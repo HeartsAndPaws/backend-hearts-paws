@@ -28,17 +28,22 @@ export class SolicitudAdoptarController {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
   }
 
-//   @Get('filtrar')
-// filtrarSolicitudes(@Query() filtro: filtroViviendaQdeMascotasDto) {
-//   return this.solicitudAdoptarService.filtroViviendaQdeMascotas(filtro.tipoVivienda, filtro.hayOtrasMascotas);
-// }
-
-
-  @Patch()
-  cambiarEstado(@Body() datos: CambiarEstadoDto) {
-    const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos
-    return this.solicitudAdoptarService.cambiarEstado(idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo);
+  @Get('filtro')
+  filtrarSolicitudes(@Body() filtro: filtroViviendaQdeMascotasDto) {
+    const { casoAdopcionId, tipoVivienda, hayOtrasMascotas } = filtro
+    return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
   }
+
+@Patch()
+async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
+  const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;
+
+  return this.solicitudAdoptarService.aceptarSolicitud(
+    idDelCasoAdopcion,
+    idDeSolicitudAceptada,
+    estadoNuevo,
+  );
+}
 
   @Delete(':id')
   borrarSolicitud(@Param('id') id: string) {

@@ -60,4 +60,35 @@ Si no recibís el correo dentro del plazo estipulado, recordá revisar la carpet
         });
     }
 
+  async enviarEmailsNotificacionAdopcion(
+  emailsSolicitantes: string[],
+  emailAceptado: string,
+  nombreMascota: string,
+): Promise<void> {
+  const asunto = `Resolución de adopción - ${nombreMascota}`;
+
+  const mensajeAceptado = `¡Felicitaciones! Tu solicitud de adopción para ${nombreMascota} ha sido ACEPTADA. La organización se pondrá en contacto con vos para coordinar la entrega.`;
+  
+  const mensajeRechazado = `Lamentamos informarte que tu solicitud de adopción para ${nombreMascota} ha sido RECHAZADA. Agradecemos tu interés en adoptar y te animamos a seguir participando en otros casos.`;
+
+  // Email al adoptante aceptado
+  await this.enviarEMail({
+    to: emailAceptado,
+    subject: asunto,
+    text: mensajeAceptado,
+  });
+
+  // Emails a los rechazados
+  const rechazados = emailsSolicitantes.filter(email => email !== emailAceptado);
+  
+  await Promise.all(
+    rechazados.map(email =>
+      this.enviarEMail({
+        to: email,
+        subject: asunto,
+        text: mensajeRechazado,
+      }),
+    )
+  );
+}
 }
