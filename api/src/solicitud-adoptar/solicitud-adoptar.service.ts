@@ -48,9 +48,9 @@ export class SolicitudAdoptarService {
         solicitudes: {
           some: {
             estado: estado
-          }
-        }
-      }: undefined,
+          },
+        },
+      } : {},
       include: {
         caso: {
           include: {
@@ -64,6 +64,7 @@ export class SolicitudAdoptarService {
           },
         },
         solicitudes: {
+          where: estado ? { estado } : undefined, 
           include:{
             usuario: true,
           },

@@ -13,16 +13,18 @@ export class DonacionController {
   @Roles('ADMIN')
   @Get()
   async getAllDonaciones(
-    @Query('organizacionId') organizacionId?: string,
-    @Query('usuarioId') usuarioId?: string,
-    @Query('fechaDesde') fechaDesde?: string,
-    @Query('fechaHasta') fechaHasta?: string,
+    @Query('nombreUsuario') nombreUsuario?: string,
+    @Query('emailUsuario') emailUsuario?: string,
+    @Query('nombreOng') nombreOng?: string,
+    @Query('emailOng') emailOng?: string,
+    @Query('fecha') fecha?: string,
   ) {
     return await this.donacionService.getDonaciones({
-      organizacionId,
-      usuarioId,
-      fechaDesde,
-      fechaHasta,
+      nombreUsuario,
+      emailUsuario,
+      nombreOng,
+      emailOng,
+      fecha,
     });
   }
 
