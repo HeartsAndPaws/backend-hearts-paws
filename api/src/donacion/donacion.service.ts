@@ -9,28 +9,33 @@ export class DonacionService {
   constructor(private readonly prismaService: PrismaService){}
 
   async getDonaciones(filtros: {
-    organizacionId?: string;
-    usuarioId?: string;
-    fechaDesde?: string;
-    fechaHasta?: string;
+    nombreUsuario?: string;
+    emailUsuario?: string;
+    nombreOng?: string;
+    emailOng?: string;
+    fecha?: string; // YYYY-MM-DD
   }){
-    const { organizacionId, usuarioId, fechaDesde, fechaHasta } = filtros;
+    const { nombreUsuario, emailUsuario, nombreOng, emailOng, fecha } = filtros;
+
+    const fechaInicio = fecha ? new Date(`${fecha}T00:00:00Z`) : undefined;
+    const fechaFin = fecha ? new Date(`${fecha}T23:59:59Z`) : undefined;
 
     return this.prismaService.donacion.findMany({
       where: {
-        ...( organizacionId && { organizacionId }),
-        ...( usuarioId && { usuarioId }),
-        ...( fechaDesde && {
+        ...( fechaInicio && fechaFin && {
           fecha: {
-            gte: new Date( fechaDesde),
+            gte: fechaInicio,
+            lte: fechaFin,
           },
         }),
-        ...(fechaHasta && {
-          fecha: {
-            ...(fechaDesde ? { gte: new Date(fechaDesde)}: {}),
-            lte: new Date(fechaHasta),
-          },
-        }),
+        usuario: {
+          ...(nombreUsuario && { nombre: { contains: nombreUsuario, mode: 'insensitive' } }),
+          ...(emailUsuario && { email: { contains: emailUsuario, mode: 'insensitive' } }),
+        },
+        organizacion: {
+          ...(nombreOng && { nombre: { contains: nombreOng, mode: 'insensitive' } }),
+          ...(emailOng && { email: { contains: emailOng, mode: 'insensitive' } }),
+        }
       },
       include: {
         usuario: {
