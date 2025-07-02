@@ -158,24 +158,33 @@ export class UsuariosService {
 async obtenerDonacionesDelUsuarioAutenticado( usuarioId: string){
   return await this.prisma.donacion.findMany({
     where: { usuarioId },
-    include: {
+    select: {
+      id: true,
+      monto: true,
+      montoARS: true,
+      tasaCambio: true,
+      fecha: true,
+      estadoPago: true,
+      stripeSessionId: true,
+      referenciaPago: true,
       organizacion: {
         select: { nombre: true},
       },
       mascota: {
-        select: { 
+        select: {
           nombre: true,
           imagenes: {
             select: { url: true},
           },
           casos: {
-            select: { descripcion: true,}
+            select: { descripcion: true},
           },
         },
       },
     },
   });
 }
+
 
 async obtenerSolicitudesDelUsuario(usuarioId: string){
   return await this.prisma.solicitudDeAdopcion.findMany({
