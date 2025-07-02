@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsUUID, IsEnum, IsInt } from 'class-validator'
+import { IsString, IsOptional, IsUUID, IsEnum, IsInt, IsNumber } from 'class-validator'
 import { EstadoAdopcion } from '@prisma/client';
 
 export class SolicitudParaAdoptarDto {
@@ -22,8 +22,8 @@ export class SolicitudParaAdoptarDto {
   @IsOptional()
   hijos: number;
 
-  @IsString()
-  hayOtrasMascotas: string;
+  @IsNumber()
+  hayOtrasMascotas: number;
 
   @IsString()
   @IsOptional()
