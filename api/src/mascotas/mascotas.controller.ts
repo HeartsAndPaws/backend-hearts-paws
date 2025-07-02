@@ -1,22 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFiles, UseGuards } from '@nestjs/common';
 import { MascotasService } from './mascotas.service';
 import { CreateMascotaDto } from './dto/create-mascota.dto';
-import { UpdateMascotaDto } from './dto/update-mascota.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { TipoMascotaDto } from './dto/tipoMascota.dto';
-import { filtroViviendaQdeMascotasDto } from '../solicitud-adoptar/dtos/filtroViviendaQdeMascotas.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
+import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 
 @Controller('mascotas')
 export class MascotasController {
   constructor(private readonly mascotasService: MascotasService) {}
 
   
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+    @Roles('ADMIN')
     @Get()
     GetMascotas(){
-
       return this.mascotasService.GetMascotas();
-
     }
 
     @Get('mascotas-por-ong-adopcion/:ongId')
@@ -24,6 +25,9 @@ export class MascotasController {
       return this.mascotasService.mascotasEnAdopcionPorOng(ongId)
     }
 
+
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+    @Roles('ADMIN')
     @Get('total')
     async contarTotalMascotas(){
       return await this.mascotasService.contarMascotas();
