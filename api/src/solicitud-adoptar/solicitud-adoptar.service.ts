@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EstadoAdopcion } from '@prisma/client';
+import { MailerService } from 'src/shared/email/email-server.service';
+import { error } from 'console';
 
 @Injectable()
 export class SolicitudAdoptarService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailerService: MailerService
+  ) {}
   async crearSolicitud(solicitud: SolicitudParaAdoptarDto) {
     const { 
       usuarioId, 
@@ -42,8 +47,6 @@ export class SolicitudAdoptarService {
 
   }
 
-// En mascota.service.ts
-
 async obtenerMascotasConAdopcionPorOng(ongId: string) {
   return await this.prisma.mascota.findMany({
     where: {
@@ -67,18 +70,25 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   });
 }
 
-  // async filtroViviendaQdeMascotas(tipoVivienda: string, hayOtrasMascotas: string) {
-  //     return await this.prisma.solicitudDeAdopcion.findMany({
-  //   where: {
-  //     tipoVivienda,
-  //     hayOtrasMascotas,
-  //   },
-  //   include: {
-  //     usuario: true,
-  //     casoAdopcion: true,
-  //   },
-  // });
-  // }
+async filtroViviendaQdeMascotas(
+  casoAdopcionId: string,
+  tipoVivienda?: string,
+) {
+  return this.prisma.solicitudDeAdopcion.findMany({
+    where: {
+      casoAdopcionId,
+      ...(tipoVivienda && { tipoVivienda }),
+    },
+    orderBy: {
+      hayOtrasMascotas: 'asc', // Orden de menor a mayor
+    },
+    include: {
+      usuario: true,
+      casoAdopcion: true,
+    },
+  });
+}
+
 
   async verSolicitudesPorCasoDeAdopcion(id: string) {
   const casoAdopcion = await this.prisma.casoAdopcion.findUnique({
@@ -99,31 +109,82 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   return casoAdopcion.solicitudes;
 }
 
-async cambiarEstado(idDelCasoAdopcion: string, idDeSolicitudAceptada, estadoNuevo: EstadoAdopcion) {
-  // 1. Cambiar estado del CasoAdopcion
-  const adopcionActualizada = await this.prisma.casoAdopcion.update({
+async aceptarSolicitud(
+  idDelCasoAdopcion: string,
+  idDeSolicitudAceptada: string,
+  estadoNuevo: EstadoAdopcion,
+) {
+  // 1. Actualizar estado general del caso
+  await this.prisma.casoAdopcion.update({
     where: { id: idDelCasoAdopcion },
     data: { estado: estadoNuevo },
   });
 
-  // 2. Si se acepta, actualizar el resto de las solicitudes a RECHAZADA
   if (estadoNuevo === 'ACEPTADA') {
+    // 2. Obtener todas las solicitudes del caso (pendientes y aceptada)
+    const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
+      where: {
+        casoAdopcionId: idDelCasoAdopcion,
+      },
+      include: {
+        usuario: true,
+      },
+    });
+
+    // 3. Rechazar las demás solicitudes pendientes
     await this.prisma.solicitudDeAdopcion.updateMany({
       where: {
         casoAdopcionId: idDelCasoAdopcion,
         estado: 'PENDIENTE',
+        NOT: {
+          id: idDeSolicitudAceptada,
+        },
       },
       data: {
         estado: 'RECHAZADA',
       },
     });
-          await this.prisma.solicitudDeAdopcion.update({
-          where: {id: idDeSolicitudAceptada},
-          data: {estado: 'ACEPTADA'}
-  })
+
+    // 4. Aceptar la solicitud seleccionada
+    await this.prisma.solicitudDeAdopcion.update({
+      where: { id: idDeSolicitudAceptada },
+      data: { estado: 'ACEPTADA' },
+    });
+
+    // 5. Extraer correos y nombre de mascota
+    const listaDeCorreos = solicitudes.map(s => s.usuario.email);
+    const emailAceptado = solicitudes.find(s => s.id === idDeSolicitudAceptada)?.usuario.email;
+
+    // const nombreMascota = await this.obtenerNombreMascotaPorCasoAdopcion(idDelCasoAdopcion);
+
+    let mascotaEncontrada = await this.prisma.casoAdopcion.findUnique({
+      where: { id: idDelCasoAdopcion },
+      select: {
+        caso: {
+          select: {
+            mascota: {
+              select: {
+                nombre: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const nombreMascota = mascotaEncontrada?.caso?.mascota?.nombre;
+
+    // 6. Enviar correos
+    if (emailAceptado && listaDeCorreos.length && nombreMascota) {
+      await this.mailerService.enviarEmailsNotificacionAdopcion(
+        listaDeCorreos,
+        emailAceptado,
+        nombreMascota,
+      );
+    }
   }
 
-  return adopcionActualizada;
+  return { message: 'Estado actualizado correctamente.' };
 }
 
 
