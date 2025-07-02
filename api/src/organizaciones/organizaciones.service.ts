@@ -56,9 +56,18 @@ export class OrganizacionesService {
   }
 
 
-  async listarTodas(){
+  async listarTodas(query: any){
+    const { nombre, email, ciudad, plan, creado_en} = query
+
     return this.prisma.organizacion.findMany({
-      where: { estado: 'PENDIENTE'},
+      where: { 
+        estado: EstadoOrganizacion.PENDIENTE,
+        nombre: nombre ? { contains: nombre, mode: 'insensitive'} : undefined,
+        email: email ? { contains: email, mode: 'insensitive'} : undefined,
+        ciudad: ciudad ? { contains: ciudad, mode: 'insensitive'} : undefined,
+        plan: plan ? plan : undefined,
+        creado_en: creado_en ? new Date(creado_en) : undefined,
+      },
       select: {
         id: true,
         nombre: true,
@@ -151,9 +160,18 @@ export class OrganizacionesService {
     }
   }
 
-  async listarAprobadas(){
+  async listarAprobadas(query: any){
+    const { nombre, email, ciudad, plan, creado_en} = query
+
     return await this.prisma.organizacion.findMany({
-      where: { estado: EstadoOrganizacion.APROBADA},
+      where: {
+        estado: EstadoOrganizacion.APROBADA,
+        nombre: nombre ? { contains: nombre, mode: 'insensitive'} : undefined,
+        email: email ? { contains: email, mode: 'insensitive'} : undefined,
+        ciudad: ciudad ? { contains: ciudad, mode: 'insensitive'} : undefined,
+        plan: plan ? plan : undefined,
+        creado_en: creado_en ? new Date(creado_en) : undefined,
+      },
       select: {
         id: true,
         nombre: true,
@@ -165,9 +183,18 @@ export class OrganizacionesService {
     });
   }
 
-  async listarRechazadas(){
+  async listarRechazadas(query: any){
+    const { nombre, email, ciudad, plan, creado_en} = query
+
     return await this.prisma.organizacion.findMany({
-      where: { estado: EstadoOrganizacion.RECHAZADA},
+      where: { 
+        estado: EstadoOrganizacion.RECHAZADA,
+        nombre: nombre ? { contains: nombre, mode: 'insensitive'} : undefined,
+        email: email ? { contains: email, mode: 'insensitive'} : undefined,
+        ciudad: ciudad ? { contains: ciudad, mode: 'insensitive'} : undefined,
+        plan: plan ? plan : undefined,
+        creado_en: creado_en ? new Date(creado_en) : undefined,
+      },
       select: {
         id: true,
         nombre: true,
