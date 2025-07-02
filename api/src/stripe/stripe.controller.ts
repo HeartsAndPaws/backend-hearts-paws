@@ -1,7 +1,6 @@
 import {
     Controller,
     Get,
-    Param,
     Post,
     Req,
     Res,
@@ -16,7 +15,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Request, Response } from 'express';
 import { stripe } from './stripe.service';
 import Stripe from 'stripe';
-import { Public } from '@prisma/client/runtime/library';
 
 @Controller('stripe')
 export class StripeController {
@@ -133,6 +131,8 @@ export class StripeController {
                 organizacionId,
                 mascotaId,
                 monto: amount,
+                montoARS: parseFloat(session.metadata?.montoARS ?? '0'),
+                tasaCambio: parseFloat(session.metadata?.tasaCambio ?? '0'),
                 comprobante: session.id, 
                 estadoPago: session.payment_status ?? 'desconocido',
                 stripeSessionId: session.id,
