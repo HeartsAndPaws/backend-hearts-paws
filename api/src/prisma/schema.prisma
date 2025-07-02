@@ -131,7 +131,7 @@ model SolicitudDeAdopcion {
   tipoVivienda     String
   integrantesFlia    Int @default(1)
   hijos            Int @default(0)
-  hayOtrasMascotas           String
+  hayOtrasMascotas           Int
   descripcionOtrasMascotas   String?
   cubrirGastos               String
   darAlimentoCuidados        String
@@ -245,4 +245,10 @@ enum EstadoPago {
 enum EstadoCasoDonacion {
   ACTIVO
   COMPLETADO
+}
+
+enum TipoVivienda {
+  casaConPatio
+  casaSinPatio
+  departamento
 }
