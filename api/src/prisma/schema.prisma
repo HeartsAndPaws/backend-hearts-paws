@@ -156,6 +156,9 @@ model Donacion {
   organizacionId String
 
   monto          Float
+  montoARS       Float?
+  tasaCambio     Float?
+
   comprobante    String?    @unique  
   fecha          DateTime     @default(now())
 
