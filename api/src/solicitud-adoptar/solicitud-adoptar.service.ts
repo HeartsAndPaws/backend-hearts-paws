@@ -3,6 +3,7 @@ import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EstadoAdopcion } from '@prisma/client';
 import { MailerService } from 'src/shared/email/email-server.service';
+import { error } from 'console';
 
 @Injectable()
 export class SolicitudAdoptarService {
@@ -69,18 +70,25 @@ async obtenerMascotasConAdopcionPorOng(ongId: string) {
   });
 }
 
-  // async filtroViviendaQdeMascotas(tipoVivienda: string, hayOtrasMascotas: string) {
-  //     return await this.prisma.solicitudDeAdopcion.findMany({
-  //   where: {
-  //     tipoVivienda,
-  //     hayOtrasMascotas,
-  //   },
-  //   include: {
-  //     usuario: true,
-  //     casoAdopcion: true,
-  //   },
-  // });
-  // }
+async filtroViviendaQdeMascotas(
+  casoAdopcionId: string,
+  tipoVivienda?: string,
+) {
+  return this.prisma.solicitudDeAdopcion.findMany({
+    where: {
+      casoAdopcionId,
+      ...(tipoVivienda && { tipoVivienda }),
+    },
+    orderBy: {
+      hayOtrasMascotas: 'asc', // Orden de menor a mayor
+    },
+    include: {
+      usuario: true,
+      casoAdopcion: true,
+    },
+  });
+}
+
 
   async verSolicitudesPorCasoDeAdopcion(id: string) {
   const casoAdopcion = await this.prisma.casoAdopcion.findUnique({
