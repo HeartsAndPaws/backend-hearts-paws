@@ -1,9 +1,13 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
+import { ChatConnectionService } from "./chat-connection.service";
 
 @Injectable()
 export class ChatService {
-    constructor(private prisma: PrismaService){}
+    constructor(
+        private prisma: PrismaService,
+        private connectionService: ChatConnectionService,
+    ){}
 
     async iniciarChat(usuarioId: string, organizacionId: string){
         const existente = await this.prisma.chat.findFirst({
@@ -99,10 +103,20 @@ export class ChatService {
             },
         });
 
-        const mensajesNormalizados = mensajes.map((msg) => ({
-            ...msg,
-            autor: msg.autorUsuario || msg.autorOrganizacion,
-        }));
+        const mensajesNormalizados = mensajes.map((msg) => {
+            const autor = msg.autorUsuario
+                ? { ...msg.autorUsuario, tipo: 'USUARIO'}
+                : msg.autorOrganizacion
+                ? { ...msg.autorOrganizacion, tipo: 'ONG'}
+                : null;
+
+            return {
+                id: msg.id,
+                contenido: msg.contenido,
+                enviado_en: msg.enviado_en,
+                autor,
+            }
+        })
 
         return {
             ok: true,
@@ -166,6 +180,53 @@ export class ChatService {
             ...mensaje,
             autor: mensaje.autorUsuario || mensaje.autorOrganizacion,
         }
+    }
 
+    async getUsuariosConEstado(nombre?: string){
+        const usuarios = await this.prisma.usuario.findMany({
+            where: nombre
+                ? {
+                    nombre: {
+                        contains: nombre,
+                        mode: 'insensitive',
+                    },
+                }
+                : undefined,
+            select: {
+                id: true,
+                nombre: true,
+                email: true,
+                imagenPerfil: true,
+            },
+        });
+
+        return usuarios.map((usuario) => ({
+            ...usuario,
+            conectado: this.connectionService.isUserConnected(usuario.id),
+        }));
+    }
+
+    async getOrganizacionesConEstado(nombre?: string){
+        const organizaciones = await this.prisma.organizacion.findMany({
+            where: nombre
+                ? {
+                    nombre: {
+                        contains: nombre,
+                        mode: 'insensitive',
+                    },
+                }
+                : undefined,
+            select: {
+                id: true,
+                nombre: true,
+                email: true,
+                imagenPerfil: true,
+            },
+        });
+
+        return organizaciones.map((ong) => ({
+            ...ong,
+            conectado: this.connectionService.isUserConnected(ong.id),
+        }));
     }
 }
