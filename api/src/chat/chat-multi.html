@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Chat WebSocket Tester (Multipropósito)</title>
+  <title>Chat WebSocket Tester (Local)</title>
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <style>
     body {
@@ -24,7 +24,7 @@
   </style>
 </head>
 <body>
-  <h2>🔌 Chat WebSocket Tester (Usuario / ONG)</h2>
+  <h2>🔌 Chat WebSocket Tester (Local)</h2>
 
   <div>
     <label>Rol actual: </label>
@@ -35,14 +35,22 @@
   </div>
 
   <div>
-    <label>Chat ID: </label>
-    <input id="chatId" type="text" placeholder="ID del chat" />
-    <button onclick="unirseChat()">Unirse al Chat</button>
+    <label>Tu ID (autorId): </label>
+    <input id="autorId" type="text" placeholder="Tu ID (usuario u ONG)" />
   </div>
 
   <div>
-    <label>Tu ID (autorId): </label>
-    <input id="autorId" type="text" placeholder="ID del autor (usuario u ong)" />
+    <label>ID del otro participante: </label>
+    <input id="otroId" type="text" placeholder="ID de la ONG o usuario" />
+  </div>
+
+  <div>
+    <button onclick="unirseChat()">Iniciar/Unirse al Chat</button>
+  </div>
+
+  <div>
+    <label>ID del chat: </label>
+    <input id="chatId" type="text" readonly />
   </div>
 
   <div>
@@ -57,10 +65,17 @@
   </div>
 
   <script>
-    const socket = io("http://localhost:3002/ws-chat"); // Cambiar si estás en producción
+    const socket = io("http://localhost:3002/ws-chat");
 
     socket.on("connect", () => {
       console.log("🟢 Conectado al servidor:", socket.id);
+
+      // Emitir 'identify' si ya se ingresó el autorId antes de la conexión
+      const autorId = document.getElementById("autorId").value.trim();
+      if (autorId) {
+        socket.emit("identify", { userId: autorId });
+        console.log("📛 Identificado automáticamente al conectar:", autorId);
+      }
     });
 
     socket.on("messageReceived", (msg) => {
@@ -70,28 +85,57 @@
       document.getElementById("mensaje-lista").appendChild(div);
     });
 
+    socket.on("chatIdAsignado", (data) => {
+      document.getElementById("chatId").value = data.chatId;
+      alert(`✅ Chat asignado con ID: ${data.chatId}`);
+
+
+      const lista = document.getElementById("mensaje-lista");
+      lista.innerHTML = "";
+
+      if (Array.isArray(data.mensajes)) {
+        data.mensajes.forEach((msg) => {
+        const autorNombre = msg.autor?.nombre ?? `ID: ${msg.autorId}`;
+        const div = document.createElement("div");
+        div.textContent = `🗨️ ${autorNombre}: ${msg.contenido}`;
+        lista.appendChild(div);
+      });
+    }
+  });
+
+
     function unirseChat() {
-      const chatId = document.getElementById("chatId").value;
-      if (!chatId) return alert("⚠️ Ingresa un ID de chat válido");
-      socket.emit("joinchat", { chatId });
+      const autorId = document.getElementById("autorId").value.trim();
+      const otroId = document.getElementById("otroId").value.trim();
+      const rol = document.getElementById("rol").value;
+
+      if (!autorId || !otroId) {
+        return alert("⚠️ Debes ingresar ambos IDs");
+      }
+
+      // Identificar usuario explícitamente
+      socket.emit("identify", { userId: autorId });
+      console.log("📛 Usuario identificado:", autorId);
+
+      const usuarioId = rol === "usuario" ? autorId : otroId;
+      const organizacionId = rol === "usuario" ? otroId : autorId;
+
+      socket.emit("joinchat", { usuarioId, organizacionId });
     }
 
     function enviarMensaje() {
       const chatId = document.getElementById("chatId").value;
-      const autorId = document.getElementById("autorId").value;
-      const contenido = document.getElementById("mensaje").value;
-      const rol = document.getElementById("rol").value;
+      const autorId = document.getElementById("autorId").value.trim();
+      const contenido = document.getElementById("mensaje").value.trim();
 
       if (!chatId || !autorId || !contenido) {
         return alert("⚠️ Completa todos los campos");
       }
 
-      // Enviamos el rol también si luego quieres usarlo para lógica de frontend
       socket.emit("sendMessage", {
         chatId,
         autorId,
         contenido,
-        tipo: rol.toUpperCase(), // solo si planeas procesar esto en el backend
       });
 
       document.getElementById("mensaje").value = "";
