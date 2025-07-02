@@ -1,11 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
 import { CasosService } from './casos.service';
 import { CreateCasoDto } from './dto/create-caso.dto';
-import { UpdateCasoDto } from './dto/update-caso.dto';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FiltrarPorCasosFechasDto } from './dto/filtro-por-caso-y-fecha.dto';
-import { TipoCaso } from '@prisma/client';
 import { FiltrarPorTipoViejoRecienteDto } from './dto/filtro-tipo-viejo-reciente.dto';
 
 @Controller('casos')
