@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Param, Post, Query, Request, UseGuards } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { JwtAutCookiesGuardia } from "src/autenticacion/guards/jwtAut.guardia";
 
@@ -61,4 +61,29 @@ export class ChatController {
         
         return await this.chatService.getMensajesDeChat(chatId);
     }
+
+    @Get('usuarios')
+    async getUsuariosConEstado(
+        @Request() req,
+        @Query('q') q?: string,
+    ){
+        if (req.user.tipo !== 'ONG') {
+            throw new ForbiddenException('Solo las organizaciones pueden acceder a esta ruta');
+        }
+
+        return await this.chatService.getUsuariosConEstado(q);
+    }
+
+    @Get('organizaciones')
+    async getOrganizacionesConEstado(
+        @Request() req,
+        @Query('q') q?: string,
+    ){
+        if (req.user.tipo !== 'USUARIO') {
+            throw new ForbiddenException('Solo los usuarios pueden acceder a esta ruta');
+        }
+
+        return await this.chatService.getOrganizacionesConEstado(q);
+    }
+
 }
