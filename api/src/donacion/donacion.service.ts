@@ -8,17 +8,66 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class DonacionService {
   constructor(private readonly prismaService: PrismaService){}
 
-  getDonaciones(){
+  async getDonaciones(filtros: {
+    organizacionId?: string;
+    usuarioId?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+  }){
+    const { organizacionId, usuarioId, fechaDesde, fechaHasta } = filtros;
 
     return this.prismaService.donacion.findMany({
+      where: {
+        ...( organizacionId && { organizacionId }),
+        ...( usuarioId && { usuarioId }),
+        ...( fechaDesde && {
+          fecha: {
+            gte: new Date( fechaDesde),
+          },
+        }),
+        ...(fechaHasta && {
+          fecha: {
+            ...(fechaDesde ? { gte: new Date(fechaDesde)}: {}),
+            lte: new Date(fechaHasta),
+          },
+        }),
+      },
       include: {
-        usuario: true,
-        organizacion: true,
-        mascota: true,
-        casoDonacion: true,
+        usuario: {
+          select: {
+            id: true,
+            nombre: true,
+            email: true,
+          },
+        },
+        organizacion: {
+          select: {
+            id: true,
+            nombre: true,
+            email: true,
+          },
+        },
+        mascota: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
+        casoDonacion: {
+          select: {
+            id: true,
+            caso: {
+              select: {
+                titulo: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        fecha: 'desc',
       },
     });
-
   }
 
   getDonacionesByOngId(ongId: string){
