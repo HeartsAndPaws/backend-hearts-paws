@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Donacion" ADD COLUMN     "montoARS" DOUBLE PRECISION,
+ADD COLUMN     "tasaCambio" DOUBLE PRECISION;
