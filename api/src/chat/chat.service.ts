@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ChatConnectionService } from "./chat-connection.service";
+import { strict } from "assert";
 
 @Injectable()
 export class ChatService {
@@ -182,16 +183,45 @@ export class ChatService {
         }
     }
 
-    async getUsuariosConEstado(nombre?: string){
+    async getUsuariosConEstado(nombre: string | undefined, ongId: string){
+
+        const donadores = await this.prisma.donacion.findMany({
+            where: { organizacionId: ongId },
+            select: { usuarioId: true },
+            distinct: ['usuarioId'],
+        });
+
+        const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
+            where: {
+                casoAdopcion: {
+                    caso: {
+                        ongId: ongId,
+                    },
+                },    
+            },
+            select: { usuarioId: true },
+            distinct: ['usuarioId'],
+        });
+
+        const usuariosIds = [
+            ...new Set([
+                ...donadores.map(d => d.usuarioId),
+                ...solicitudes.map(s => s.usuarioId),
+            ].filter((id): id is string => typeof id === 'string')),
+        ];
+
+        if (usuariosIds.length === 0) return [];
+
         const usuarios = await this.prisma.usuario.findMany({
-            where: nombre
-                ? {
+            where: {
+                id: { in: usuariosIds },
+                ...(nombre && {
                     nombre: {
                         contains: nombre,
-                        mode: 'insensitive',
+                        mode: 'insensitive'
                     },
-                }
-                : undefined,
+                }),
+            },
             select: {
                 id: true,
                 nombre: true,
@@ -206,16 +236,50 @@ export class ChatService {
         }));
     }
 
-    async getOrganizacionesConEstado(nombre?: string){
+    async getOrganizacionesConEstado(nombre: string | undefined, usuarioId: string){
+        
+        const donaciones = await this.prisma.donacion.findMany({
+            where: { usuarioId },
+            select: { organizacionId: true },
+            distinct: ['organizacionId'],
+        })
+
+        const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
+            where: {
+                usuarioId,
+            },
+            select: {
+                casoAdopcion: {
+                    select: {
+                        caso: {
+                            select: {
+                                ongId: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const ongIds = [
+            ...new Set([
+                ...donaciones.map(d => d.organizacionId),
+                ...solicitudes.map(s => s.casoAdopcion?.caso?.ongId),
+            ].filter((id): id is string => typeof id === 'string')),
+        ];
+        
+        if (ongIds.length === 0) return [];
+        
         const organizaciones = await this.prisma.organizacion.findMany({
-            where: nombre
-                ? {
+            where: {
+                id: { in: ongIds },
+                ...(nombre && {
                     nombre: {
                         contains: nombre,
                         mode: 'insensitive',
                     },
-                }
-                : undefined,
+                }),
+            },
             select: {
                 id: true,
                 nombre: true,

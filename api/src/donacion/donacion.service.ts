@@ -1,8 +1,7 @@
 
 import { Injectable } from '@nestjs/common';
-import { CreateDonacionDto } from './dto/create-donacion.dto';
-import { UpdateDonacionDto } from './dto/update-donacion.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { formatearARS, calcularPorcentajeProgreso } from 'src/utils/formatters';
 
 @Injectable()
 export class DonacionService {
@@ -20,7 +19,7 @@ export class DonacionService {
     const fechaInicio = fecha ? new Date(`${fecha}T00:00:00Z`) : undefined;
     const fechaFin = fecha ? new Date(`${fecha}T23:59:59Z`) : undefined;
 
-    return this.prismaService.donacion.findMany({
+    const donaciones = await this.prismaService.donacion.findMany({
       where: {
         ...( fechaInicio && fechaFin && {
           fecha: {
@@ -73,10 +72,15 @@ export class DonacionService {
         fecha: 'desc',
       },
     });
+
+    return donaciones.map((d) => ({
+      ...d,
+      montoFormateado: formatearARS(d.monto),
+    }))
   }
 
-  getDonacionesByOngId(ongId: string){
-    return this.prismaService.donacion.findMany({
+  async getDonacionesByOngId(ongId: string){
+    const donaciones = await this.prismaService.donacion.findMany({
       where: {
         organizacionId: ongId
       },
@@ -88,11 +92,16 @@ export class DonacionService {
       },
     });
 
+    return donaciones.map((d) => ({
+      ...d,
+      montoformateado: formatearARS(d.monto),
+    }))
+
   }
 
-  getDonacionById(id: string){
+  async getDonacionById(id: string){
 
-    return this.prismaService.donacion.findUnique({
+    const donacion = await this.prismaService.donacion.findUnique({
       where: {id: id},
       include: {
         usuario: true,
@@ -102,6 +111,10 @@ export class DonacionService {
       },
     });
 
+    return {
+      ...donacion,
+      montoformateado: donacion ? formatearARS(donacion.monto) : null,
+    }
   }
 
   async obtenerValorTotalDonaciones(){
@@ -111,18 +124,34 @@ export class DonacionService {
       },
     });
 
-    return { total: resultado._sum.monto ?? 0 };
+    return { 
+      total: resultado._sum.monto ?? 0,
+      totalFormatado: formatearARS(resultado._sum.monto ?? 0),
+    }
   }
 
   async getDetalleDonacionByCasoId(CasoId: string) {
-    return this.prismaService.casoDonacion.findMany({
+    const casos =await this.prismaService.casoDonacion.findMany({
       where: {casoId: CasoId},
-    })
+    });
+
+    return casos.map((caso) => ({
+      ...caso,
+      estadoDonacionARS: formatearARS(caso.estadoDonacion),
+      metaDonacionARS: formatearARS(caso.metaDonacion),
+      progreso: calcularPorcentajeProgreso(caso.metaDonacion, caso.estadoDonacion),
+    }))
   }
 
   async getDetallesDonacion(){
-    return this.prismaService.casoDonacion.findMany()
+    const casos = await this.prismaService.casoDonacion.findMany();
+
+    return casos.map((caso) => ({
+      ...caso,
+      estadoDonacionARS: formatearARS(caso.estadoDonacion),
+      metaDonacionARS: formatearARS(caso.metaDonacion),
+      progreso: calcularPorcentajeProgreso(caso.metaDonacion, caso.estadoDonacion),
+    }))
   }
-   
   
 }

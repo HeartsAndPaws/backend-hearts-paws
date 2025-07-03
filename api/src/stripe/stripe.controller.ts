@@ -15,6 +15,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Request, Response } from 'express';
 import { stripe } from './stripe.service';
 import Stripe from 'stripe';
+import { formatearARS } from 'src/utils/formatters';
 
 @Controller('stripe')
 export class StripeController {
@@ -61,12 +62,16 @@ export class StripeController {
             throw new BadRequestException(`El monto excede el objetivo restante ${restante}`);
         }
 
+        const caso = casoDonacion.caso;
+
         const url = await this.stripeService.crearCheckoutSession(
             monto,
             casoId,
             usuarioId,
-            casoDonacion.caso.ong?.id || '',
-            casoDonacion.caso.mascota?.id || '',
+            caso.ong?.id || '',
+            caso.mascota?.id || '',
+            caso.titulo,
+            caso.descripcion || '',
         );
 
         return { url };
@@ -152,7 +157,7 @@ export class StripeController {
             },
         });
 
-        console.log(`✅ Donación registrada: $${amount} al caso ${casoId}`);
+        console.log(`✅ Donación registrada: ${formatearARS(amount)} al caso ${casoId}`);
         }
 
         return res.status(HttpStatus.OK).json({ received: true });

@@ -11,13 +11,23 @@ export class ChatController {
     async iniciarChat(
         @Body() body: { usuarioId: string; organizacionId: string},
         @Request() req,
-){
-        if (req.user.tipo !== 'USUARIO') {
-            throw new ForbiddenException('Solo los usuarios pueden iniciar un chat')
+    ){
+        const { tipo, id: solicitanteId } = req.user;
+
+        if (tipo === 'USUARIO') {
+            if (solicitanteId !== body.usuarioId) {
+                throw new ForbiddenException('No puedes iniciar un chat por otro usuario');
+            }
         }
 
-        if (req.user.id !== body.usuarioId) {
-            throw new ForbiddenException('No puedes iniciar un chat por otro usuario');
+        else if (tipo === 'ONG'){
+            if (solicitanteId !== body.organizacionId) {
+                throw new ForbiddenException('No puedes iniciar un chat por otra organización');
+            }
+        }
+
+        else {
+            throw new ForbiddenException('No autorizado para iniciar chats');
         }
 
         return await this.chatService.iniciarChat(body.usuarioId, body.organizacionId);
@@ -71,7 +81,7 @@ export class ChatController {
             throw new ForbiddenException('Solo las organizaciones pueden acceder a esta ruta');
         }
 
-        return await this.chatService.getUsuariosConEstado(q);
+        return await this.chatService.getUsuariosConEstado(q, req.user.id);
     }
 
     @Get('organizaciones')
@@ -83,7 +93,7 @@ export class ChatController {
             throw new ForbiddenException('Solo los usuarios pueden acceder a esta ruta');
         }
 
-        return await this.chatService.getOrganizacionesConEstado(q);
+        return await this.chatService.getOrganizacionesConEstado(q, req.user.id);
     }
 
 }
