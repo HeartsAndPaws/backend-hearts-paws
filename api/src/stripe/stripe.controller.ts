@@ -104,7 +104,7 @@ export class StripeController {
         const session = event.data.object as Stripe.Checkout.Session;
 
         const { casoId, usuarioId, organizacionId, mascotaId } = session.metadata || {};
-        const amount = session.amount_total! / 100;
+        const montoARS = parseFloat(session.metadata?.montoARS ?? '0');
 
         if (!casoId || !usuarioId || !organizacionId || !mascotaId) {
         return res.status(400).send('⚠️ Faltan metadatos en la sesión');
@@ -127,7 +127,7 @@ export class StripeController {
             return res.status(404).send('⚠️ Caso no encontrado');
         }
 
-        const nuevoTotal = casoDonacion.estadoDonacion + amount;
+        const nuevoTotal = casoDonacion.estadoDonacion + montoARS;
 
         // Crear donación
         await this.prisma.donacion.create({
@@ -135,8 +135,8 @@ export class StripeController {
                 usuarioId,
                 organizacionId,
                 mascotaId,
-                monto: amount,
-                montoARS: parseFloat(session.metadata?.montoARS ?? '0'),
+                monto: session.amount_total! / 100, // monto en USD,
+                montoARS: montoARS,
                 tasaCambio: parseFloat(session.metadata?.tasaCambio ?? '0'),
                 comprobante: session.id, 
                 estadoPago: session.payment_status ?? 'desconocido',
@@ -157,7 +157,7 @@ export class StripeController {
             },
         });
 
-        console.log(`✅ Donación registrada: ${formatearARS(amount)} al caso ${casoId}`);
+        console.log(`✅ Donación registrada: ${formatearARS(montoARS)} al caso ${casoId}`);
         }
 
         return res.status(HttpStatus.OK).json({ received: true });
