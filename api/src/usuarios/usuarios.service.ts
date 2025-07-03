@@ -1,15 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { ActualizarUsuarioDTO } from './dto/ActualizarUsuario.dto';
 import { Rol } from '@prisma/client';
+import { GoogleVisionService } from 'src/google-vision/google-vision.service';
 
 
 @Injectable()
 export class UsuariosService {
-  constructor( private readonly prisma: PrismaService){}
-
-  
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly googleVisionService: GoogleVisionService
+  ){}
 
   async actualizarFotoPerfil(id: string, fotoUrl: string){
     const usuario = await this.prisma.usuario.findUnique({where: {id}});
@@ -17,7 +19,11 @@ export class UsuariosService {
     if (!usuario) {
       throw new NotFoundException(`No se encontro el usuario con id ${ id }`);
     }
+      const analisis = await this.googleVisionService.analizarImagen(fotoUrl);
 
+  if (analisis.advertencia) {
+    throw new BadRequestException('La imagen parece contener contenido sensible. Intenta con otra imagen.');
+  }
     return this.prisma.usuario.update({
       where: { id },
       data: { imagenPerfil: fotoUrl}
