@@ -78,6 +78,10 @@ export class UsuariosService {
         rol: true,
         imagenPerfil: true,
         pais: true,
+        creado_en: true,
+        ciudad: true,
+        externalId: true,
+        direccion: true,
         // No incluir contraseñas ni otros campos sensibles
       },
     });
