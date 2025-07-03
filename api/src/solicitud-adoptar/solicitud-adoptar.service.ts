@@ -42,10 +42,37 @@ export class SolicitudAdoptarService {
     return nuevaSolicitud
   }
 
-  async verTodasLasSolicitudes() {
-    return await this.prisma.solicitudDeAdopcion.findMany();
-
+  async verCasosAdopcionPorEstado(estado?: EstadoAdopcion) {
+    return await this.prisma.casoAdopcion.findMany({
+      where: estado ? {
+        solicitudes: {
+          some: {
+            estado: estado
+          },
+        },
+      } : {},
+      include: {
+        caso: {
+          include: {
+            mascota: {
+              include: {
+                organizacion: true,
+                tipo: true,
+                imagenes: true,
+              },
+            },
+          },
+        },
+        solicitudes: {
+          where: estado ? { estado } : undefined, 
+          include:{
+            usuario: true,
+          },
+        },
+      },
+    });
   }
+
 
 async obtenerMascotasConAdopcionPorOng(ongId: string) {
   return await this.prisma.mascota.findMany({

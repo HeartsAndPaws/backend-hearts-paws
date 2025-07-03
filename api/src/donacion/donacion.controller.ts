@@ -1,18 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { DonacionService } from './donacion.service';
-import { CreateDonacionDto } from './dto/create-donacion.dto';
-import { UpdateDonacionDto } from './dto/update-donacion.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
+import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 
 @Controller('donacion')
 export class DonacionController {
   constructor(private readonly donacionService: DonacionService) {}
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+  @Roles('ADMIN')
   @Get()
-  getAllDonaciones() {
-    return this.donacionService.getDonaciones();
+  async getAllDonaciones(
+    @Query('nombreUsuario') nombreUsuario?: string,
+    @Query('emailUsuario') emailUsuario?: string,
+    @Query('nombreOng') nombreOng?: string,
+    @Query('emailOng') emailOng?: string,
+    @Query('fecha') fecha?: string,
+  ) {
+    return await this.donacionService.getDonaciones({
+      nombreUsuario,
+      emailUsuario,
+      nombreOng,
+      emailOng,
+      fecha,
+    });
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+  @Roles('ADMIN')
   @Get('total')
   async obtenerTotalDonado(){
     return await this.donacionService.obtenerValorTotalDonaciones();

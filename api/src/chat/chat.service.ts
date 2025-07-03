@@ -1,9 +1,14 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
+import { ChatConnectionService } from "./chat-connection.service";
+import { strict } from "assert";
 
 @Injectable()
 export class ChatService {
-    constructor(private prisma: PrismaService){}
+    constructor(
+        private prisma: PrismaService,
+        private connectionService: ChatConnectionService,
+    ){}
 
     async iniciarChat(usuarioId: string, organizacionId: string){
         const existente = await this.prisma.chat.findFirst({
@@ -99,10 +104,20 @@ export class ChatService {
             },
         });
 
-        const mensajesNormalizados = mensajes.map((msg) => ({
-            ...msg,
-            autor: msg.autorUsuario || msg.autorOrganizacion,
-        }));
+        const mensajesNormalizados = mensajes.map((msg) => {
+            const autor = msg.autorUsuario
+                ? { ...msg.autorUsuario, tipo: 'USUARIO'}
+                : msg.autorOrganizacion
+                ? { ...msg.autorOrganizacion, tipo: 'ONG'}
+                : null;
+
+            return {
+                id: msg.id,
+                contenido: msg.contenido,
+                enviado_en: msg.enviado_en,
+                autor,
+            }
+        })
 
         return {
             ok: true,
@@ -166,6 +181,116 @@ export class ChatService {
             ...mensaje,
             autor: mensaje.autorUsuario || mensaje.autorOrganizacion,
         }
+    }
 
+    async getUsuariosConEstado(nombre: string | undefined, ongId: string){
+
+        const donadores = await this.prisma.donacion.findMany({
+            where: { organizacionId: ongId },
+            select: { usuarioId: true },
+            distinct: ['usuarioId'],
+        });
+
+        const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
+            where: {
+                casoAdopcion: {
+                    caso: {
+                        ongId: ongId,
+                    },
+                },    
+            },
+            select: { usuarioId: true },
+            distinct: ['usuarioId'],
+        });
+
+        const usuariosIds = [
+            ...new Set([
+                ...donadores.map(d => d.usuarioId),
+                ...solicitudes.map(s => s.usuarioId),
+            ].filter((id): id is string => typeof id === 'string')),
+        ];
+
+        if (usuariosIds.length === 0) return [];
+
+        const usuarios = await this.prisma.usuario.findMany({
+            where: {
+                id: { in: usuariosIds },
+                ...(nombre && {
+                    nombre: {
+                        contains: nombre,
+                        mode: 'insensitive'
+                    },
+                }),
+            },
+            select: {
+                id: true,
+                nombre: true,
+                email: true,
+                imagenPerfil: true,
+            },
+        });
+
+        return usuarios.map((usuario) => ({
+            ...usuario,
+            conectado: this.connectionService.isUserConnected(usuario.id),
+        }));
+    }
+
+    async getOrganizacionesConEstado(nombre: string | undefined, usuarioId: string){
+        
+        const donaciones = await this.prisma.donacion.findMany({
+            where: { usuarioId },
+            select: { organizacionId: true },
+            distinct: ['organizacionId'],
+        })
+
+        const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
+            where: {
+                usuarioId,
+            },
+            select: {
+                casoAdopcion: {
+                    select: {
+                        caso: {
+                            select: {
+                                ongId: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        const ongIds = [
+            ...new Set([
+                ...donaciones.map(d => d.organizacionId),
+                ...solicitudes.map(s => s.casoAdopcion?.caso?.ongId),
+            ].filter((id): id is string => typeof id === 'string')),
+        ];
+        
+        if (ongIds.length === 0) return [];
+        
+        const organizaciones = await this.prisma.organizacion.findMany({
+            where: {
+                id: { in: ongIds },
+                ...(nombre && {
+                    nombre: {
+                        contains: nombre,
+                        mode: 'insensitive',
+                    },
+                }),
+            },
+            select: {
+                id: true,
+                nombre: true,
+                email: true,
+                imagenPerfil: true,
+            },
+        });
+
+        return organizaciones.map((ong) => ({
+            ...ong,
+            conectado: this.connectionService.isUserConnected(ong.id),
+        }));
     }
 }
