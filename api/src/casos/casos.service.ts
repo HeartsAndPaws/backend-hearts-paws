@@ -37,8 +37,7 @@ export class CasosService {
         mascota: {
           include: {
             imagenes: {
-              take: 1,
-              orderBy: { subida_en: 'desc'}, // Trae la imagen más reciente
+              orderBy: { subida_en: 'desc'}, 
             },
           },
         },
@@ -55,8 +54,7 @@ export class CasosService {
         mascota: {
           include: {
             imagenes: {
-              take: 1,
-              orderBy: { subida_en: 'desc'}, // Trae solo la imagen más reciente
+              orderBy: { subida_en: 'desc'}, 
             },
           },
         },
