@@ -13,8 +13,6 @@ export class UsuariosService {
     private readonly googleVisionService: GoogleVisionService
   ){}
 
-  
-
   async actualizarFotoPerfil(id: string, fotoUrl: string){
     const usuario = await this.prisma.usuario.findUnique({where: {id}});
 
