@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import Stripe from "stripe";
+import { formatearARS } from "src/utils/formatters";
 
 
 const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -23,6 +24,8 @@ export class StripeService {
         usuarioId: string,
         organizacionId: string,
         mascotaId: string,
+        titulo: string,
+        descripcion: string,
     ) {
 
     const tasa = this.tasaCambioARSUSD;
@@ -45,7 +48,8 @@ export class StripeService {
             price_data: {
                 currency: 'usd',
                 product_data: {
-                name: `Donación al caso ${casoId} (ARS ${montoARS})`,
+                name: `Donación: ${titulo} (${formatearARS(montoARS)} ARS)`,
+                description: descripcion.length > 100 ? descripcion.slice(0, 100) + '...' : descripcion,
                 },  
                 unit_amount: montoCentavosUSD,
             },
@@ -58,6 +62,7 @@ export class StripeService {
             organizacionId,
             mascotaId,
             montoARS: montoARS.toFixed(2),
+            montoARSFormateado: formatearARS(montoARS),
             tasaCambio: tasa.toFixed(6),
             montoUSD: montoUSD.toFixed(2),
         },
