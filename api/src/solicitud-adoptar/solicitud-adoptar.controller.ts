@@ -41,7 +41,7 @@ export class SolicitudAdoptarController {
 
   @Get('filtro')
   filtrarSolicitudes(@Body() filtro: filtroViviendaQdeMascotasDto) {
-    const { casoAdopcionId, tipoVivienda, hayOtrasMascotas } = filtro
+    const { casoAdopcionId, tipoVivienda } = filtro
     return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
   }
 
