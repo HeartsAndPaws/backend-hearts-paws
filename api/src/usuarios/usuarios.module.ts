@@ -6,13 +6,16 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { GoogleVisionModule } from 'src/google-vision/google-vision.module';
 
 @Module({
   imports: [
     JwtModule,
     PrismaModule, 
     CloudinaryModule, 
-    PassportModule],
+    PassportModule,
+    GoogleVisionModule
+  ],
   controllers: [UsuariosController],
   providers: [UsuariosService, JwtService],
 })
