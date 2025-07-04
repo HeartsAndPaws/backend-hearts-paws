@@ -19,11 +19,7 @@ export class UsuariosService {
     if (!usuario) {
       throw new NotFoundException(`No se encontro el usuario con id ${ id }`);
     }
-      const analisis = await this.googleVisionService.analizarImagen(fotoUrl);
-
-  if (analisis.advertencia) {
-    throw new BadRequestException('La imagen parece contener contenido sensible. Intenta con otra imagen.');
-  }
+    
     return this.prisma.usuario.update({
       where: { id },
       data: { imagenPerfil: fotoUrl}
