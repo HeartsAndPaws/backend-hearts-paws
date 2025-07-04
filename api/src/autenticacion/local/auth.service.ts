@@ -32,11 +32,16 @@ export class ServicioAut {
     const hashedPassword = await bcrypt.hash(datosDeUsuario.contrasena, 10);
     datosDeUsuario.contrasena = hashedPassword;
 
+    if (!datosDeUsuario.imagenPerfil && datosDeUsuario.nombre) {
+      const encodedNombre = encodeURIComponent(datosDeUsuario.nombre.trim());
+      datosDeUsuario.imagenPerfil = `https://ui-avatars.com/api/?name=${encodedNombre}&background=random&size=256`;
+    }
+
     const usuario = await this.prisma.usuario.create({
       data: {
         ...datosDeUsuario,
         contrasena: hashedPassword,
-        imagenPerfil: datosDeUsuario.imagenPerfil ?? null,
+        imagenPerfil: datosDeUsuario.imagenPerfil,
         rol: 'USUARIO'
       },
       select: {
