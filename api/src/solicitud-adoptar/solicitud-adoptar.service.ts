@@ -11,36 +11,51 @@ export class SolicitudAdoptarService {
     private readonly prisma: PrismaService,
     private readonly mailerService: MailerService
   ) {}
-  async crearSolicitud(solicitud: SolicitudParaAdoptarDto) {
-    const { 
-      usuarioId, 
-      casoAdopcionId, 
-      estado, 
-      tipoVivienda, 
-      integrantesFlia, 
-      hijos,  
-      hayOtrasMascotas,
-    descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
-    devolucionDeMascota, siNoPodesCuidarla, declaracionFinal} = solicitud
 
-    const usuarioSolicitante = await this.prisma.usuario.findUnique({
-      where: {
-        id: usuarioId
-      },
-    });
-    if(!usuarioSolicitante){
-      throw new Error('Falta el usuario solicitante')
-    }
-    const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
-      data: {
-        usuarioId, casoAdopcionId: casoAdopcionId, estado, tipoVivienda, integrantesFlia, hijos, hayOtrasMascotas,
+async crearSolicitud(solicitud: SolicitudParaAdoptarDto) {
+  const { 
+    usuarioId, 
+    casoAdopcionId, 
+    estado, 
+    tipoVivienda, 
+    integrantesFlia, 
+    hijos,  
+    hayOtrasMascotas,
     descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
     devolucionDeMascota, siNoPodesCuidarla, declaracionFinal
-      },
-    });
-  
-    return nuevaSolicitud
+  } = solicitud;
+
+  const usuarioSolicitante = await this.prisma.usuario.findUnique({
+    where: {
+      id: usuarioId
+    },
+  });
+
+  if (!usuarioSolicitante) {
+    throw new BadRequestException('Falta el usuario solicitante');
   }
+
+  const solicitudExistente = await this.prisma.solicitudDeAdopcion.findFirst({
+    where: {
+      usuarioId,
+      casoAdopcionId
+    }
+  });
+
+  if (solicitudExistente) {
+    throw new BadRequestException('El usuario no puede enviar mas de 1 solicitud para el mismo caso de adopción');
+  }
+
+  const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
+    data: {
+      usuarioId, casoAdopcionId, estado, tipoVivienda, integrantesFlia, hijos, hayOtrasMascotas,
+      descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
+      devolucionDeMascota, siNoPodesCuidarla, declaracionFinal
+    },
+  });
+
+  return nuevaSolicitud;
+}
 
   async verCasosAdopcionPorEstado(estado?: EstadoAdopcion) {
     return await this.prisma.casoAdopcion.findMany({
