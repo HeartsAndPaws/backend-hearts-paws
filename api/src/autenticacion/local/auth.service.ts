@@ -171,12 +171,17 @@ export class ServicioAut {
 
     const contraseñaHash = await bcrypt.hash(data.contrasena, 10);
 
+    if (!data.imagenPerfil && data.nombre) {
+      const encodedNombre = encodeURIComponent(data.nombre.trim());
+      data.imagenPerfil = `https://ui-avatars.com/api/?name=${encodedNombre}&background=random&size=256`;
+    }
+
     const nuevaOrganizacion = await this.prisma.organizacion.create({
       data: {
         ...data,
         contrasena: contraseñaHash,
         archivoVerificacionUrl: data.archivoVerificacionUrl,
-        imagenPerfil: data.imagenPerfil ?? null,
+        imagenPerfil: data.imagenPerfil,
         estado: 'PENDIENTE',
       },
       select: {
