@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { SafeSearchResult } from './types/safe-search-result.type';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class GoogleVisionService {
   private client: ImageAnnotatorClient;
   
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     this.client = new ImageAnnotatorClient({
       keyFilename: 'google-key-cloud-vision.json', // o una ruta desde variable de entorno
     });
@@ -47,4 +48,11 @@ export class GoogleVisionService {
     advertencia,
   };
   }
+
+  async getImagenesSensibles() {
+  return this.prisma.imagen.findMany({
+    where: { sensible: true },
+    select: { url: true, sensible: true },
+  });
+}
 }

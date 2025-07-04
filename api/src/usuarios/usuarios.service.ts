@@ -5,7 +5,6 @@ import { ActualizarUsuarioDTO } from './dto/ActualizarUsuario.dto';
 import { Rol } from '@prisma/client';
 import { GoogleVisionService } from 'src/google-vision/google-vision.service';
 
-
 @Injectable()
 export class UsuariosService {
   constructor(

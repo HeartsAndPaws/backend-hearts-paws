@@ -1,11 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Get, Inject, Injectable } from '@nestjs/common';
 import { rejects } from 'assert';
 import { v2 as Cloudinary, UploadApiResponse } from 'cloudinary';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 
 @Injectable()
 export class CloudinaryService {
-  constructor(@Inject('CLOUDINARY') private cloudinary: typeof Cloudinary){}
+  constructor(
+    @Inject('CLOUDINARY') private cloudinary: typeof Cloudinary,
+    private readonly prisma: PrismaService
+  ){}
 
   async subirIamgen(file: Express.Multer.File): Promise<UploadApiResponse>{
     return new Promise((resolve, reject) => {
@@ -42,6 +46,7 @@ export class CloudinaryService {
     ).end(file.buffer);
     })
   }
+
 }
 
 
