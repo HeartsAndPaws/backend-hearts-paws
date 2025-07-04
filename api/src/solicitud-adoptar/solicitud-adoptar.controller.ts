@@ -39,11 +39,11 @@ export class SolicitudAdoptarController {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
   }
 
-  @Get('filtro')
-  filtrarSolicitudes(@Body() filtro: filtroViviendaQdeMascotasDto) {
-    const { casoAdopcionId, tipoVivienda } = filtro
-    return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
-  }
+@Get('filtro')
+filtrarSolicitudes(@Query() filtro: filtroViviendaQdeMascotasDto) {
+  const { casoAdopcionId, tipoVivienda } = filtro;
+  return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
+}
 
 @Patch()
 async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
