@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsNotEmpty, IsOptional, IsNumber, ValidateNested } from "class-validator";
+import { IsString, IsEnum, IsNotEmpty, IsOptional, IsNumber, ValidateNested, IsArray, ArrayMaxSize } from "class-validator";
 import { Type } from "class-transformer";
 
 export enum TipoCaso {
@@ -32,6 +32,12 @@ export class CreateCasoDto {
   @IsString()
   @IsNotEmpty()
   mascotaId: string;
+
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsString({ each: true })
+  @IsOptional()
+  imagenes: string[]
 
   @IsString()
   @IsNotEmpty()

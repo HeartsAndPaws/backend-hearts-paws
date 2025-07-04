@@ -1,6 +1,6 @@
-import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiExcludeController } from '@nestjs/swagger';
 
 @ApiExcludeController()
@@ -14,4 +14,12 @@ export class UploadController{
         const result = await this.cloudinaryService.subirIamgen(file);
         return { url:result.secure_url};
     }
+
+    @Post('multiples')
+    @UseInterceptors(FilesInterceptor('imagenes', 5))
+    async subirMultiples(
+        @UploadedFiles() files: Express.Multer.File[]
+      ) {
+        return this.cloudinaryService.subirMultiplesImagenes(files);
+      }
 }

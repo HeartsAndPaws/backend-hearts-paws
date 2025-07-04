@@ -15,6 +15,14 @@ export class CloudinaryService {
       }).end(file.buffer);
     })
   }
+  
+  async subirMultiplesImagenes(files: Express.Multer.File[]): Promise<string[]> {
+  const resultados = await Promise.all(
+    files.map(file => this.subirIamgen(file))
+  );
+  return resultados.map(res => res.secure_url);
+}
+
 
   async subirPdf(file: Express.Multer.File): Promise<UploadApiResponse>{
     return new Promise((resolve, rejects) => {

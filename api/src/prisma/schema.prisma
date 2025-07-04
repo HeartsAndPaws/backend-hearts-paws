@@ -92,6 +92,7 @@ model Caso {
   mascotaId   String
   ong         Organizacion?  @relation(fields: [ongId], references: [id])
   ongId       String?
+  imagenes    ImagenesDeLaPublicacion?
 
   creado_en DateTime @default(now())
 
@@ -99,6 +100,22 @@ model Caso {
   favoritos   Favorito[]
   adopcion    CasoAdopcion?
   donacion    CasoDonacion?
+}
+
+model ImagenesDeLaPublicacion {
+  id               String        @id @default(uuid())
+  imagenes       Imagen[]
+  subidas_en       DateTime     @default(now())
+  caso     Caso @relation(fields: [idCasoPadre], references: [id])
+  idCasoPadre  String   @unique
+}
+
+model Imagen {
+  id                        String   @id @default(uuid())
+  url                       String
+  sensible                  Boolean  @default(false)
+  imagenesDeLaPublicacion   ImagenesDeLaPublicacion @relation(fields: [imagenesDeLaPublicacionId], references: [id])
+  imagenesDeLaPublicacionId String
 }
 
 model CasoAdopcion {
@@ -110,15 +127,13 @@ model CasoAdopcion {
 }
 
 model CasoDonacion {
-  id            String   @id @default(uuid())
-  caso          Caso     @relation(fields: [casoId], references: [id])
-  casoId        String   @unique
-  estadoDonacion Float   // Monto recaudado hasta el momento
-  metaDonacion   Float   // Meta de la donación
-
-  // Relacion inversa
-  donaciones    Donacion[]  @relation("DonacionesPorCaso")
-  estado        EstadoCasoDonacion  @default(ACTIVO)
+  id             String               @id @default(uuid())
+  caso           Caso                 @relation(fields: [casoId], references: [id])
+  casoId         String               @unique
+  estadoDonacion Float
+  metaDonacion   Float
+  donaciones     Donacion[]          @relation("DonacionesPorCaso")
+  estado         EstadoCasoDonacion  @default(ACTIVO)
 }
 
 model SolicitudDeAdopcion {

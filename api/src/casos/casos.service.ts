@@ -4,10 +4,14 @@ import { UpdateCasoDto } from './dto/update-caso.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TipoCaso } from '@prisma/client';
 import { FiltroViejoRecienteEnum } from './enums/filtro-tipo-reciente-antiguo.enum';
+import { GoogleVisionService } from 'src/google-vision/google-vision.service';
 
 @Injectable()
 export class CasosService {
-  constructor(private readonly prismaService: PrismaService){}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly googleVisionService: GoogleVisionService
+  ){}
 
   async GetCasos() {
 
@@ -89,52 +93,89 @@ export class CasosService {
   return { casoAdopcionId: casoConAdopcion.adopcion!.id };
 }
 
+async CreateCaso(createCasoDto: CreateCasoDto) {
+  const {
+    titulo,
+    descripcion,
+    tipo,
+    mascotaId,
+    ongId,
+    imagenes,
+    donacion,
+  } = createCasoDto;
 
-  async CreateCaso(createCasoDto: CreateCasoDto) {
-    
-    const casoExistente = await this.prismaService.caso.findFirst({
-      where: {
-        tipo: createCasoDto.tipo,
-        mascotaId: createCasoDto.mascotaId,
-      }
-    })
+  // Verificar si ya existe un caso del mismo tipo para la misma mascota
+  const casoExistente = await this.prismaService.caso.findFirst({
+    where: {
+      tipo,
+      mascotaId,
+    },
+  });
 
-    if (casoExistente) {
-      throw new BadRequestException(`Ya existe un caso de tipo ${createCasoDto.tipo} para la mascota con ID ${createCasoDto.mascotaId}`);
-    }
+  if (casoExistente) {
+    throw new BadRequestException(
+      `Ya existe un caso de tipo ${tipo} para la mascota con ID ${mascotaId}`,
+    );
+  }
 
-    const caso = await this.prismaService.caso.create({
+  // Crear el caso principal
+  const caso = await this.prismaService.caso.create({
+    data: {
+      titulo,
+      descripcion,
+      tipo,
+      mascotaId,
+      ongId,
+    },
+  });
+
+  // Crear subtipo si es necesario
+  if (tipo === 'ADOPCION') {
+    await this.prismaService.casoAdopcion.create({
       data: {
-        titulo: createCasoDto.titulo,
-        descripcion: createCasoDto.descripcion,
-        tipo: createCasoDto.tipo,
-        mascotaId: createCasoDto.mascotaId,
-        ongId: createCasoDto.ongId,
+        casoId: caso.id,
+        estado: 'PENDIENTE',
       },
     });
+  } else if (tipo === 'DONACION' && donacion) {
+    await this.prismaService.casoDonacion.create({
+      data: {
+        casoId: caso.id,
+        metaDonacion: donacion.metaDonacion,
+        estadoDonacion: 0,
+      },
+    });
+  }
 
-    if(createCasoDto.tipo === 'ADOPCION') {
-
-      await this.prismaService.casoAdopcion.create({
-        data: {
-          casoId: caso.id,
-          estado: 'PENDIENTE',
-        },
-      });
-
-    } else if(createCasoDto.tipo === 'DONACION' && createCasoDto.donacion) {
-      await this.prismaService.casoDonacion.create({
-        data: {
-          casoId: caso.id,
-          metaDonacion: createCasoDto.donacion.metaDonacion,
-          estadoDonacion: 0,
-        },
-      });
+  // ✅ Procesar y guardar imágenes si se enviaron
+  if (imagenes?.length) {
+    if (imagenes.length > 5) {
+      throw new BadRequestException('Se permiten hasta 5 imágenes por caso.');
     }
 
-    return caso;
+    // Analizar cada imagen con Google Vision y marcar si es sensible
+    const imagenesProcesadas = await Promise.all(
+      imagenes.map(async (url) => {
+        const resultado = await this.googleVisionService.analizarImagen(url); // 👈 este método debe devolver { advertencia: boolean }
+        return {
+          url,
+          sensible: resultado.advertencia,
+        };
+      }),
+    );
 
+    // Crear el registro de ImagenesDeLaPublicacion con sus imágenes asociadas
+    await this.prismaService.imagenesDeLaPublicacion.create({
+      data: {
+        idCasoPadre: caso.id,
+        imagenes: {
+          create: imagenesProcesadas,
+        },
+      },
+    });
   }
+  return caso;
+}
 
   async buscarCasos(filtros: { tipoMascota?: string; nombreMascota?: string }) {
     
@@ -270,8 +311,7 @@ async filtrarPorTipoYordenTemporal(ongId: string, orden?: string, tipoMascota?: 
   });
 }
 
-
-async obtenerCasosPorOng(ongId: string){
+async obtenerCasosPorOng(ongId: string) {
   return await this.prismaService.caso.findMany({
     where: { ongId },
     include: {
@@ -283,6 +323,11 @@ async obtenerCasosPorOng(ongId: string){
       },
       adopcion: true,
       donacion: true,
+      imagenes: {
+        include: {
+          imagenes: true, // Incluir las imágenes con el campo `sensible`
+        },
+      },
     },
   });
 }
