@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { CloudinaryService } from './cloudinary.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiExcludeController } from '@nestjs/swagger';
@@ -20,6 +20,12 @@ export class UploadController{
     async subirMultiples(
         @UploadedFiles() files: Express.Multer.File[]
       ) {
+        console.log('Retornando desde /multiples controller')
         return this.cloudinaryService.subirMultiplesImagenes(files);
+      }
+
+      @Get('prueba')
+      getDePrueba(){
+        return 'RETORNANDO DESDE CLOUDINARY CONTROLLER'
       }
 }
