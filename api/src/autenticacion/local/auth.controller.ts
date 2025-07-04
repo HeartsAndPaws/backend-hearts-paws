@@ -61,7 +61,8 @@ export class AuthController {
     }
   }
 
-
+  @ApiOperation({ summary: 'Cierra Sesión del usuario' })
+  @ApiOkResponse({ description: 'Sesión cerrada' })
   @Post('cerrarSesion')
   async logout (@Res() res: Response){
     const isProduction = ['production', 'staging'].includes(process.env.NODE_ENV || '');

@@ -77,7 +77,7 @@ export class UsuariosController {
     return await this.usuariosService.usuarioPorId(id);
   }
 
-
+  @ApiOperation({ summary: 'Obtener todos los casos favoritos de un usuario' })
   @Get('favoritos/casos/:usuarioId')
   obetnerFavoritos(@Param('usuarioId') usuarioId: string){
     return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId)
@@ -135,6 +135,7 @@ export class UsuariosController {
     return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url)
   }
 
+  @ApiOperation({ summary: 'Agregar o eliminar caso de favoritos' })
   @Put(':userId/favoritos/:casoId')
   toggleFavorito(@Param('userId', ParseUUIDPipe) userId: string, @Param('casoId', ParseUUIDPipe) casoId: string) {
     return this.usuariosService.toggleFavorito(userId, casoId);
