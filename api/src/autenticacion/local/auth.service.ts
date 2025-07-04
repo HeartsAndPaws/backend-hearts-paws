@@ -32,11 +32,16 @@ export class ServicioAut {
     const hashedPassword = await bcrypt.hash(datosDeUsuario.contrasena, 10);
     datosDeUsuario.contrasena = hashedPassword;
 
+    if (!datosDeUsuario.imagenPerfil && datosDeUsuario.nombre) {
+      const encodedNombre = encodeURIComponent(datosDeUsuario.nombre.trim());
+      datosDeUsuario.imagenPerfil = `https://ui-avatars.com/api/?name=${encodedNombre}&background=random&size=256`;
+    }
+
     const usuario = await this.prisma.usuario.create({
       data: {
         ...datosDeUsuario,
         contrasena: hashedPassword,
-        imagenPerfil: datosDeUsuario.imagenPerfil ?? null,
+        imagenPerfil: datosDeUsuario.imagenPerfil,
         rol: 'USUARIO'
       },
       select: {
@@ -166,12 +171,17 @@ export class ServicioAut {
 
     const contraseñaHash = await bcrypt.hash(data.contrasena, 10);
 
+    if (!data.imagenPerfil && data.nombre) {
+      const encodedNombre = encodeURIComponent(data.nombre.trim());
+      data.imagenPerfil = `https://ui-avatars.com/api/?name=${encodedNombre}&background=random&size=256`;
+    }
+
     const nuevaOrganizacion = await this.prisma.organizacion.create({
       data: {
         ...data,
         contrasena: contraseñaHash,
         archivoVerificacionUrl: data.archivoVerificacionUrl,
-        imagenPerfil: data.imagenPerfil ?? null,
+        imagenPerfil: data.imagenPerfil,
         estado: 'PENDIENTE',
       },
       select: {
