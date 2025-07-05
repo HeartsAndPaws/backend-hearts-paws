@@ -43,19 +43,22 @@ export class MascotasController {
     return this.mascotasService.GetTipo();
   }
 
+
+  @UseGuards(AuthGuard('jwt-local'))
+  @Get("ong")
+  GetMascotasByOngId(@Req() req: AuthenticateRequest) {
+    console.log('Usuario autenticado:', req.user); 
+    const ongId = req.user.id;
+    return this.mascotasService.GetMascotasByOngId(ongId);
+  }
+
+
   @Get(':id')
   GetMascotaById(@Param('id') id: string) {
     return this.mascotasService.GetMascotaById(id);
   }
 
-  @UseGuards(AuthGuard('jwt-local'))
-  @Get("ong")
-  GetMascotasByOngId(@Req() req: AuthenticateRequest) {
-    console.log('Usuario autenticado:', req.user); // 👈 Debug
-    const ongId = req.user.id;
-    return this.mascotasService.GetMascotasByOngId(ongId);
-  }
-
+  
   @Post("crearTipo")
   CreateTipoMascota(@Body() createTipoMascotaDto: TipoMascotaDto) {
     return this.mascotasService.CreateTipoMascota(createTipoMascotaDto);
