@@ -15,9 +15,5 @@ export class CreateMascotaDto {
 
   @IsUUID()
   @IsNotEmpty()
-  organizacionId: string;
-
-  @IsUUID()
-  @IsNotEmpty()
   tipoId: string;
 }

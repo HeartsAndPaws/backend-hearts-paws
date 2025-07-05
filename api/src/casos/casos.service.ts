@@ -90,7 +90,7 @@ export class CasosService {
 }
 
 
-  async CreateCaso(createCasoDto: CreateCasoDto) {
+  async CreateCaso(createCasoDto: CreateCasoDto, ongId: string) {
     
     const casoExistente = await this.prismaService.caso.findFirst({
       where: {
@@ -109,7 +109,7 @@ export class CasosService {
         descripcion: createCasoDto.descripcion,
         tipo: createCasoDto.tipo,
         mascotaId: createCasoDto.mascotaId,
-        ongId: createCasoDto.ongId,
+        ongId,
       },
     });
 
