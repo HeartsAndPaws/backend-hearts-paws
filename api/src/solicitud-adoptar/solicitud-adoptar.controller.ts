@@ -9,6 +9,7 @@ import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { Request as ExpressRequest } from 'express';
 import { User } from '@supabase/supabase-js';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 
 @Controller('solicitud-adoptar')
@@ -44,9 +45,10 @@ export class SolicitudAdoptarController {
 
 
   @UseGuards(AuthGuard('jwt-local'))
-  @Get('solicitudesDeCadaAdopcion/:id')
-  verSolicitudesPorCaso(@Param('id') id: string) {
-    return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
+  @Get('/solicitudesDeCadaAdopcion')
+  verSolicitudesPorCaso(@Req() req: AuthenticateRequest) {
+    const ongId = req.user.id;
+    return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(ongId)
   }
 
 @Get('filtro')
