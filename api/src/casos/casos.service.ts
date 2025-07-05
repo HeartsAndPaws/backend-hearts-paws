@@ -147,7 +147,7 @@ async CreateCaso(createCasoDto: CreateCasoDto) {
     });
   }
 
-  // ✅ Procesar y guardar imágenes si se enviaron
+  //  Procesar y guardar imágenes si se enviaron
   if (imagenes?.length) {
     if (imagenes.length > 5) {
       throw new BadRequestException('Se permiten hasta 5 imágenes por caso.');
@@ -156,7 +156,7 @@ async CreateCaso(createCasoDto: CreateCasoDto) {
     // Analizar cada imagen con Google Vision y marcar si es sensible
     const imagenesProcesadas = await Promise.all(
       imagenes.map(async (url) => {
-        const resultado = await this.googleVisionService.analizarImagen(url); // 👈 este método debe devolver { advertencia: boolean }
+        const resultado = await this.googleVisionService.analizarImagen(url);
         return {
           url,
           sensible: resultado.advertencia,
