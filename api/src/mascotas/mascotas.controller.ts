@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFiles, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseInterceptors, UploadedFiles, UseGuards, Req } from '@nestjs/common';
 import { MascotasService } from './mascotas.service';
 import { CreateMascotaDto } from './dto/create-mascota.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -7,6 +7,8 @@ import { TipoMascotaDto } from './dto/tipoMascota.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
+
 
 @Controller('mascotas')
 export class MascotasController {
@@ -23,7 +25,8 @@ export class MascotasController {
 
   @UseGuards(AuthGuard('jwt-local'))
   @Get('mascotas-por-ong-adopcion/:ongId')
-  listaDeMascotasEnAdopcionPorOng(@Param('ongId') ongId: string){
+  listaDeMascotasEnAdopcionPorOng(@Req() req: AuthenticateRequest){
+    const ongId = req.user.id;
     return this.mascotasService.mascotasEnAdopcionPorOng(ongId)
   }
 
@@ -46,8 +49,9 @@ export class MascotasController {
   }
 
   @UseGuards(AuthGuard('jwt-local'))
-  @Get("ong/:id")
-  GetMascotasByOngId(@Param('id') ongId: string) {
+  @Get("ong")
+  GetMascotasByOngId(@Req() req: AuthenticateRequest) {
+    const ongId = req.user.id;
     return this.mascotasService.GetMascotasByOngId(ongId);
   }
 
@@ -59,14 +63,20 @@ export class MascotasController {
     
   @UseGuards(AuthGuard('jwt-local'))
   @Post()
-  CreateMascota(@Body() createMascotaDto: CreateMascotaDto) {
-    return this.mascotasService.CreateMascota(createMascotaDto);
+  CreateMascota(
+    @Req() req: AuthenticateRequest,
+    @Body() createMascotaDto: CreateMascotaDto) {
+      const ongId = req.user.id;
+      return this.mascotasService.CreateMascota(createMascotaDto, ongId);
   }
 
 
   @UseGuards(AuthGuard('jwt-local'))
   @Post('tipo')
-  crearTipoDeMascota(@Body() datos: TipoMascotaDto) {
+  crearTipoDeMascota(
+    @Body() datos: TipoMascotaDto,
+    @Req() req: AuthenticateRequest
+  ) {
     const { nombre } = datos;
     return this.mascotasService.crearTipoDeMascota(nombre);
   }
@@ -93,8 +103,10 @@ export class MascotasController {
   async subirImagenes(
     @Param('id') mascotaId: string,
     @UploadedFiles() archivos: Express.Multer.File[],
+    @Req() req: AuthenticateRequest
   ) {
-    return this.mascotasService.SubirImagenes(mascotaId, archivos);
+    const ongId = req.user.id;
+    return this.mascotasService.SubirImagenes(mascotaId, archivos, ongId);
   }
 
 

@@ -5,6 +5,7 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FiltrarPorCasosFechasDto } from './dto/filtro-por-caso-y-fecha.dto';
 import { FiltrarPorTipoViejoRecienteDto } from './dto/filtro-tipo-viejo-reciente.dto';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @Controller('casos')
 export class CasosController {
@@ -58,8 +59,14 @@ filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
 
   @UseGuards(AuthGuard('jwt-local'))
   @Post()
-  CreateCaso(@Body() createCasoDto: CreateCasoDto) {
-    return this.casosService.CreateCaso(createCasoDto);
+  CreateCaso(
+    @Req() req: AuthenticateRequest,
+    @Body() createCasoDto: CreateCasoDto) {
+      const ongId = req.user.id;
+      if (req.user.tipo !== 'ONG') {
+        throw new UnauthorizedException('Solo una organización puede crear casos.')
+      }
+    return this.casosService.CreateCaso(createCasoDto, ongId);
   }
 
   @Get('buscar')

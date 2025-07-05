@@ -10,6 +10,7 @@ import { Rol } from '@prisma/client';
 import { Request } from 'express';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 
 @ApiTags('Usuarios')
@@ -47,23 +48,21 @@ export class UsuariosController {
 
   @Get('mis-donaciones')
   @ApiOperation({summary: 'ver mis donaciones'})
-  async obtenerMisDonaciones(@Req() req: Request){
-    const usuario = req.user as any;
-    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(usuario.id);
+  async obtenerMisDonaciones(@Req() req: AuthenticateRequest){
+    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(req.user.id);
   }
 
   @Get('mis-solicitudes')
   @ApiOperation({ summary: 'Ver mis solicitudes de adopción'})
-  async obtenerMisSolicitudes(@Req() req: Request){
-    const usuario = req.user as any;
-    return await this.usuariosService.obtenerSolicitudesDelUsuario(usuario.id);
+  async obtenerMisSolicitudes(@Req() req: AuthenticateRequest){
+    return await this.usuariosService.obtenerSolicitudesDelUsuario(req.user.id);
   }
 
 
   @Get('me')
   @ApiOperation({ summary: 'Obtener el usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
-  async getUsuarioActual(@Req() req){
+  async getUsuarioActual(@Req() req: AuthenticateRequest){
     return await this.usuariosService.usuarioPorId(req.user.id, req.user.external)
   }
 
