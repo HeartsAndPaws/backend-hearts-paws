@@ -133,46 +133,71 @@ async filtroViviendaQdeMascotas(
 
 
   async verSolicitudesPorCasoDeAdopcion(ongId: string) {
-
-  const casoAdopcion = await this.prisma.casoAdopcion.findMany({
-    where: {
-      caso: {
-        ongId: ongId,
-        tipo: 'ADOPCION',
-      },
-    },
+    const mascotas = await this.prisma.mascota.findMany({
+    where: { organizacionId: ongId },
     include: {
-      caso: {
-        select: {
-          id: true,
-          titulo: true,
-          mascota: {
-            select: {
-              id: true,
-              nombre: true,
-              imagenes: true,
+      imagenes: true,
+      casos: {
+        where: {
+          tipo: 'ADOPCION',
+        },
+        include: {
+          adopcion: {
+            include: {
+              solicitudes: {
+                include: {
+                  usuario: true,
+                },
+              },
             },
           },
-        },
-      },
-      solicitudes: {
-        include: {
-          usuario: true,
         },
       },
     },
   });
 
-  if (!casoAdopcion) {
-    throw new NotFoundException(`No se encontró el caso de adopción para el caso con ID ${ongId}`);
-  }
-  
-  return casoAdopcion.map((casoAdopcion) => ({
-    casoId: casoAdopcion.caso.id,
-    titulo: casoAdopcion.caso.titulo,
-    Mascota: casoAdopcion.caso.mascota,
-    solicitudes: casoAdopcion.solicitudes,
-  }));
+  const resultado = mascotas.map((mascota) => {
+    const casoAdopcion = mascota.casos[0]?.adopcion;
+    const solicitudes = casoAdopcion?.solicitudes || [];
+
+    return {
+      mascota: {
+        id: mascota.id,
+        nombre: mascota.nombre,
+        edad: mascota.edad,
+        descripcion: mascota.descripcion,
+        imagenes: mascota.imagenes,
+      },
+      solicitudes: solicitudes.map((s) => ({
+        id: s.id,
+        estado: s.estado,
+        tipoVivienda: s.tipoVivienda,
+        integrantesFlia: s.integrantesFlia,
+        hijos: s.hijos,
+        hayOtrasMascotas: s.hayOtrasMascotas,
+        descripcionOtrasMascotas: s.descripcionOtrasMascotas,
+        cubrirGastos: s.cubrirGastos,
+        darAlimentoCuidados: s.darAlimentoCuidados,
+        darAmorTiempoEj: s.darAmorTiempoEj,
+        devolucionDeMascota: s.devolucionDeMascota,
+        siNoPodesCuidarla: s.siNoPodesCuidarla,
+        declaracionFinal: s.declaracionFinal,
+        usuario: {
+          id: s.usuario.id,
+          nombre: s.usuario.nombre,
+          email: s.usuario.email,
+          telefono: s.usuario.telefono,
+          direccion: s.usuario.direccion,
+          ciudad: s.usuario.ciudad,
+          pais: s.usuario.pais,
+          imagenPerfil: s.usuario.imagenPerfil,
+        },
+      })),
+    };
+  });
+
+  return resultado;
+
 }
 
 async aceptarSolicitud(
