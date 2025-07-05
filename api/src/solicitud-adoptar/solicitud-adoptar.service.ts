@@ -3,7 +3,6 @@ import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EstadoAdopcion } from '@prisma/client';
 import { MailerService } from 'src/shared/email/email-server.service';
-import { error } from 'console';
 
 @Injectable()
 export class SolicitudAdoptarService {
@@ -12,20 +11,19 @@ export class SolicitudAdoptarService {
     private readonly mailerService: MailerService
   ) {}
 
-async crearSolicitud(solicitud: SolicitudParaAdoptarDto) {
-  const { 
-    usuarioId, 
-    casoAdopcionId, 
-    estado, 
-    tipoVivienda, 
-    integrantesFlia, 
-    hijos,  
-    hayOtrasMascotas,
-    descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
-    devolucionDeMascota, siNoPodesCuidarla, declaracionFinal
-  } = solicitud;
 
-  const usuarioSolicitante = await this.prisma.usuario.findUnique({
+  async crearSolicitud(usuarioId: string ,solicitud: SolicitudParaAdoptarDto) {
+    const { 
+      casoAdopcionId, 
+      estado, 
+      tipoVivienda, 
+      integrantesFlia, 
+      hijos,  
+      hayOtrasMascotas,
+    descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
+    devolucionDeMascota, siNoPodesCuidarla, declaracionFinal} = solicitud
+
+    const usuarioSolicitante = await this.prisma.usuario.findUnique({
     where: {
       id: usuarioId
     },

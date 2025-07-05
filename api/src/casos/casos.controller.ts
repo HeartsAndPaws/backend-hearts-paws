@@ -41,7 +41,7 @@ export class CasosController {
 
   @Get('donacion/buscar')
   @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
-@ApiOperation({ summary: 'Buscar casos de donación por tipo de mascota' })
+  @ApiOperation({ summary: 'Buscar casos de donación por tipo de mascota' })
   busquedaDonacion(@Query('tipo') tipo: string){
     return this.casosService.buscarCasosDeDonacionPorTipoDeMascota(tipo)
   }
@@ -56,6 +56,7 @@ filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
   return this.casosService.filtrarPorTipoYordenTemporal(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);
 }
 
+  @UseGuards(AuthGuard('jwt-local'))
   @Post()
   CreateCaso(@Body() createCasoDto: CreateCasoDto) {
     return this.casosService.CreateCaso(createCasoDto);
