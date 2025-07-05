@@ -24,7 +24,7 @@ export class MascotasController {
 
 
   @UseGuards(AuthGuard('jwt-local'))
-  @Get('mascotas-por-ong-adopcion/:ongId')
+  @Get('mascotas-por-ong-adopcion')
   listaDeMascotasEnAdopcionPorOng(@Req() req: AuthenticateRequest){
     const ongId = req.user.id;
     return this.mascotasService.mascotasEnAdopcionPorOng(ongId)
@@ -51,6 +51,7 @@ export class MascotasController {
   @UseGuards(AuthGuard('jwt-local'))
   @Get("ong")
   GetMascotasByOngId(@Req() req: AuthenticateRequest) {
+    console.log('Usuario autenticado:', req.user); // 👈 Debug
     const ongId = req.user.id;
     return this.mascotasService.GetMascotasByOngId(ongId);
   }
