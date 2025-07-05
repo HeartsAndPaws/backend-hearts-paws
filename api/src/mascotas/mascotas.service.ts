@@ -1,4 +1,4 @@
-import { Injectable, Get, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Get, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CreateMascotaDto } from './dto/create-mascota.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -89,6 +89,22 @@ async mascotasEnAdopcionPorOng(ongId: string) {
 }
 
 async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
+
+  const tipoExist = await this.prismaService.tiposMascota.findUnique({
+    where: { id: createMascotaDto.tipoId}
+  });
+
+  if (!tipoExist) {
+    throw new BadRequestException('El ripo de mascota no existe');
+  }
+
+  const ongExiste = await this.prismaService.organizacion.findUnique({
+    where: { id: ongId }
+  });
+
+  if (!ongExiste) {
+    throw new BadRequestException('La organizacion no existe')
+  }
   
   return this.prismaService.mascota.create({
     data: {
