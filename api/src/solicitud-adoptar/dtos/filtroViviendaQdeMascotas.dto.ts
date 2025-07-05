@@ -8,8 +8,4 @@ export class filtroViviendaQdeMascotasDto {
     @IsOptional()
     @IsString()
     tipoVivienda?: string
-
-    @IsOptional()
-    @IsNumber()
-    hayOtrasMascotas?:number
 }

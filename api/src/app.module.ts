@@ -16,6 +16,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { SupabaseModule } from './autenticacion/supabase/supabase.module';
 import { SolicitudAdoptarModule } from './solicitud-adoptar/solicitud-adoptar.module';
 import { DonacionModule } from './donacion/donacion.module';
+import { GoogleVisionModule } from './google-vision/google-vision.module';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { DonacionModule } from './donacion/donacion.module';
     SupabaseModule,
     ChatModule,
     SolicitudAdoptarModule,
-    DonacionModule
+    DonacionModule,
+    GoogleVisionModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
