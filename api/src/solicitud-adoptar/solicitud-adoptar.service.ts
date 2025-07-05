@@ -11,9 +11,8 @@ export class SolicitudAdoptarService {
     private readonly prisma: PrismaService,
     private readonly mailerService: MailerService
   ) {}
-  async crearSolicitud(solicitud: SolicitudParaAdoptarDto) {
+  async crearSolicitud(usuarioId: string ,solicitud: SolicitudParaAdoptarDto) {
     const { 
-      usuarioId, 
       casoAdopcionId, 
       estado, 
       tipoVivienda, 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req} from '@nestjs/common';
 import { SolicitudAdoptarService } from './solicitud-adoptar.service';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { CambiarEstadoDto } from './dtos/cambiar-estado.dto';
@@ -7,6 +7,9 @@ import { EstadoAdopcion } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
+import { Request as ExpressRequest } from 'express';
+import { User } from '@supabase/supabase-js';
+
 
 @Controller('solicitud-adoptar')
 export class SolicitudAdoptarController {
@@ -14,8 +17,13 @@ export class SolicitudAdoptarController {
 
 
   @Post()
-  create(@Body() createSolicitudAdoptarDto: SolicitudParaAdoptarDto) {
-    return this.solicitudAdoptarService.crearSolicitud(createSolicitudAdoptarDto);
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  create(
+    @Body() createSolicitudAdoptarDto: SolicitudParaAdoptarDto,
+    @Req() req: ExpressRequest & { user: User}
+  ) {
+    const usuarioId = req.user.id;
+    return this.solicitudAdoptarService.crearSolicitud(usuarioId, createSolicitudAdoptarDto);
   }
 
 
@@ -34,6 +42,8 @@ export class SolicitudAdoptarController {
     return await this.solicitudAdoptarService.contarAdopcionesAceptadas();
   }
 
+
+  @UseGuards(AuthGuard('jwt-local'))
   @Get('solicitudesDeCadaAdopcion/:id')
   verSolicitudesPorCaso(@Param('id') id: string) {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
@@ -45,6 +55,8 @@ export class SolicitudAdoptarController {
     return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
   }
 
+
+@UseGuards(AuthGuard('jwt-local'))
 @Patch()
 async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
   const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;

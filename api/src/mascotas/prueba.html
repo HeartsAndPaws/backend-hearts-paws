@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prueba Imagen Sensible</title>
+  <style>
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      text-align: center;
+    }
+
+    img {
+      width: 100%;
+      max-height: 400px;
+      border-radius: 10px;
+      transition: filter 0.3s ease;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Imagen sensible</h2>
+    <img id="imagen" src="https://res.cloudinary.com/dbqmuze26/image/upload/e_pixelate:100/v1751729294/hertsandpaws/hzp9mldyvmmr9t6g5ulc.jpg" alt="imagen desenfocada" />
+    <br />
+    <button onclick="verImagen()">Ver imagen</button>
+  </div>
+
+  <script>
+    function verImagen() {
+      const imagen = document.getElementById('imagen');
+      imagen.src = "https://res.cloudinary.com/dbqmuze26/image/upload/v1751729294/hertsandpaws/hzp9mldyvmmr9t6g5ulc.jpg";
+    }
+  </script>
+
+</body>
+</html>
