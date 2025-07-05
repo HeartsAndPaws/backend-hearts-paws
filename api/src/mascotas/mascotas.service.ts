@@ -1,4 +1,4 @@
-import { Injectable, Get } from '@nestjs/common';
+import { Injectable, Get, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { CreateMascotaDto } from './dto/create-mascota.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -88,10 +88,13 @@ async mascotasEnAdopcionPorOng(ongId: string) {
   });
 }
 
-async CreateMascota(createMascotaDto: CreateMascotaDto) {
+async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
   
   return this.prismaService.mascota.create({
-    data: createMascotaDto,
+    data: {
+      ...createMascotaDto,
+      organizacionId: ongId,
+    },
     include: {
         imagenes: true,
         tipo: true
@@ -100,7 +103,19 @@ async CreateMascota(createMascotaDto: CreateMascotaDto) {
   
   }
 
-  async SubirImagenes(mascotaId: string, archivos: Express.Multer.File[]) {
+  async SubirImagenes(mascotaId: string, archivos: Express.Multer.File[], ongId: string) {
+
+    const mascota = await this.prismaService.mascota.findUnique({
+      where: { id: mascotaId},
+    });
+
+    if (!mascota) {
+      throw new NotFoundException('Mascota no encontrada');
+    }
+
+    if (mascota.organizacionId !== ongId) {
+      throw new ForbiddenException('No puedes subir imagenes a esta mascota');
+    }
 
     const imagenes: any = []
 

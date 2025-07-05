@@ -33,10 +33,6 @@ export class CreateCasoDto {
   @IsNotEmpty()
   mascotaId: string;
 
-  @IsString()
-  @IsNotEmpty()
-  ongId: string;
-
   @IsOptional()
   @ValidateNested()
   @Type(() => AdopcionDataDto)
