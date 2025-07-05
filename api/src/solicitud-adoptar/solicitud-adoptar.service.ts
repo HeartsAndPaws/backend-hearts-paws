@@ -3,6 +3,8 @@ import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EstadoAdopcion } from '@prisma/client';
 import { MailerService } from 'src/shared/email/email-server.service';
+import { timeout } from 'rxjs';
+import { Mascota } from 'src/mascotas/entities/mascota.entity';
 
 @Injectable()
 export class SolicitudAdoptarService {
@@ -130,23 +132,47 @@ async filtroViviendaQdeMascotas(
 }
 
 
-  async verSolicitudesPorCasoDeAdopcion(id: string) {
-  const casoAdopcion = await this.prisma.casoAdopcion.findUnique({
+  async verSolicitudesPorCasoDeAdopcion(ongId: string) {
+
+  const casoAdopcion = await this.prisma.casoAdopcion.findMany({
     where: {
-      id,
+      caso: {
+        ongId: ongId,
+        tipo: 'ADOPCION',
+      },
     },
     include: {
+      caso: {
+        select: {
+          id: true,
+          titulo: true,
+          mascota: {
+            select: {
+              id: true,
+              nombre: true,
+              imagenes: true,
+            },
+          },
+        },
+      },
       solicitudes: {
-        include: { usuario: true,},
+        include: {
+          usuario: true,
+        },
       },
     },
   });
 
   if (!casoAdopcion) {
-    throw new NotFoundException(`No se encontró el caso de adopción para el caso con ID ${id}`);
+    throw new NotFoundException(`No se encontró el caso de adopción para el caso con ID ${ongId}`);
   }
   
-  return casoAdopcion.solicitudes;
+  return casoAdopcion.map((casoAdopcion) => ({
+    casoId: casoAdopcion.caso.id,
+    titulo: casoAdopcion.caso.titulo,
+    Mascota: casoAdopcion.caso.mascota,
+    solicitudes: casoAdopcion.solicitudes,
+  }));
 }
 
 async aceptarSolicitud(
