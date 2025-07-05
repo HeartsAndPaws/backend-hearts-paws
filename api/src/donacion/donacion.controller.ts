@@ -36,6 +36,7 @@ export class DonacionController {
     return await this.donacionService.obtenerValorTotalDonaciones();
   }
 
+  @UseGuards(AuthGuard('jwt-local'))
   @Get('/ong/:ongId')
   getDonacionesByOngId(@Param('ongId') ongId: string) {
     return this.donacionService.getDonacionesByOngId(ongId);

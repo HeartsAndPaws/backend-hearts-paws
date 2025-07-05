@@ -72,9 +72,13 @@ model Organizacion {
 model imagenMascota {
   id        String   @id @default(uuid())
   url       String
+  urlBlur   String?
   mascota   Mascota  @relation(fields: [mascotaId], references: [id])
   mascotaId String
   subida_en DateTime @default(now())
+
+  esSensible  Boolean?  @default(false)
+  violenciaScore  Float?  
 }
 
 model TiposMascota {
