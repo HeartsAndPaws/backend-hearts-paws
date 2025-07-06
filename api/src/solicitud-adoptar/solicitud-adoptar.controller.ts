@@ -25,6 +25,7 @@ import { User } from '@supabase/supabase-js';
 import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @ApiTags('Solicitudes de Adopción')
+@UseGuards(AuthGuard(['jwt-local', 'supabase']))
 @Controller('solicitud-adoptar')
 export class SolicitudAdoptarController {
   constructor(private readonly solicitudAdoptarService: SolicitudAdoptarService) {}
@@ -137,16 +138,17 @@ export class SolicitudAdoptarController {
       req.user.id,
     );
   }
-@Get('existenciaDeSolicitud')
+  
+@Get('yaExisteLaSolicitud/:idCasoAdopcion')
 async verifica(
   @Req() req: ExpressRequest & { user: User },
   @Param('idCasoAdopcion') idCasoAdopcion: string
 ) {
-  return this.solicitudAdoptarService.existenciaDeSolicitud(req.user.id, idCasoAdopcion);
+  const userId = req.user.id
+  console.log(userId)
+  return this.solicitudAdoptarService.existenciaDeSolicitud(userId, idCasoAdopcion);
 }
 
-
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una solicitud de adopción' })
   @ApiParam({ name: 'id', type: 'string', description: 'ID de la solicitud' })

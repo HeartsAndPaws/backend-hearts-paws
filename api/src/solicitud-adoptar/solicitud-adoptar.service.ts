@@ -12,7 +12,6 @@ export class SolicitudAdoptarService {
     private readonly mailerService: MailerService
   ) {}
 
-
   async crearSolicitud(usuarioId: string ,solicitud: SolicitudParaAdoptarDto) {
     const { 
       casoAdopcionId, 
