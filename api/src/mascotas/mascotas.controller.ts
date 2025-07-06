@@ -9,19 +9,16 @@ import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
-
 @Controller('mascotas')
 export class MascotasController {
   constructor(private readonly mascotasService: MascotasService) {}
 
-  
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Roles('ADMIN')
   @Get()
   GetMascotas(){
     return this.mascotasService.GetMascotas();
   }
-
 
   @UseGuards(AuthGuard('jwt-local'))
   @Get('mascotas-por-ong-adopcion')
@@ -38,11 +35,13 @@ export class MascotasController {
     return await this.mascotasService.contarMascotas();
   }
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Get('tipo')
   GetTiposMascotas() {
     return this.mascotasService.GetTipo();
   }
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Get(':id')
   GetMascotaById(@Param('id') id: string) {
     return this.mascotasService.GetMascotaById(id);
@@ -56,6 +55,7 @@ export class MascotasController {
     return this.mascotasService.GetMascotasByOngId(ongId);
   }
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Post("crearTipo")
   CreateTipoMascota(@Body() createTipoMascotaDto: TipoMascotaDto) {
     return this.mascotasService.CreateTipoMascota(createTipoMascotaDto);
@@ -109,6 +109,4 @@ export class MascotasController {
     const ongId = req.user.id;
     return this.mascotasService.SubirImagenes(mascotaId, archivos, ongId);
   }
-
-
 }

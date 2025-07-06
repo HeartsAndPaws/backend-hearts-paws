@@ -13,26 +13,31 @@ export class CasosController {
     private readonly casosService: CasosService
   ) {}
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get()
   GetCasos(){
     return this.casosService.GetCasos();
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('adopcion')
   GetCasosAdopcion() {
     return this.casosService.GetCasosAdopcion();
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('donacion')
   GetCasosDonacion() {
     return this.casosService.GetCasosDonacion();
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('idAdopcion/:mascotaId')
   obtenerIdAdopcion(@Param('mascotaId') mascotaId: string){
     return this.casosService.obtenerIdDelCasoAdopcion(mascotaId)
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('adopcion/buscar')
   @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
   @ApiOperation({ summary: 'Buscar casos de adopción por tipo de mascota' })
@@ -40,6 +45,7 @@ export class CasosController {
     return this.casosService.filtroParaAdopcionesPorMascota(tipo)
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('donacion/buscar')
   @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
   @ApiOperation({ summary: 'Buscar casos de donación por tipo de mascota' })
@@ -47,17 +53,19 @@ export class CasosController {
     return this.casosService.buscarCasosDeDonacionPorTipoDeMascota(tipo)
   }
 
+@UseGuards(AuthGuard(['jwt-local']))
 @Get('filtro-casos-fechas/buscar')
 buscarPorTipoYFechas(@Query() filtros: FiltrarPorCasosFechasDto) {
   return this.casosService.buscarCasosPorTipoYFechas(filtros.tipo, filtros.fechaDesde, filtros.fechaHasta);
 }
 
+@UseGuards(AuthGuard(['jwt-local']))
 @Get('filtro-tipo-mascota-orden-temporal')
 filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
   return this.casosService.filtrarPorTipoYordenTemporal(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);
 }
 
-  @UseGuards(AuthGuard('jwt-local'))
+  @UseGuards(AuthGuard(['jwt-local']))
   @Post()
   CreateCaso(
     @Req() req: AuthenticateRequest,
@@ -69,12 +77,14 @@ filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
     return this.casosService.CreateCaso(createCasoDto, ongId);
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('buscar')
   async buscarCasos(@Query('tipo') tipoMascota?: string, @Query('nombre') nombreMascota?: string) {
     return this.casosService.buscarCasos({ tipoMascota, nombreMascota }); 
 
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get(':id')
   GetCasoById(@Param('id') id: string) {
     return this.casosService.GetCasoById(id);
@@ -93,5 +103,4 @@ filtroPorTipoRecienteAntiguo(@Query() filtros: FiltrarPorTipoViejoRecienteDto) {
     }
     return await this.casosService.obtenerCasosPorOng(ongId);
   }
-  
 }
