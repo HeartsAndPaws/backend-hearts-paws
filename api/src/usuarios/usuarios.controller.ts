@@ -76,9 +76,12 @@ export class UsuariosController {
     return await this.usuariosService.usuarioPorId(id);
   }
 
-
-  @Get('favoritos/casos/:usuarioId')
-  obetnerFavoritos(@Param('usuarioId') usuarioId: string){
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Get('favoritos/casos/')
+  obetnerFavoritos(
+    @Req() req: AuthenticateRequest
+  ){
+    const usuarioId = req.user.id;
     return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId)
   }
 
