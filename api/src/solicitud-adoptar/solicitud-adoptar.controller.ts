@@ -10,14 +10,12 @@ import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { Request as ExpressRequest } from 'express';
 import { User } from '@supabase/supabase-js';
 
-
+@UseGuards(AuthGuard(['jwt-local', 'supabase']))
 @Controller('solicitud-adoptar')
 export class SolicitudAdoptarController {
   constructor(private readonly solicitudAdoptarService: SolicitudAdoptarService) {}
 
-
   @Post()
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   create(
     @Body() createSolicitudAdoptarDto: SolicitudParaAdoptarDto,
     @Req() req: ExpressRequest & { user: User}
@@ -42,8 +40,6 @@ export class SolicitudAdoptarController {
     return await this.solicitudAdoptarService.contarAdopcionesAceptadas();
   }
 
-
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('solicitudesDeCadaAdopcion/:id')
   verSolicitudesPorCaso(@Param('id') id: string) {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
@@ -55,16 +51,16 @@ filtrarSolicitudes(@Query() filtro: filtroViviendaQdeMascotasDto) {
   return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
 }
 
-@Get('existenciaDeSolicitud')
+@Get('yaExisteLaSolicitud/:idCasoAdopcion')
 async verifica(
   @Req() req: ExpressRequest & { user: User },
   @Param('idCasoAdopcion') idCasoAdopcion: string
 ) {
-  return this.solicitudAdoptarService.existenciaDeSolicitud(req.user.id, idCasoAdopcion);
+  const userId = req.user.id
+  console.log(userId)
+  return this.solicitudAdoptarService.existenciaDeSolicitud(userId, idCasoAdopcion);
 }
 
-
-@UseGuards(AuthGuard(['jwt-local', 'supabase']))
 @Patch()
 async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
   const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;
@@ -75,8 +71,6 @@ async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
     estadoNuevo,
   );
 }
-
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Delete(':id')
   borrarSolicitud(@Param('id') id: string) {
     return this.solicitudAdoptarService.borrarSolicitud(id);
