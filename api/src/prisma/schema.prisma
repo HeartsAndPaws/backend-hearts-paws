@@ -109,7 +109,7 @@ model CasoAdopcion {
   id           String   @id @default(uuid())
   caso         Caso     @relation(fields: [casoId], references: [id])
   casoId       String   @unique
-  estado       EstadoAdopcion @default(PENDIENTE)
+  estado       EstadoCasoAdopcion @default(PENDIENTE)
   solicitudes  SolicitudDeAdopcion[]
 }
 
@@ -227,6 +227,11 @@ enum EstadoAdopcion {
   PENDIENTE
   ACEPTADA
   RECHAZADA
+}
+
+enum EstadoCasoAdopcion {
+  PENDIENTE
+  ACEPTADA
 }
 
 enum Plan {

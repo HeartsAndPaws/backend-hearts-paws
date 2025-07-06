@@ -21,9 +21,6 @@ export class JwtLocalStrategy extends PassportStrategy(Strategy, 'jwt-local') {
 
   async validate(payload: any) {
 
-    console.log('Payload JWT recibido en estrategia local:', payload);
-
-
     if (!payload || !payload.sub || !payload.rol) {
       throw new UnauthorizedException('Token invalido o incompleto');
     }
