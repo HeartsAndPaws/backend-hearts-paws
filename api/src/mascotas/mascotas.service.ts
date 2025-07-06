@@ -121,7 +121,9 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
 
   async SubirImagenes(mascotaId: string, archivos: Express.Multer.File[], ongId: string) {
 
-    const mascota = await this.prismaService.mascota.findUnique({
+    try {
+      
+      const mascota = await this.prismaService.mascota.findUnique({
       where: { id: mascotaId},
     });
 
@@ -147,7 +149,11 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
         },
       });
 
-      const analisis = res.data;
+      if (res.data.status === 'failure') {
+        console.warn('Sightengine error:', res.data.error.message);
+        throw new BadRequestException('Error al analizar imagen: ' + res.data.error.message);
+      }
+
       const violenciaScore = Math.max(
         res.data.violence?.prob || 0,
         res.data.gore?.prob || 0
@@ -176,6 +182,11 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
     }
 
     return imagenes;
+    } catch (error) {
+      console.error('ErrorAl subir imagen:', error);
+      throw new Error('Fallo la subida de imagen.')
+    }
+
   }
 
   async contarMascotas(){
