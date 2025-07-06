@@ -139,7 +139,7 @@ export class UsuariosController {
   @Put(':casoId/favoritos')
   toggleFavorito(
     @Param('casoId', ParseUUIDPipe) casoId: string,
-    @Req() req: AuthenticateRequest & { user: any},
+    @Req() req: AuthenticateRequest,
   ) {
     const userId = req.user.id;
     return this.usuariosService.toggleFavorito(userId, casoId);
