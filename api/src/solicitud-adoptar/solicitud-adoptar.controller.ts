@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req, UnauthorizedException} from '@nestjs/common';
 import { SolicitudAdoptarService } from './solicitud-adoptar.service';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { CambiarEstadoDto } from './dtos/cambiar-estado.dto';
@@ -43,7 +43,7 @@ export class SolicitudAdoptarController {
   }
 
 
-  @UseGuards(AuthGuard('jwt-local'))
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('solicitudesDeCadaAdopcion/:id')
   verSolicitudesPorCaso(@Param('id') id: string) {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
@@ -55,8 +55,16 @@ filtrarSolicitudes(@Query() filtro: filtroViviendaQdeMascotasDto) {
   return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
 }
 
+@Get('existenciaDeSolicitud')
+async verifica(
+  @Req() req: ExpressRequest & { user: User },
+  @Param('idCasoAdopcion') idCasoAdopcion: string
+) {
+  return this.solicitudAdoptarService.existenciaDeSolicitud(req.user.id, idCasoAdopcion);
+}
 
-@UseGuards(AuthGuard('jwt-local'))
+
+@UseGuards(AuthGuard(['jwt-local', 'supabase']))
 @Patch()
 async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
   const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;
@@ -68,6 +76,7 @@ async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
   );
 }
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Delete(':id')
   borrarSolicitud(@Param('id') id: string) {
     return this.solicitudAdoptarService.borrarSolicitud(id);
