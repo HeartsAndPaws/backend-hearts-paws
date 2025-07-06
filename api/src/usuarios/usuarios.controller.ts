@@ -134,9 +134,15 @@ export class UsuariosController {
     return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url)
   }
 
-  @Put(':userId/favoritos/:casoId')
-  toggleFavorito(@Param('userId', ParseUUIDPipe) userId: string, @Param('casoId', ParseUUIDPipe) casoId: string) {
-    return this.usuariosService.toggleFavorito(userId, casoId);
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Put(':casoId/favoritos')
+  toggleFavorito(
+    @Param('casoId', ParseUUIDPipe) casoId: string,
+    @Req() req: AuthenticateRequest & { user: any},
+  ) {
+    const userId = req.user.id;
+    return this.usuariosService.toggleFavorito(userId, casoId);
   }
+
 }
