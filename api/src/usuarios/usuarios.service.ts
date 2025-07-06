@@ -223,19 +223,21 @@ async obtenerSolicitudesDelUsuario(usuarioId: string){
   async toggleFavorito(userId: string, casoId: string) {
 
     const favorito = await this.prisma.favorito.findUnique({
-      where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } },
+      where: { usuarioId_casoId: { usuarioId: userId, casoId } },
     })
 
     if(favorito){
 
-      await this.prisma.favorito.delete({where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } }})
+      await this.prisma.favorito.delete({
+        where: { usuarioId_casoId: { usuarioId: userId, casoId } },
+      });
 
       return { message: 'Eliminado de favoritos' };
     }
 
     await this.prisma.favorito.create({
-      data: {usuarioId: userId, casoId: casoId}
-    })
+      data: {usuarioId: userId, casoId },
+    });
 
     return { message: 'Agregado a favoritos' };
 
