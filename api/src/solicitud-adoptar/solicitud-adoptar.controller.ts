@@ -9,6 +9,7 @@ import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { Request as ExpressRequest } from 'express';
 import { User } from '@supabase/supabase-js';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @UseGuards(AuthGuard(['jwt-local', 'supabase']))
 @Controller('solicitud-adoptar')
@@ -40,9 +41,11 @@ export class SolicitudAdoptarController {
     return await this.solicitudAdoptarService.contarAdopcionesAceptadas();
   }
 
-  @Get('solicitudesDeCadaAdopcion/:id')
-  verSolicitudesPorCaso(@Param('id') id: string) {
-    return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
+  @UseGuards(AuthGuard('jwt-local'))
+  @Get('/solicitudesDeCadaAdopcion')
+  verSolicitudesPorCaso(@Req() req: AuthenticateRequest) {
+    const ongId = req.user.id;
+    return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(ongId)
   }
 
 @Get('filtro')
@@ -62,13 +65,20 @@ async verifica(
 }
 
 @Patch()
-async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
+async aceptarSolicitud(
+  @Req() req: AuthenticateRequest,
+  @Body() datos: CambiarEstadoDto) {
   const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;
+
+  if (req.user.tipo !== 'ONG') {
+    throw new UnauthorizedException('Solo una organización puede realizar esta acción');
+  }
 
   return this.solicitudAdoptarService.aceptarSolicitud(
     idDelCasoAdopcion,
     idDeSolicitudAceptada,
     estadoNuevo,
+    req.user.id,
   );
 }
   @Delete(':id')

@@ -1,4 +1,4 @@
-import { Injectable, Get, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Get, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { CreateMascotaDto } from './dto/create-mascota.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -89,6 +89,22 @@ async mascotasEnAdopcionPorOng(ongId: string) {
 }
 
 async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
+
+  const tipoExist = await this.prismaService.tiposMascota.findUnique({
+    where: { id: createMascotaDto.tipoId}
+  });
+
+  if (!tipoExist) {
+    throw new BadRequestException('El ripo de mascota no existe');
+  }
+
+  const ongExiste = await this.prismaService.organizacion.findUnique({
+    where: { id: ongId }
+  });
+
+  if (!ongExiste) {
+    throw new BadRequestException('La organizacion no existe')
+  }
   
   return this.prismaService.mascota.create({
     data: {
@@ -105,7 +121,9 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
 
   async SubirImagenes(mascotaId: string, archivos: Express.Multer.File[], ongId: string) {
 
-    const mascota = await this.prismaService.mascota.findUnique({
+    try {
+      
+      const mascota = await this.prismaService.mascota.findUnique({
       where: { id: mascotaId},
     });
 
@@ -131,7 +149,11 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
         },
       });
 
-      const analisis = res.data;
+      if (res.data.status === 'failure') {
+        console.warn('Sightengine error:', res.data.error.message);
+        throw new BadRequestException('Error al analizar imagen: ' + res.data.error.message);
+      }
+
       const violenciaScore = Math.max(
         res.data.violence?.prob || 0,
         res.data.gore?.prob || 0
@@ -160,6 +182,11 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
     }
 
     return imagenes;
+    } catch (error) {
+      console.error('ErrorAl subir imagen:', error);
+      throw new Error('Fallo la subida de imagen.')
+    }
+
   }
 
   async contarMascotas(){

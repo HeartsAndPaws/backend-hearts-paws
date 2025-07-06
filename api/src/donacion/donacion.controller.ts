@@ -1,8 +1,9 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { DonacionService } from './donacion.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @Controller('donacion')
 export class DonacionController {
@@ -37,8 +38,9 @@ export class DonacionController {
   }
 
   @UseGuards(AuthGuard('jwt-local'))
-  @Get('/ong/:ongId')
-  getDonacionesByOngId(@Param('ongId') ongId: string) {
+  @Get('/ong')
+  getDonacionesByOngId(@Req() req: AuthenticateRequest) {
+    const ongId = req.user.id;
     return this.donacionService.getDonacionesByOngId(ongId);
   }
 
