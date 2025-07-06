@@ -34,17 +34,6 @@ export class SolicitudAdoptarService {
     throw new BadRequestException('Falta el usuario solicitante');
   }
 
-  const solicitudExistente = await this.prisma.solicitudDeAdopcion.findFirst({
-    where: {
-      usuarioId,
-      casoAdopcionId
-    }
-  });
-
-  if (solicitudExistente) {
-    throw new BadRequestException('El usuario no puede enviar mas de 1 solicitud para el mismo caso de adopción');
-  }
-
   const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
     data: {
       usuarioId, casoAdopcionId, estado, tipoVivienda, integrantesFlia, hijos, hayOtrasMascotas,
@@ -319,4 +308,15 @@ async aceptarSolicitud(
 
     return { total };
   }
+
+async existenciaDeSolicitud(usuarioId: string, casoAdopcionId: string) {
+  const solicitud = await this.prisma.solicitudDeAdopcion.findFirst({
+    where: {
+      usuarioId,
+      casoAdopcionId,
+    },
+  });
+
+  return solicitud !== null;
+}
 }

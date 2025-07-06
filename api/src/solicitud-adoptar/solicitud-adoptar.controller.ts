@@ -137,7 +137,16 @@ export class SolicitudAdoptarController {
       req.user.id,
     );
   }
+@Get('existenciaDeSolicitud')
+async verifica(
+  @Req() req: ExpressRequest & { user: User },
+  @Param('idCasoAdopcion') idCasoAdopcion: string
+) {
+  return this.solicitudAdoptarService.existenciaDeSolicitud(req.user.id, idCasoAdopcion);
+}
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una solicitud de adopción' })
   @ApiParam({ name: 'id', type: 'string', description: 'ID de la solicitud' })
