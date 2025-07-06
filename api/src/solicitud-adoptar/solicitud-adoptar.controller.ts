@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req, UnauthorizedException} from '@nestjs/common';
 import { SolicitudAdoptarService } from './solicitud-adoptar.service';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { CambiarEstadoDto } from './dtos/cambiar-estado.dto';
@@ -60,13 +60,20 @@ filtrarSolicitudes(@Query() filtro: filtroViviendaQdeMascotasDto) {
 
 @UseGuards(AuthGuard('jwt-local'))
 @Patch()
-async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
+async aceptarSolicitud(
+  @Req() req: AuthenticateRequest,
+  @Body() datos: CambiarEstadoDto) {
   const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;
+
+  if (req.user.tipo !== 'ONG') {
+    throw new UnauthorizedException('Solo una organización puede realizar esta acción');
+  }
 
   return this.solicitudAdoptarService.aceptarSolicitud(
     idDelCasoAdopcion,
     idDeSolicitudAceptada,
     estadoNuevo,
+    req.user.id,
   );
 }
 
