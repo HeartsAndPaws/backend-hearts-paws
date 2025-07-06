@@ -76,9 +76,12 @@ export class UsuariosController {
     return await this.usuariosService.usuarioPorId(id);
   }
 
-
-  @Get('favoritos/casos/:usuarioId')
-  obetnerFavoritos(@Param('usuarioId') usuarioId: string){
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Get('favoritos/casos/')
+  obetnerFavoritos(
+    @Req() req: AuthenticateRequest
+  ){
+    const usuarioId = req.user.id;
     return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId)
   }
 
@@ -134,9 +137,15 @@ export class UsuariosController {
     return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url)
   }
 
-  @Put(':userId/favoritos/:casoId')
-  toggleFavorito(@Param('userId', ParseUUIDPipe) userId: string, @Param('casoId', ParseUUIDPipe) casoId: string) {
-    return this.usuariosService.toggleFavorito(userId, casoId);
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Put(':casoId/favoritos')
+  toggleFavorito(
+    @Param('casoId', ParseUUIDPipe) casoId: string,
+    @Req() req: AuthenticateRequest,
+  ) {
+    const userId = req.user.id;
+    return this.usuariosService.toggleFavorito(userId, casoId);
   }
+
 }

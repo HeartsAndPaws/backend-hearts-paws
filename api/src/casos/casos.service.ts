@@ -32,7 +32,12 @@ export class CasosService {
   
   async GetCasosAdopcion() {
     return this.prismaService.caso.findMany({
-      where: { tipo: 'ADOPCION' },
+      where: { 
+        tipo: 'ADOPCION',
+        adopcion: {
+          estado: 'PENDIENTE',
+        }
+      },
       include: {
         mascota: {
           include: {

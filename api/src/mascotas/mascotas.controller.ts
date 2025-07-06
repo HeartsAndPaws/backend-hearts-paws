@@ -41,12 +41,26 @@ export class MascotasController {
     return this.mascotasService.GetTipo();
   }
 
+<<<<<<< HEAD
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+=======
+
+  @UseGuards(AuthGuard('jwt-local'))
+  @Get("ong")
+  GetMascotasByOngId(@Req() req: AuthenticateRequest) {
+    console.log('Usuario autenticado:', req.user); 
+    const ongId = req.user.id;
+    return this.mascotasService.GetMascotasByOngId(ongId);
+  }
+
+
+>>>>>>> origin/dev
   @Get(':id')
   GetMascotaById(@Param('id') id: string) {
     return this.mascotasService.GetMascotaById(id);
   }
 
+<<<<<<< HEAD
   @UseGuards(AuthGuard('jwt-local'))
   @Get("ong")
   GetMascotasByOngId(@Req() req: AuthenticateRequest) {
@@ -56,6 +70,9 @@ export class MascotasController {
   }
 
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+=======
+  
+>>>>>>> origin/dev
   @Post("crearTipo")
   CreateTipoMascota(@Body() createTipoMascotaDto: TipoMascotaDto) {
     return this.mascotasService.CreateTipoMascota(createTipoMascotaDto);
