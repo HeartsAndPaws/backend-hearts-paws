@@ -1,10 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EstadoAdopcion } from '@prisma/client';
 import { MailerService } from 'src/shared/email/email-server.service';
-import { timeout } from 'rxjs';
-import { Mascota } from 'src/mascotas/entities/mascota.entity';
+
 
 @Injectable()
 export class SolicitudAdoptarService {
@@ -204,23 +203,56 @@ async aceptarSolicitud(
   idDelCasoAdopcion: string,
   idDeSolicitudAceptada: string,
   estadoNuevo: EstadoAdopcion,
+  ongId: string
 ) {
+  const caso = await this.prisma.casoAdopcion.findUnique({
+    where: { id: idDelCasoAdopcion },
+    include: {
+      caso: {
+        select: {
+          ongId: true,
+          mascotaId: true,
+        },
+      },
+    },
+  });
+
+  if (!caso || caso.caso.ongId !== ongId) {
+    throw new UnauthorizedException('No tienes permiso para modificar este caso');
+  }
+
+  if (estadoNuevo !== 'ACEPTADA') {
+    throw new BadRequestException('Solo se permite aceptar una solicitud en esta ruta');
+  }
+
+  const solicitudValidar = await this.prisma.solicitudDeAdopcion.findUnique({
+    where: { id: idDeSolicitudAceptada },
+    select: { estado: true },
+  });
+
+  if (!solicitudValidar) {
+    throw new NotFoundException('No se encontró la solicitud indicada');
+  }
+
+  if (solicitudValidar.estado !== 'PENDIENTE') {
+    throw new BadRequestException('Solo se pueden aceptar solicitudes que esten en estado PENDIENTE');
+  }
+
   // 1. Actualizar estado general del caso
   await this.prisma.casoAdopcion.update({
     where: { id: idDelCasoAdopcion },
-    data: { estado: estadoNuevo },
+    data: { estado: 'ACEPTADA' },
   });
 
-  if (estadoNuevo === 'ACEPTADA') {
-    // 2. Obtener todas las solicitudes del caso (pendientes y aceptada)
-    const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
-      where: {
-        casoAdopcionId: idDelCasoAdopcion,
-      },
-      include: {
-        usuario: true,
-      },
-    });
+
+  const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
+    where: {
+      casoAdopcionId: idDelCasoAdopcion,
+    },
+    include: {
+      usuario: true,
+    },
+  });
 
     // 3. Rechazar las demás solicitudes pendientes
     await this.prisma.solicitudDeAdopcion.updateMany({
@@ -242,40 +274,30 @@ async aceptarSolicitud(
       data: { estado: 'ACEPTADA' },
     });
 
+    const nombreMascota = caso?.caso?.mascotaId
+      ? await this.prisma.mascota.findUnique({
+        where: { id: caso.caso.mascotaId },
+        select: { nombre: true },
+      })
+      : null;
+
     // 5. Extraer correos y nombre de mascota
     const listaDeCorreos = solicitudes.map(s => s.usuario.email);
     const emailAceptado = solicitudes.find(s => s.id === idDeSolicitudAceptada)?.usuario.email;
 
     // const nombreMascota = await this.obtenerNombreMascotaPorCasoAdopcion(idDelCasoAdopcion);
 
-    let mascotaEncontrada = await this.prisma.casoAdopcion.findUnique({
-      where: { id: idDelCasoAdopcion },
-      select: {
-        caso: {
-          select: {
-            mascota: {
-              select: {
-                nombre: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const nombreMascota = mascotaEncontrada?.caso?.mascota?.nombre;
-
-    // 6. Enviar correos
-    if (emailAceptado && listaDeCorreos.length && nombreMascota) {
+    if ( emailAceptado && listaDeCorreos.length && nombreMascota?.nombre) {
       await this.mailerService.enviarEmailsNotificacionAdopcion(
         listaDeCorreos,
         emailAceptado,
-        nombreMascota,
+        nombreMascota.nombre,
       );
     }
-  }
 
-  return { message: 'Estado actualizado correctamente.' };
+    // 6. Enviar correos
+    return { message: 'Solicitud aceptada correctamente y otras rechazadas.'}
+
 }
 
 
