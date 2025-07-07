@@ -49,9 +49,14 @@ export class DonacionController {
     return this.donacionService.getDonacionById(id);
   }
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('detalleDonacion/:CasoId')
-  getDetalleDonacionByCasoId(@Param('CasoId') CasoId: string) {
-    return this.donacionService.getDetalleDonacionByCasoId(CasoId);
+  getDetalleDonacionByCasoId(
+    @Param('CasoId') CasoId: string,
+    @Req() req: AuthenticateRequest,
+  ) {
+    const usuarioId = req.user.id;
+    return this.donacionService.getDetalleDonacionByCasoId(CasoId, usuarioId);
   }
 
   @Get('detalle/donaciones')
