@@ -213,4 +213,10 @@ export class OrganizacionesService {
     return { total };
   }
 
+  async buscarPorEmail(email: string){
+    return await this.prisma.organizacion.findUnique({
+      where: { email },
+    });
+  }
+
 }

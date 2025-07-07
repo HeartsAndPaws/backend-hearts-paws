@@ -53,6 +53,19 @@ export class OrganizacionesController {
     return await this.organizacionesService.contarAprobadas();
   }
 
+  @Get('verificar-email/:email')
+  @ApiOperation({ summary: 'Verificar si el email ya está registrado por una ONG'})
+  async verificarEmailONG(
+    @Param('email') email: string
+  ){
+    const ong = await this.organizacionesService.buscarPorEmail(email);
+    return {
+      disponible: !ong,
+      mensaje: ong ? 'El email ya está registrado por una ONG' : 'El email está disponible',
+    };
+  }
+
+  
   @UseGuards(JwtAutCookiesGuardia)
   @Get('me')
   @ApiBearerAuth()
