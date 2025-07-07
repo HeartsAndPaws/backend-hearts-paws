@@ -130,10 +130,9 @@ export class DonacionService {
     }
   }
 
-  async getDetalleDonacionByCasoId(CasoId: string, usuarioId: string) {
+  async getDetalleDonacionByCasoId(CasoId: string) {
     const haDonado = await this.prismaService.donacion.findFirst({
       where: {
-        usuarioId,
         casoDonacion: {
           casoId: CasoId,
         },
