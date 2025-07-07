@@ -260,4 +260,11 @@ async obtenerSolicitudesDelUsuario(usuarioId: string){
       },
     });
   }
+
+  async buscarPorEmail(email: string){
+    return await this.prisma.usuario.findUnique({
+      where: { email },
+    });
+  }
+
 }

@@ -62,6 +62,17 @@ export class UsuariosController {
     return await this.usuariosService.obtenerSolicitudesDelUsuario(usuarioId);
   }
 
+  @Get('verificar-email/:email')
+  @ApiOperation({ summary: 'Verificar si el email ya está registrado'})
+  async verificarEmail(
+    @Param('email') email: string
+  ){
+    const usuario = await this.usuariosService.buscarPorEmail(email);
+    return {
+      disponible: !usuario,
+      mensaje: usuario ? 'El email ya está registrado' : 'El email está disponible',
+    };
+  }
 
   @Get('me')
   @ApiOperation({ summary: 'Obtener el usuario autenticado' })
@@ -81,7 +92,7 @@ export class UsuariosController {
   }
 
   @UseGuards(AuthGuard(['jwt-local', 'supabase']))
-  @Get('favoritos/casos/')
+  @Get('favoritos/casos')
   obetnerFavoritos(
     @Req() req: AuthenticateRequest
   ){
