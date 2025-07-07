@@ -74,6 +74,8 @@ export class UsuariosController {
     };
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('me')
   @ApiOperation({ summary: 'Obtener el usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
