@@ -8,7 +8,8 @@ import {
     HttpStatus,
     BadRequestException,
     NotFoundException,
-    Query
+    Query,
+    UseGuards
 } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,6 +17,8 @@ import { Request, Response } from 'express';
 import { stripe } from './stripe.service';
 import Stripe from 'stripe';
 import { formatearARS } from 'src/utils/formatters';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @Controller('stripe')
 export class StripeController {
@@ -24,12 +27,15 @@ export class StripeController {
         private readonly prisma: PrismaService,
     ) {}
 
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Get('checkout')
     async crearCheckout(
         @Query('casoId') casoId: string, 
-        @Query('usuarioId') usuarioId: string,
         @Query('monto') montoStr: string,
+        @Req() req: AuthenticateRequest,
     ) {
+        const usuarioId = req.user.id;
+
         const monto = parseFloat(montoStr);
         if (!usuarioId || isNaN(monto) || monto <= 0) {
             throw new BadRequestException('Parámetros inválidos para donación')
