@@ -45,17 +45,21 @@ export class UsuariosController {
     return { total };
   }
 
-
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('mis-donaciones')
   @ApiOperation({summary: 'ver mis donaciones'})
   async obtenerMisDonaciones(@Req() req: AuthenticateRequest){
-    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(req.user.id);
+    const usuarioId = req.user.id;
+    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(usuarioId);
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('mis-solicitudes')
   @ApiOperation({ summary: 'Ver mis solicitudes de adopción'})
   async obtenerMisSolicitudes(@Req() req: AuthenticateRequest){
-    return await this.usuariosService.obtenerSolicitudesDelUsuario(req.user.id);
+    const usuarioId = req.user.id;
+    return await this.usuariosService.obtenerSolicitudesDelUsuario(usuarioId);
   }
 
 
