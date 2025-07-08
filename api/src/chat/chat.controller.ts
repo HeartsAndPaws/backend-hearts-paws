@@ -26,26 +26,31 @@ export class ChatController {
     @ApiResponse({ status: 201, description: 'Chat iniciado correctamente.' })
     @ApiResponse({ status: 403, description: 'No autorizado para iniciar chats.' })
     async iniciarChat(
-        @Body() body: { usuarioId: string; organizacionId: string},
+        @Body() body: { organizacionId: string},
         @Request() req: AuthenticateRequest,
     ){
         const { tipo, id: solicitanteId } = req.user;
 
         if (tipo === 'USUARIO') {
-            if (solicitanteId !== body.usuarioId) {
-                throw new ForbiddenException('No puedes iniciar un chat por otro usuario');
-            }
+            return await this.chatService.iniciarChat(solicitanteId, body.organizacionId);
         }
+        
         else if (tipo === 'ONG'){
-            if (solicitanteId !== body.organizacionId) {
-                throw new ForbiddenException('No puedes iniciar un chat por otra organización');
+            const usuarioId = (req.body as any).usuarioId;
+
+            if (!usuarioId) {
+                throw new ForbiddenException('Debe proporcionar el ID del usuario');
             }
-        }
-        else {
-            throw new ForbiddenException('No autorizado para iniciar chats');
+
+            if ( solicitanteId !== body.organizacionId) {
+                throw new ForbiddenException('No puedes iniciar un chat por otra organizacion');
+            }
+
+
+            return await this.chatService.iniciarChat(usuarioId, solicitanteId);
         }
 
-        return await this.chatService.iniciarChat(body.usuarioId, body.organizacionId);
+        throw new ForbiddenException('No autorizado para iniciar chats');
     }
 
     @Get('usuario/:id')
