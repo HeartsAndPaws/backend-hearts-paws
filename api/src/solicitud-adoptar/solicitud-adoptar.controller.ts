@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+  Req,
+  UnauthorizedException
+} from '@nestjs/common';
 import { SolicitudAdoptarService } from './solicitud-adoptar.service';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { CambiarEstadoDto } from './dtos/cambiar-estado.dto';
@@ -8,6 +20,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { Request as ExpressRequest } from 'express';
+import { User } from '@supabase/supabase-js';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @ApiTags('Solicitudes de Adopción')
 @Controller('solicitud-adoptar')
@@ -15,6 +30,7 @@ export class SolicitudAdoptarController {
   constructor(private readonly solicitudAdoptarService: SolicitudAdoptarService) {}
 
   @Post()
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @ApiOperation({ summary: 'Crear una nueva solicitud de adopción' })
   @ApiBody({
     type: SolicitudParaAdoptarDto,
@@ -39,8 +55,12 @@ export class SolicitudAdoptarController {
     }
   })
   @ApiResponse({ status: 201, description: 'Solicitud creada correctamente' })
-  create(@Body() createSolicitudAdoptarDto: SolicitudParaAdoptarDto) {
-    return this.solicitudAdoptarService.crearSolicitud(createSolicitudAdoptarDto);
+  create(
+    @Body() createSolicitudAdoptarDto: SolicitudParaAdoptarDto,
+    @Req() req: ExpressRequest & { user: User }
+  ) {
+    const usuarioId = req.user.id;
+    return this.solicitudAdoptarService.crearSolicitud(usuarioId, createSolicitudAdoptarDto);
   }
 
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
@@ -55,7 +75,7 @@ export class SolicitudAdoptarController {
   })
   @ApiResponse({ status: 200, description: 'Lista de solicitudes de adopción' })
   async verTodasLasSolicitudes(@Query('estado') estado: EstadoAdopcion) {
-    return this.solicitudAdoptarService.verCasosAdopcionPorEstado(estado)
+    return this.solicitudAdoptarService.verCasosAdopcionPorEstado(estado);
   }
 
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
@@ -67,35 +87,28 @@ export class SolicitudAdoptarController {
     return await this.solicitudAdoptarService.contarAdopcionesAceptadas();
   }
 
-  @Get('solicitudesDeCadaAdopcion/:id')
-  @ApiOperation({ summary: 'Ver solicitudes para un caso de adopción' })
-  @ApiParam({ name: 'id', type: 'string', description: 'ID del caso de adopción' })
-  @ApiResponse({ status: 200, description: 'Solicitudes asociadas a un caso de adopción' })
-  verSolicitudesPorCaso(@Param('id') id: string) {
-    return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(id)
+  @UseGuards(AuthGuard('jwt-local'))
+  @Get('/solicitudesDeCadaAdopcion')
+  @ApiOperation({ summary: 'Ver solicitudes para un caso de adopción (ONG autenticada)' })
+  @ApiResponse({ status: 200, description: 'Solicitudes asociadas a la ONG autenticada' })
+  verSolicitudesPorCaso(@Req() req: AuthenticateRequest) {
+    const ongId = req.user.id;
+    return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(ongId);
   }
 
   @Get('filtro')
   @ApiOperation({ summary: 'Filtrar solicitudes por vivienda y tipo de mascota' })
-  @ApiBody({
-    type: filtroViviendaQdeMascotasDto,
-    examples: {
-      ejemplo: {
-        value: {
-          casoAdopcionId: 'a1b2c3d4-5678-9101-1121-314151617181',
-          tipoVivienda: 'Casa'
-        }
-      }
-    }
-  })
+  @ApiQuery({ name: 'casoAdopcionId', type: 'string', required: true })
+  @ApiQuery({ name: 'tipoVivienda', type: 'string', required: false })
   @ApiResponse({ status: 200, description: 'Lista filtrada de solicitudes' })
-  filtrarSolicitudes(@Body() filtro: filtroViviendaQdeMascotasDto) {
-    const { casoAdopcionId, tipoVivienda } = filtro
+  filtrarSolicitudes(@Query() filtro: filtroViviendaQdeMascotasDto) {
+    const { casoAdopcionId, tipoVivienda } = filtro;
     return this.solicitudAdoptarService.filtroViviendaQdeMascotas(casoAdopcionId, tipoVivienda);
   }
 
+  @UseGuards(AuthGuard('jwt-local'))
   @Patch()
-  @ApiOperation({ summary: 'Aceptar o cambiar el estado de una solicitud de adopción' })
+  @ApiOperation({ summary: 'Aceptar o cambiar el estado de una solicitud de adopción (solo ONG autenticada)' })
   @ApiBody({
     type: CambiarEstadoDto,
     examples: {
@@ -109,12 +122,19 @@ export class SolicitudAdoptarController {
     }
   })
   @ApiResponse({ status: 200, description: 'Solicitud actualizada correctamente' })
-  async aceptarSolicitud(@Body() datos: CambiarEstadoDto) {
+  async aceptarSolicitud(
+    @Req() req: AuthenticateRequest,
+    @Body() datos: CambiarEstadoDto
+  ) {
     const { idDelCasoAdopcion, idDeSolicitudAceptada, estadoNuevo } = datos;
+    if (req.user.tipo !== 'ONG') {
+      throw new UnauthorizedException('Solo una organización puede realizar esta acción');
+    }
     return this.solicitudAdoptarService.aceptarSolicitud(
       idDelCasoAdopcion,
       idDeSolicitudAceptada,
       estadoNuevo,
+      req.user.id,
     );
   }
 

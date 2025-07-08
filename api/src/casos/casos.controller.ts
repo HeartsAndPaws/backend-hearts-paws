@@ -5,6 +5,7 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags, ApiBearerAuth, 
 import { AuthGuard } from '@nestjs/passport';
 import { FiltrarPorCasosFechasDto } from './dto/filtro-por-caso-y-fecha.dto';
 import { FiltrarPorTipoViejoRecienteDto } from './dto/filtro-tipo-viejo-reciente.dto';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @ApiTags('Casos')
 @Controller('casos')
@@ -79,8 +80,10 @@ export class CasosController {
     return this.casosService.filtrarPorTipoYordenTemporal(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);
   }
 
+  @UseGuards(AuthGuard('jwt-local'))
   @Post()
-  @ApiOperation({ summary: 'Crear un nuevo caso' })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Crear un nuevo caso (solo ONG autenticada)' })
   @ApiBody({
     type: CreateCasoDto,
     description: 'Datos para crear un nuevo caso de adopción o donación',
@@ -94,9 +97,7 @@ export class CasosController {
           tipo: 'ADOPCION',
           mascotaId: '550e8400-e29b-41d4-a716-446655440000',
           ongId: '550e8400-e29b-41d4-a716-446655440001',
-          adopcion: {
-            estado: 'PENDIENTE'
-          }
+          adopcion: { estado: 'PENDIENTE' }
         }
       },
       'caso-donacion': {
@@ -108,37 +109,7 @@ export class CasosController {
           tipo: 'DONACION',
           mascotaId: '550e8400-e29b-41d4-a716-446655440002',
           ongId: '550e8400-e29b-41d4-a716-446655440001',
-          donacion: {
-            metaDonacion: 250000
-          }
-        }
-      },
-      'caso-adopcion-completo': {
-        summary: 'Caso de adopción detallado',
-        description: 'Ejemplo completo de un caso de adopción con descripción detallada',
-        value: {
-          titulo: 'Familia cariñosa busca a Bella',
-          descripcion: 'Bella es una perrita mestiza de 2 años, muy sociable y entrenada. Le encanta jugar con niños y es perfecta para una familia activa. Está vacunada y esterilizada.',
-          tipo: 'ADOPCION',
-          mascotaId: '550e8400-e29b-41d4-a716-446655440003',
-          ongId: '550e8400-e29b-41d4-a716-446655440001',
-          adopcion: {
-            estado: 'PENDIENTE'
-          }
-        }
-      },
-      'caso-donacion-urgente': {
-        summary: 'Caso de donación urgente',
-        description: 'Ejemplo de caso de donación para tratamiento médico urgente',
-        value: {
-          titulo: 'Operación urgente para Rocky',
-          descripcion: 'Rocky fue atropellado y necesita una operación inmediata en la pata trasera. Es un perro joven con muchas ganas de vivir. Tu donación puede salvar su vida.',
-          tipo: 'DONACION',
-          mascotaId: '550e8400-e29b-41d4-a716-446655440004',
-          ongId: '550e8400-e29b-41d4-a716-446655440001',
-          donacion: {
-            metaDonacion: 500000
-          }
+          donacion: { metaDonacion: 250000 }
         }
       }
     }
@@ -183,8 +154,15 @@ export class CasosController {
       }
     }
   })
-  CreateCaso(@Body() createCasoDto: CreateCasoDto) {
-    return this.casosService.CreateCaso(createCasoDto);
+  CreateCaso(
+    @Req() req: AuthenticateRequest,
+    @Body() createCasoDto: CreateCasoDto
+  ) {
+    const ongId = req.user.id;
+    if (req.user.tipo !== 'ONG') {
+      throw new UnauthorizedException('Solo una organización puede crear casos.');
+    }
+    return this.casosService.CreateCaso(createCasoDto, ongId);
   }
 
   @Get('buscar')
@@ -193,7 +171,7 @@ export class CasosController {
   @ApiQuery({ name: 'nombre', required: false, description: 'Nombre de la mascota' })
   @ApiResponse({ status: 200, description: 'Casos encontrados exitosamente' })
   async buscarCasos(@Query('tipo') tipoMascota?: string, @Query('nombre') nombreMascota?: string) {
-    return this.casosService.buscarCasos({ tipoMascota, nombreMascota }); 
+    return this.casosService.buscarCasos({ tipoMascota, nombreMascota });
   }
 
   @Get(':id')
@@ -204,18 +182,17 @@ export class CasosController {
   GetCasoById(@Param('id') id: string) {
     return this.casosService.GetCasoById(id);
   }
-  
+
   @UseGuards(AuthGuard('jwt-local'))
   @Get('ong/mis-casos')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener todos los casos de una ONG autenticada' })
   @ApiResponse({ status: 200, description: 'Casos de la ONG obtenidos exitosamente' })
   @ApiResponse({ status: 401, description: 'No autorizado - Solo organizaciones pueden acceder' })
-  async obtenerCasosPorOng(@Req() req){
+  async obtenerCasosPorOng(@Req() req: AuthenticateRequest){
     const ongId = req.user.id;
-
     if (req.user.tipo !== 'ONG') {
-      throw new UnauthorizedException('Solo una organizacion puede acceder a esta ruta.')
+      throw new UnauthorizedException('Solo una organizacion puede acceder a esta ruta.');
     }
     return await this.casosService.obtenerCasosPorOng(ongId);
   }

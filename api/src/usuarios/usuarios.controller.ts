@@ -1,19 +1,42 @@
-import { Controller, Post, Param, UseInterceptors, UploadedFile, Get, ParseUUIDPipe, UseGuards, Req, Patch, Body, BadRequestException, Delete, Query, Put } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+  Req,
+  UploadedFile,
+  UseInterceptors,
+  Put,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { filtroArchivoImagen, limits } from 'src/cloudinary/file.interceptor';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+  ApiConsumes,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { ActualizarUsuarioDTO } from 'src/usuarios/dto/ActualizarUsuario.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Rol } from '@prisma/client';
-import { Request } from 'express';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
-
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @ApiTags('Usuarios')
-@UseGuards(AuthGuard(['jwt-local', 'supabase']) ,RolesGuard)
+@UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
 @ApiBearerAuth()
 @Controller('usuarios')
 export class UsuariosController {
@@ -25,48 +48,66 @@ export class UsuariosController {
   @Get()
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Listar todos los usuarios' })
+  @ApiQuery({ name: 'rol', enum: Rol, required: false })
+  @ApiQuery({ name: 'pais', type: 'string', required: false })
+  @ApiQuery({ name: 'email', type: 'string', required: false })
+  @ApiQuery({ name: 'nombre', type: 'string', required: false })
   @ApiResponse({ status: 200, description: 'Lista de usuarios obtenida correctamente' })
   async obtenerUsuarios(
-    @Query('rol') rol: Rol, 
+    @Query('rol') rol: Rol,
     @Query('pais') pais: string,
     @Query('email') email: string,
     @Query('nombre') nombre: string
   ) {
-  return await this.usuariosService.listaDeUsuarios( {rol, pais, email, nombre} );
-}
-
+    return await this.usuariosService.listaDeUsuarios({ rol, pais, email, nombre });
+  }
 
   @Get('estadisticas/total')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Obtener total de usuarios' })
+  @ApiResponse({ status: 200, description: 'Total de usuarios', schema: { example: { total: 100 } } })
   async totalUsuarios() {
     const total = await this.usuariosService.totalUsuarios();
     return { total };
   }
 
-
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('mis-donaciones')
-  @ApiOperation({summary: 'ver mis donaciones'})
-  async obtenerMisDonaciones(@Req() req: Request){
-    const usuario = req.user as any;
-    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(usuario.id);
+  @ApiOperation({ summary: 'Ver mis donaciones' })
+  @ApiResponse({ status: 200, description: 'Donaciones del usuario autenticado' })
+  async obtenerMisDonaciones(@Req() req: AuthenticateRequest) {
+    const usuarioId = req.user.id;
+    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(usuarioId);
   }
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('mis-solicitudes')
-  @ApiOperation({ summary: 'Ver mis solicitudes de adopción'})
-  async obtenerMisSolicitudes(@Req() req: Request){
-    const usuario = req.user as any;
-    return await this.usuariosService.obtenerSolicitudesDelUsuario(usuario.id);
+  @ApiOperation({ summary: 'Ver mis solicitudes de adopción' })
+  @ApiResponse({ status: 200, description: 'Solicitudes de adopción del usuario autenticado' })
+  async obtenerMisSolicitudes(@Req() req: AuthenticateRequest) {
+    const usuarioId = req.user.id;
+    return await this.usuariosService.obtenerSolicitudesDelUsuario(usuarioId);
   }
 
+  @Get('verificar-email/:email')
+  @ApiOperation({ summary: 'Verificar si el email ya está registrado' })
+  @ApiParam({ name: 'email', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Estado de disponibilidad del email', schema: { example: { disponible: true, mensaje: 'El email está disponible' } } })
+  async verificarEmail(@Param('email') email: string) {
+    const usuario = await this.usuariosService.buscarPorEmail(email);
+    return {
+      disponible: !usuario,
+      mensaje: usuario ? 'El email ya está registrado' : 'El email está disponible',
+    };
+  }
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('me')
   @ApiOperation({ summary: 'Obtener el usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
-  async getUsuarioActual(@Req() req){
-    return await this.usuariosService.usuarioPorId(req.user.id, req.user.external)
+  async getUsuarioActual(@Req() req: AuthenticateRequest) {
+    return await this.usuariosService.usuarioPorId(req.user.id, req.user.external);
   }
-
 
   @Get(':id')
   @Roles('ADMIN')
@@ -77,12 +118,14 @@ export class UsuariosController {
     return await this.usuariosService.usuarioPorId(id);
   }
 
-  @ApiOperation({ summary: 'Obtener todos los casos favoritos de un usuario' })
-  @Get('favoritos/casos/:usuarioId')
-  obetnerFavoritos(@Param('usuarioId') usuarioId: string){
-    return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId)
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Get('favoritos/casos')
+  @ApiOperation({ summary: 'Obtener todos los casos favoritos del usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Lista de favoritos' })
+  obetnerFavoritos(@Req() req: AuthenticateRequest) {
+    const usuarioId = req.user.id;
+    return this.usuariosService.obtenerFavoritosDelUsuario(usuarioId);
   }
-
 
   @Patch(':id')
   @ApiOperation({ summary: 'Cambia los datos del usuario' })
@@ -96,7 +139,6 @@ export class UsuariosController {
     return await this.usuariosService.actualizarUsuario(id, datosDeUsuario);
   }
 
-
   @Delete(':id')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
@@ -105,7 +147,6 @@ export class UsuariosController {
   async borrarUsuario(@Param('id', ParseUUIDPipe) id: string) {
     return await this.usuariosService.borrarUsuario(id);
   }
-
 
   @Post(':id/foto')
   @UseInterceptors(FileInterceptor('file', {
@@ -130,15 +171,21 @@ export class UsuariosController {
   async subirFotoPerfil(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-  ){
+  ) {
     const subirImagen = await this.cloudinaryService.subirIamgen(file);
-    return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url)
+    return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url);
   }
 
-  @ApiOperation({ summary: 'Agregar o eliminar caso de favoritos' })
-  @Put(':userId/favoritos/:casoId')
-  toggleFavorito(@Param('userId', ParseUUIDPipe) userId: string, @Param('casoId', ParseUUIDPipe) casoId: string) {
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+  @Put(':casoId/favoritos')
+  @ApiOperation({ summary: 'Agregar o eliminar caso de favoritos para el usuario autenticado' })
+  @ApiParam({ name: 'casoId', type: 'string' })
+  @ApiResponse({ status: 200, description: 'Favorito actualizado correctamente' })
+  toggleFavorito(
+    @Param('casoId', ParseUUIDPipe) casoId: string,
+    @Req() req: AuthenticateRequest,
+  ) {
+    const userId = req.user.id;
     return this.usuariosService.toggleFavorito(userId, casoId);
-
   }
 }

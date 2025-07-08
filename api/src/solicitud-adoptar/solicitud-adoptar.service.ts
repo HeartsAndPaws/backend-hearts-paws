@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { SolicitudParaAdoptarDto } from './dtos/solicitud-adoptar.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EstadoAdopcion } from '@prisma/client';
 import { MailerService } from 'src/shared/email/email-server.service';
-import { error } from 'console';
+
 
 @Injectable()
 export class SolicitudAdoptarService {
@@ -11,9 +11,10 @@ export class SolicitudAdoptarService {
     private readonly prisma: PrismaService,
     private readonly mailerService: MailerService
   ) {}
-  async crearSolicitud(solicitud: SolicitudParaAdoptarDto) {
+
+
+  async crearSolicitud(usuarioId: string ,solicitud: SolicitudParaAdoptarDto) {
     const { 
-      usuarioId, 
       casoAdopcionId, 
       estado, 
       tipoVivienda, 
@@ -24,23 +25,36 @@ export class SolicitudAdoptarService {
     devolucionDeMascota, siNoPodesCuidarla, declaracionFinal} = solicitud
 
     const usuarioSolicitante = await this.prisma.usuario.findUnique({
-      where: {
-        id: usuarioId
-      },
-    });
-    if(!usuarioSolicitante){
-      throw new Error('Falta el usuario solicitante')
-    }
-    const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
-      data: {
-        usuarioId, casoAdopcionId: casoAdopcionId, estado, tipoVivienda, integrantesFlia, hijos, hayOtrasMascotas,
-    descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
-    devolucionDeMascota, siNoPodesCuidarla, declaracionFinal
-      },
-    });
-  
-    return nuevaSolicitud
+    where: {
+      id: usuarioId
+    },
+  });
+
+  if (!usuarioSolicitante) {
+    throw new BadRequestException('Falta el usuario solicitante');
   }
+
+  const solicitudExistente = await this.prisma.solicitudDeAdopcion.findFirst({
+    where: {
+      usuarioId,
+      casoAdopcionId
+    }
+  });
+
+  if (solicitudExistente) {
+    throw new BadRequestException('El usuario no puede enviar mas de 1 solicitud para el mismo caso de adopción');
+  }
+
+  const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
+    data: {
+      usuarioId, casoAdopcionId, estado, tipoVivienda, integrantesFlia, hijos, hayOtrasMascotas,
+      descripcionOtrasMascotas, cubrirGastos, darAlimentoCuidados, darAmorTiempoEj,
+      devolucionDeMascota, siNoPodesCuidarla, declaracionFinal
+    },
+  });
+
+  return nuevaSolicitud;
+}
 
   async verCasosAdopcionPorEstado(estado?: EstadoAdopcion) {
     return await this.prisma.casoAdopcion.findMany({
@@ -117,46 +131,128 @@ async filtroViviendaQdeMascotas(
 }
 
 
-  async verSolicitudesPorCasoDeAdopcion(id: string) {
-  const casoAdopcion = await this.prisma.casoAdopcion.findUnique({
-    where: {
-      id,
-    },
+  async verSolicitudesPorCasoDeAdopcion(ongId: string) {
+    const mascotas = await this.prisma.mascota.findMany({
+    where: { organizacionId: ongId },
     include: {
-      solicitudes: {
-        include: { usuario: true,},
+      imagenes: true,
+      casos: {
+        where: {
+          tipo: 'ADOPCION',
+        },
+        include: {
+          adopcion: {
+            include: {
+              solicitudes: {
+                include: {
+                  usuario: true,
+                },
+              },
+            },
+          },
+        },
       },
     },
   });
 
-  if (!casoAdopcion) {
-    throw new NotFoundException(`No se encontró el caso de adopción para el caso con ID ${id}`);
-  }
-  
-  return casoAdopcion.solicitudes;
+  const resultado = mascotas.map((mascota) => {
+    const casoAdopcion = mascota.casos[0]?.adopcion;
+    const solicitudes = casoAdopcion?.solicitudes || [];
+
+    return {
+      mascota: {
+        id: mascota.id,
+        nombre: mascota.nombre,
+        edad: mascota.edad,
+        descripcion: mascota.descripcion,
+        imagenes: mascota.imagenes,
+      },
+      solicitudes: solicitudes.map((s) => ({
+        id: s.id,
+        estado: s.estado,
+        tipoVivienda: s.tipoVivienda,
+        integrantesFlia: s.integrantesFlia,
+        hijos: s.hijos,
+        hayOtrasMascotas: s.hayOtrasMascotas,
+        descripcionOtrasMascotas: s.descripcionOtrasMascotas,
+        cubrirGastos: s.cubrirGastos,
+        darAlimentoCuidados: s.darAlimentoCuidados,
+        darAmorTiempoEj: s.darAmorTiempoEj,
+        devolucionDeMascota: s.devolucionDeMascota,
+        siNoPodesCuidarla: s.siNoPodesCuidarla,
+        declaracionFinal: s.declaracionFinal,
+        usuario: {
+          id: s.usuario.id,
+          nombre: s.usuario.nombre,
+          email: s.usuario.email,
+          telefono: s.usuario.telefono,
+          direccion: s.usuario.direccion,
+          ciudad: s.usuario.ciudad,
+          pais: s.usuario.pais,
+          imagenPerfil: s.usuario.imagenPerfil,
+        },
+      })),
+    };
+  });
+
+  return resultado;
+
 }
 
 async aceptarSolicitud(
   idDelCasoAdopcion: string,
   idDeSolicitudAceptada: string,
   estadoNuevo: EstadoAdopcion,
+  ongId: string
 ) {
+  const caso = await this.prisma.casoAdopcion.findUnique({
+    where: { id: idDelCasoAdopcion },
+    include: {
+      caso: {
+        select: {
+          ongId: true,
+          mascotaId: true,
+        },
+      },
+    },
+  });
+
+  if (!caso || caso.caso.ongId !== ongId) {
+    throw new UnauthorizedException('No tienes permiso para modificar este caso');
+  }
+
+  if (estadoNuevo !== 'ACEPTADA') {
+    throw new BadRequestException('Solo se permite aceptar una solicitud en esta ruta');
+  }
+
+  const solicitudValidar = await this.prisma.solicitudDeAdopcion.findUnique({
+    where: { id: idDeSolicitudAceptada },
+    select: { estado: true },
+  });
+
+  if (!solicitudValidar) {
+    throw new NotFoundException('No se encontró la solicitud indicada');
+  }
+
+  if (solicitudValidar.estado !== 'PENDIENTE') {
+    throw new BadRequestException('Solo se pueden aceptar solicitudes que esten en estado PENDIENTE');
+  }
+
   // 1. Actualizar estado general del caso
   await this.prisma.casoAdopcion.update({
     where: { id: idDelCasoAdopcion },
-    data: { estado: estadoNuevo },
+    data: { estado: 'ACEPTADA' },
   });
 
-  if (estadoNuevo === 'ACEPTADA') {
-    // 2. Obtener todas las solicitudes del caso (pendientes y aceptada)
-    const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
-      where: {
-        casoAdopcionId: idDelCasoAdopcion,
-      },
-      include: {
-        usuario: true,
-      },
-    });
+
+  const solicitudes = await this.prisma.solicitudDeAdopcion.findMany({
+    where: {
+      casoAdopcionId: idDelCasoAdopcion,
+    },
+    include: {
+      usuario: true,
+    },
+  });
 
     // 3. Rechazar las demás solicitudes pendientes
     await this.prisma.solicitudDeAdopcion.updateMany({
@@ -178,40 +274,30 @@ async aceptarSolicitud(
       data: { estado: 'ACEPTADA' },
     });
 
+    const nombreMascota = caso?.caso?.mascotaId
+      ? await this.prisma.mascota.findUnique({
+        where: { id: caso.caso.mascotaId },
+        select: { nombre: true },
+      })
+      : null;
+
     // 5. Extraer correos y nombre de mascota
     const listaDeCorreos = solicitudes.map(s => s.usuario.email);
     const emailAceptado = solicitudes.find(s => s.id === idDeSolicitudAceptada)?.usuario.email;
 
     // const nombreMascota = await this.obtenerNombreMascotaPorCasoAdopcion(idDelCasoAdopcion);
 
-    let mascotaEncontrada = await this.prisma.casoAdopcion.findUnique({
-      where: { id: idDelCasoAdopcion },
-      select: {
-        caso: {
-          select: {
-            mascota: {
-              select: {
-                nombre: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const nombreMascota = mascotaEncontrada?.caso?.mascota?.nombre;
-
-    // 6. Enviar correos
-    if (emailAceptado && listaDeCorreos.length && nombreMascota) {
+    if ( emailAceptado && listaDeCorreos.length && nombreMascota?.nombre) {
       await this.mailerService.enviarEmailsNotificacionAdopcion(
         listaDeCorreos,
         emailAceptado,
-        nombreMascota,
+        nombreMascota.nombre,
       );
     }
-  }
 
-  return { message: 'Estado actualizado correctamente.' };
+    // 6. Enviar correos
+    return { message: 'Solicitud aceptada correctamente y otras rechazadas.'}
+
 }
 
 

@@ -1,8 +1,9 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { DonacionService } from './donacion.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @Controller('donacion')
 export class DonacionController {
@@ -36,8 +37,10 @@ export class DonacionController {
     return await this.donacionService.obtenerValorTotalDonaciones();
   }
 
-  @Get('/ong/:ongId')
-  getDonacionesByOngId(@Param('ongId') ongId: string) {
+  @UseGuards(AuthGuard('jwt-local'))
+  @Get('/ong')
+  getDonacionesByOngId(@Req() req: AuthenticateRequest) {
+    const ongId = req.user.id;
     return this.donacionService.getDonacionesByOngId(ongId);
   }
 
@@ -47,10 +50,14 @@ export class DonacionController {
   }
 
   @Get('detalleDonacion/:CasoId')
-  getDetalleDonacionByCasoId(@Param('CasoId') CasoId: string) {
+  getDetalleDonacionByCasoId(
+    @Param('CasoId') CasoId: string,
+  ) {
     return this.donacionService.getDetalleDonacionByCasoId(CasoId);
   }
 
+
+  
   @Get('detalle/donaciones')
   getDetallesDonacion(){
 

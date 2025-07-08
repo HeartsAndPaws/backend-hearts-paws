@@ -17,6 +17,8 @@ export class JwtLocalStrategy extends PassportStrategy(Strategy, 'jwt-local') {
     });
   }
 
+
+
   async validate(payload: any) {
 
     if (!payload || !payload.sub || !payload.rol) {

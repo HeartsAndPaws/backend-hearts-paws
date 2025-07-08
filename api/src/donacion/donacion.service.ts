@@ -1,5 +1,5 @@
 
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { formatearARS, calcularPorcentajeProgreso } from 'src/utils/formatters';
 
@@ -131,6 +131,18 @@ export class DonacionService {
   }
 
   async getDetalleDonacionByCasoId(CasoId: string) {
+    const haDonado = await this.prismaService.donacion.findFirst({
+      where: {
+        casoDonacion: {
+          casoId: CasoId,
+        },
+      },
+    });
+
+    if (!haDonado) {
+      throw new ForbiddenException('No tienes permiso para ver el detalle de esta donacion')
+    }
+
     const casos =await this.prismaService.casoDonacion.findMany({
       where: {casoId: CasoId},
     });
