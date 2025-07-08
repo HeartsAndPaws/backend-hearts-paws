@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MailerService } from 'src/shared/email/email-server.service';
 import { BadRequestException } from '@nestjs/common';
 import { EstadoAdopcion } from '@prisma/client';
-import { prismaMock } from 'test/mocks/prisma.mock';
+import { prismaMock } from 'src/test/mocks/prisma.mock';
 
 describe('SolicitudAdoptarService', () => {
   let service: SolicitudAdoptarService;
@@ -47,7 +47,7 @@ describe('SolicitudAdoptarService', () => {
       declaracionFinal: 'Me comprometo totalmente',
     };
 
-    it('✅ debería crear una solicitud de adopción correctamente', async () => {
+    it('Debería crear una solicitud de adopción correctamente', async () => {
       const solicitudCreada = { id: 'solicitud-id', ...mockDto };
 
       prismaMock.usuario.findUnique.mockResolvedValue({ id: mockUsuarioId } as any);
@@ -65,14 +65,14 @@ describe('SolicitudAdoptarService', () => {
       expect(result).toEqual(solicitudCreada);
     });
 
-    it('❌ debería lanzar BadRequest si el usuario no existe', async () => {
+    it('Debería lanzar BadRequest si el usuario no existe', async () => {
       prismaMock.usuario.findUnique.mockResolvedValue(null);
 
       await expect(service.crearSolicitud(mockUsuarioId, mockDto)).rejects.toThrow(BadRequestException);
       expect(prismaMock.solicitudDeAdopcion.create).not.toHaveBeenCalled();
     });
 
-    it('❌ debería lanzar un error si Prisma falla al crear', async () => {
+    it('Debería lanzar un error si Prisma falla al crear', async () => {
       prismaMock.usuario.findUnique.mockResolvedValue({ id: mockUsuarioId } as any);
       prismaMock.solicitudDeAdopcion.create.mockRejectedValue(new Error('DB error'));
 
