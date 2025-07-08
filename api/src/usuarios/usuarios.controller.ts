@@ -80,7 +80,7 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Obtener el usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
   async getUsuarioActual(@Req() req: AuthenticateRequest){
-    return await this.usuariosService.usuarioPorId(req.user.id, req.user.external)
+    return await this.usuariosService.usuarioPorId(req.user.id)
   }
 
 
