@@ -52,11 +52,37 @@ export class ChatService {
                         imagenPerfil: true,
                     },
                 },
+                ultimoMensaje: {
+                    select: {
+                        id: true,
+                        contenido: true,
+                        enviado_en: true,
+                        autorUsuario: {
+                            select: { id: true, nombre: true},
+                        },
+                        autorOrganizacion: {
+                            select: { id: true, nombre: true},
+                        },
+                    },
+                },
             },
         });
+
+        const chatsConAutor = chats.map(chat => ({
+            ...chat,
+            ultimoMensaje: chat.ultimoMensaje && {
+                id: chat.ultimoMensaje.id,
+                contenido: chat.ultimoMensaje.contenido,
+                enviado_en: chat.ultimoMensaje.enviado_en,
+                autor: chat.ultimoMensaje.autorUsuario
+                    ? { ...chat.ultimoMensaje.autorUsuario, tipo: 'USUARIO'}
+                    : { ...chat.ultimoMensaje.autorOrganizacion, tipo: 'ONG'}
+            }
+        }));
+
         return {
             ok: true,
-            chats,
+            chats: chatsConAutor,
         };
     }
 
@@ -151,8 +177,8 @@ export class ChatService {
     }
 
     async crearMensaje(chatId: string, autorId: string, contenido: string) {
+        
         const chat = await this.getChatPorId(chatId);
-
         const usuario = await this.prisma.usuario.findUnique({where: { id: autorId}});
         const esUsuario = Boolean(usuario)
 
@@ -175,6 +201,11 @@ export class ChatService {
                     select: { id: true, nombre: true, email: true, imagenPerfil: true},
                 },
             },
+        });
+
+        await this.prisma.chat.update({
+            where: { id: chatId },
+            data: { ultimoMensajeId: mensaje.id},
         });
 
         return {
