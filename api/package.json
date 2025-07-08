@@ -119,7 +119,7 @@
         "preset": "ts-jest",
     "testEnvironment": "node",
     "moduleNameMapper": {
-      "^src/(.*)$": "<rootDir>/src/$1"
+      "^src/(.*)$": "<rootDir>/$1"
     },
     "testMatch": [
       "**/?(*.)+(spec|test).[jt]s?(x)"
