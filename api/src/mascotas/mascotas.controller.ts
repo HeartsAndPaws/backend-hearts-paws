@@ -72,8 +72,6 @@ export class MascotasController {
   }
 
 
-
-
   @UseGuards(AuthGuard('jwt-local'))
   @Get('ong')
   @ApiOperation({ summary: 'Obtener mascotas de mi ONG autenticada' })
@@ -110,7 +108,6 @@ export class MascotasController {
     return this.mascotasService.CreateTipoMascota(createTipoMascotaDto);
   }
 
-  // ONG autenticada: Crear mascota
   @UseGuards(AuthGuard('jwt-local'))
   @Post()
   @ApiOperation({ summary: 'Crear una nueva mascota (ONG autenticada)' })
@@ -137,7 +134,6 @@ export class MascotasController {
     return this.mascotasService.CreateMascota(createMascotaDto, ongId);
   }
 
-  // ONG autenticada: Crear tipo de mascota (simple)
   @UseGuards(AuthGuard('jwt-local'))
   @Post('tipo')
   @ApiOperation({ summary: 'Crear un tipo de mascota (ONG autenticada)' })
