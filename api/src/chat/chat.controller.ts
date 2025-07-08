@@ -3,11 +3,12 @@ import { ChatService } from "./chat.service";
 import { JwtAutCookiesGuardia } from "src/autenticacion/guards/jwtAut.guardia";
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiQuery } from "@nestjs/swagger";
 import { AuthGuard } from "@nestjs/passport";
+import { AuthenticateRequest } from "src/common/interfaces/authenticated-request.interface";
 
 @ApiTags('Chats')
 @ApiBearerAuth()
 @Controller('chats')
-@UseGuards(JwtAutCookiesGuardia)
+@UseGuards(AuthGuard(['jwt-local', 'supabase']))
 export class ChatController {
     constructor(private readonly chatService: ChatService){}
 
@@ -26,7 +27,7 @@ export class ChatController {
     @ApiResponse({ status: 403, description: 'No autorizado para iniciar chats.' })
     async iniciarChat(
         @Body() body: { usuarioId: string; organizacionId: string},
-        @Request() req,
+        @Request() req: AuthenticateRequest,
     ){
         const { tipo, id: solicitanteId } = req.user;
 
@@ -52,7 +53,9 @@ export class ChatController {
     @ApiParam({ name: 'id', type: 'string', description: 'ID del usuario' })
     @ApiResponse({ status: 200, description: 'Lista de chats del usuario' })
     @ApiResponse({ status: 403, description: 'Solo los usuarios autenticados pueden acceder a sus chats.' })
-    async getChatsDeUsuario(@Param('id') usuarioId: string, @Request() req){
+    async getChatsDeUsuario(
+        @Param('id') usuarioId: string, 
+        @Request() req: AuthenticateRequest){
         if (req.user.tipo !== 'USUARIO') {
             throw new ForbiddenException('Solo los usuarios pueden acceder a esta ruta');
         }
@@ -70,7 +73,7 @@ export class ChatController {
     @ApiResponse({ status: 403, description: 'Solo las organizaciones autenticadas pueden acceder a sus chats.' })
     async getChatsDeOrganizacion(
         @Param('id') organizacionId: string,
-        @Request() req,
+        @Request() req: AuthenticateRequest,
     ){
         if (req.user.tipo !== 'ONG') {
             throw new ForbiddenException('Solo las organizaciones pueden acceder a esta ruta');
@@ -90,7 +93,7 @@ export class ChatController {
     @ApiResponse({ status: 403, description: 'No tienes acceso a este chat.' })
     async getMensajesDeChat(
         @Param('chatId') chatId: string,
-        @Request() req,
+        @Request() req: AuthenticateRequest,
     ){
         await this.chatService.verificarAccesoAlChat(chatId, req.user);
         return await this.chatService.getMensajesDeChat(chatId);
@@ -102,7 +105,7 @@ export class ChatController {
     @ApiResponse({ status: 200, description: 'Lista de usuarios relacionados con la ONG y su estado de chat' })
     @ApiResponse({ status: 403, description: 'Solo las organizaciones pueden acceder a esta ruta.' })
     async getUsuariosConEstado(
-        @Request() req,
+        @Request() req: AuthenticateRequest,
         @Query('q') q?: string,
     ){
         if (req.user.tipo !== 'ONG') {
@@ -118,7 +121,7 @@ export class ChatController {
     @ApiResponse({ status: 200, description: 'Lista de organizaciones relacionadas con el usuario y su estado de chat' })
     @ApiResponse({ status: 403, description: 'Solo los usuarios pueden acceder a esta ruta.' })
     async getOrganizacionesConEstado(
-        @Request() req,
+        @Request() req: AuthenticateRequest,
         @Query('q') q?: string,
     ){
         if (req.user.tipo !== 'USUARIO') {
