@@ -19,11 +19,7 @@ export class UsuariosService {
     if (!usuario) {
       throw new NotFoundException(`No se encontro el usuario con id ${ id }`);
     }
-      const analisis = await this.googleVisionService.analizarImagen(fotoUrl);
-
-  if (analisis.advertencia) {
-    throw new BadRequestException('La imagen parece contener contenido sensible. Intenta con otra imagen.');
-  }
+    
     return this.prisma.usuario.update({
       where: { id },
       data: { imagenPerfil: fotoUrl}
@@ -227,19 +223,21 @@ async obtenerSolicitudesDelUsuario(usuarioId: string){
   async toggleFavorito(userId: string, casoId: string) {
 
     const favorito = await this.prisma.favorito.findUnique({
-      where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } },
+      where: { usuarioId_casoId: { usuarioId: userId, casoId } },
     })
 
     if(favorito){
 
-      await this.prisma.favorito.delete({where: { usuarioId_casoId: { usuarioId: userId, casoId: casoId } }})
+      await this.prisma.favorito.delete({
+        where: { usuarioId_casoId: { usuarioId: userId, casoId } },
+      });
 
       return { message: 'Eliminado de favoritos' };
     }
 
     await this.prisma.favorito.create({
-      data: {usuarioId: userId, casoId: casoId}
-    })
+      data: {usuarioId: userId, casoId },
+    });
 
     return { message: 'Agregado a favoritos' };
 
@@ -262,4 +260,11 @@ async obtenerSolicitudesDelUsuario(usuarioId: string){
       },
     });
   }
+
+  async buscarPorEmail(email: string){
+    return await this.prisma.usuario.findUnique({
+      where: { email },
+    });
+  }
+
 }

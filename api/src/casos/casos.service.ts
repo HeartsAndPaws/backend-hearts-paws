@@ -32,7 +32,12 @@ export class CasosService {
   
   async GetCasosAdopcion() {
     return this.prismaService.caso.findMany({
-      where: { tipo: 'ADOPCION' },
+      where: { 
+        tipo: 'ADOPCION',
+        adopcion: {
+          estado: 'PENDIENTE',
+        }
+      },
       include: {
         mascota: {
           include: {
@@ -90,7 +95,7 @@ export class CasosService {
 }
 
 
-  async CreateCaso(createCasoDto: CreateCasoDto) {
+  async CreateCaso(createCasoDto: CreateCasoDto, ongId: string) {
     
     const casoExistente = await this.prismaService.caso.findFirst({
       where: {
@@ -109,7 +114,7 @@ export class CasosService {
         descripcion: createCasoDto.descripcion,
         tipo: createCasoDto.tipo,
         mascotaId: createCasoDto.mascotaId,
-        ongId: createCasoDto.ongId,
+        ongId,
       },
     });
 

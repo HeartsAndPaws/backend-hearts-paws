@@ -3,9 +3,6 @@ import { EstadoAdopcion } from '@prisma/client';
 
 export class SolicitudParaAdoptarDto {
   @IsUUID()
-  usuarioId: string;
-
-  @IsUUID()
   casoAdopcionId: string;
 
   @IsEnum(EstadoAdopcion)

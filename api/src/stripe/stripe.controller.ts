@@ -8,7 +8,8 @@ import {
     HttpStatus,
     BadRequestException,
     NotFoundException,
-    Query
+    Query,
+    UseGuards
 } from '@nestjs/common';
 import { StripeService } from './stripe.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,7 +17,16 @@ import { Request, Response } from 'express';
 import { stripe } from './stripe.service';
 import Stripe from 'stripe';
 import { formatearARS } from 'src/utils/formatters';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBody, ApiHeaders } from '@nestjs/swagger';
+import {
+    ApiTags,
+    ApiOperation,
+    ApiResponse,
+    ApiQuery,
+    ApiBody,
+    ApiHeaders
+} from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @ApiTags('Stripe')
 @Controller('stripe')
@@ -26,32 +36,32 @@ export class StripeController {
         private readonly prisma: PrismaService,
     ) {}
 
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Get('checkout')
     @ApiOperation({ summary: 'Crea una sesión de pago para donar a un caso' })
     @ApiQuery({ name: 'casoId', type: 'string', required: true, description: 'ID del caso de donación' })
-    @ApiQuery({ name: 'usuarioId', type: 'string', required: true, description: 'ID del usuario que dona' })
     @ApiQuery({ name: 'monto', type: 'string', required: true, description: 'Monto de la donación (ARS)' })
     @ApiResponse({
         status: 200,
         description: 'URL de Stripe Checkout para procesar el pago',
-        schema: {
-            example: { url: 'https://checkout.stripe.com/pay/cs_test_...' }
-        }
+        schema: { example: { url: 'https://checkout.stripe.com/pay/cs_test_...' } }
     })
     @ApiResponse({ status: 400, description: 'Parámetros inválidos o monto inválido' })
     @ApiResponse({ status: 404, description: 'Caso de donación no encontrado' })
     async crearCheckout(
-        @Query('casoId') casoId: string, 
-        @Query('usuarioId') usuarioId: string,
+        @Query('casoId') casoId: string,
         @Query('monto') montoStr: string,
+        @Req() req: AuthenticateRequest,
     ) {
+        const usuarioId = req.user.id;
+
         const monto = parseFloat(montoStr);
         if (!usuarioId || isNaN(monto) || monto <= 0) {
             throw new BadRequestException('Parámetros inválidos para donación')
         }
 
         const casoDonacion = await this.prisma.casoDonacion.findUnique({
-            where: { casoId},
+            where: { casoId },
             include: {
                 caso: {
                     include: {
@@ -99,10 +109,7 @@ export class StripeController {
     ])
     @ApiBody({
         description: 'Evento enviado por Stripe (raw)',
-        schema: {
-            type: 'object',
-            example: {}
-        }
+        schema: { type: 'object', example: {} }
     })
     @ApiResponse({ status: 200, description: 'Evento recibido correctamente', schema: { example: { received: true } } })
     @ApiResponse({ status: 400, description: 'Webhook Error o metadatos incompletos' })
@@ -139,16 +146,16 @@ export class StripeController {
             }
 
             const donacionExistente = await this.prisma.donacion.findUnique({
-                where: { comprobante: session.id},
+                where: { comprobante: session.id },
             });
 
-            if (donacionExistente){
+            if (donacionExistente) {
                 console.log('🔁 Webhook ya procesado');
-                return res.status(HttpStatus.OK).json({ received: true});
+                return res.status(HttpStatus.OK).json({ received: true });
             }
 
             const casoDonacion = await this.prisma.casoDonacion.findUnique({
-                where: { casoId}
+                where: { casoId }
             })
 
             if (!casoDonacion) {
@@ -165,11 +172,11 @@ export class StripeController {
                     monto: session.amount_total! / 100,
                     montoARS: montoARS,
                     tasaCambio: parseFloat(session.metadata?.tasaCambio ?? '0'),
-                    comprobante: session.id, 
+                    comprobante: session.id,
                     estadoPago: session.payment_status ?? 'desconocido',
                     stripeSessionId: session.id,
-                    referenciaPago: typeof session.payment_intent === 'string' 
-                        ? session.payment_intent 
+                    referenciaPago: typeof session.payment_intent === 'string'
+                        ? session.payment_intent
                         : session.payment_intent?.id ?? '',
                     casoDonacionId: casoDonacion.id,
                 },
