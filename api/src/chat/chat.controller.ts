@@ -114,7 +114,7 @@ export class ChatController {
         return await this.chatService.getUsuariosConEstado(q, req.user.id);
     }
 
-    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
+
     @Get('organizaciones')
     @ApiOperation({ summary: 'Usuario: Buscar organizaciones con las que tiene chats o historial' })
     @ApiQuery({ name: 'q', type: 'string', required: false, description: 'Filtro de búsqueda' })
