@@ -8,10 +8,11 @@ import { AuthenticateRequest } from "src/common/interfaces/authenticated-request
 @ApiTags('Chats')
 @ApiBearerAuth()
 @Controller('chats')
-@UseGuards(AuthGuard(['jwt-local', 'supabase']))
+
 export class ChatController {
     constructor(private readonly chatService: ChatService){}
 
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Post('iniciar')
     @ApiOperation({ summary: 'Iniciar un nuevo chat entre usuario y organización' })
     @ApiBody({
@@ -53,6 +54,7 @@ export class ChatController {
         throw new ForbiddenException('No autorizado para iniciar chats');
     }
 
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Get('usuario/:id')
     @ApiOperation({ summary: 'Obtener los chats de un usuario autenticado' })
     @ApiParam({ name: 'id', type: 'string', description: 'ID del usuario' })
@@ -71,6 +73,7 @@ export class ChatController {
         return await this.chatService.getChatsDeUsuario(usuarioId);
     }
 
+    @UseGuards(AuthGuard(['jwt-local']))
     @Get('organizacion/:id')
     @ApiOperation({ summary: 'Obtener los chats de una organización autenticada' })
     @ApiParam({ name: 'id', type: 'string', description: 'ID de la organización' })
@@ -91,6 +94,7 @@ export class ChatController {
         return await this.chatService.getChatDeOrganizacion(organizacionId);
     }
 
+
     @Get(':chatId/mensajes')
     @ApiOperation({ summary: 'Obtener mensajes de un chat, validando acceso' })
     @ApiParam({ name: 'chatId', type: 'string', description: 'ID del chat' })
@@ -104,6 +108,8 @@ export class ChatController {
         return await this.chatService.getMensajesDeChat(chatId);
     }
 
+
+    @UseGuards(AuthGuard(['jwt-local']))
     @Get('usuarios')
     @ApiOperation({ summary: 'ONG: Buscar usuarios con los que tiene chats o historial' })
     @ApiQuery({ name: 'q', type: 'string', required: false, description: 'Filtro de búsqueda' })
@@ -120,6 +126,7 @@ export class ChatController {
     }
 
 
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Get('organizaciones')
     @ApiOperation({ summary: 'Usuario: Buscar organizaciones con las que tiene chats o historial' })
     @ApiQuery({ name: 'q', type: 'string', required: false, description: 'Filtro de búsqueda' })
