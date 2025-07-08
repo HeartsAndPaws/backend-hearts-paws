@@ -110,7 +110,7 @@ export class ChatController {
     }
 
 
-    @UseGuards(AuthGuard(['jwt-local']))
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Get('usuarios')
     @ApiOperation({ summary: 'ONG: Buscar usuarios con los que tiene chats o historial' })
     @ApiQuery({ name: 'q', type: 'string', required: false, description: 'Filtro de búsqueda' })
