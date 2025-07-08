@@ -2,6 +2,7 @@ import { Body, Controller, ForbiddenException, Get, Param, Post, Query, Request,
 import { ChatService } from "./chat.service";
 import { JwtAutCookiesGuardia } from "src/autenticacion/guards/jwtAut.guardia";
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiQuery } from "@nestjs/swagger";
+import { AuthGuard } from "@nestjs/passport";
 
 @ApiTags('Chats')
 @ApiBearerAuth()
@@ -110,6 +111,7 @@ export class ChatController {
         return await this.chatService.getUsuariosConEstado(q, req.user.id);
     }
 
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Get('organizaciones')
     @ApiOperation({ summary: 'Usuario: Buscar organizaciones con las que tiene chats o historial' })
     @ApiQuery({ name: 'q', type: 'string', required: false, description: 'Filtro de búsqueda' })
