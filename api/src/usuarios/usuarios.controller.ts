@@ -103,16 +103,18 @@ export class UsuariosController {
   }
 
 
-  @Patch(':id')
+  @Patch('me')
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @ApiOperation({ summary: 'Cambia los datos del usuario' })
   @ApiParam({ name: 'id', type: 'string' })
   @ApiBody({ type: ActualizarUsuarioDTO })
   @ApiResponse({ status: 200, description: 'Datos actualizados' })
   async actualizarUsuario(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: AuthenticateRequest,
     @Body() datosDeUsuario: ActualizarUsuarioDTO,
   ) {
-    return await this.usuariosService.actualizarUsuario(id, datosDeUsuario);
+    const userId = req.user.id;
+    return await this.usuariosService.actualizarUsuario(userId, datosDeUsuario);
   }
 
 
