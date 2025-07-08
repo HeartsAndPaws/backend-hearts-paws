@@ -26,11 +26,10 @@ export class UsuariosService {
     });
   }
 
-    async usuarioPorId(id: string, external = false) {
-      const where = external ? { externalId: id } : { id };
+    async usuarioPorId(id: string) {
 
       const usuario = await this.prisma.usuario.findUnique({
-        where,
+        where: { id },
         select: {
           id: true,
           nombre: true,
@@ -46,7 +45,7 @@ export class UsuariosService {
       });
   
       if (!usuario) {
-        throw new NotFoundException(`No se encontró el usuario con ${external ? 'externalId' : 'id'} ${id}`);
+        throw new NotFoundException(`No se encontró el usuario con Id ${id}`);
       }
   
       return usuario;
