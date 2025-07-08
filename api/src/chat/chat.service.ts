@@ -97,12 +97,37 @@ export class ChatService {
                         imagenPerfil: true, 
                         email: true},
                 },
+                ultimoMensaje: {
+                    select: {
+                        id: true,
+                        contenido: true,
+                        enviado_en: true,
+                        autorUsuario: {
+                            select: { id: true, nombre: true },
+                        },
+                        autorOrganizacion: {
+                            select: { id: true, nombre: true },
+                        },
+                    },
+                },
             },
         });
 
+        const chatsConAutor = chats.map(chat => ({
+            ...chat,
+            ultimoMensaje: chat.ultimoMensaje && {
+                id: chat.ultimoMensaje.id,
+                contenido: chat.ultimoMensaje.contenido,
+                enviado_en: chat.ultimoMensaje.enviado_en,
+                autor: chat.ultimoMensaje.autorUsuario
+                    ? { ...chat.ultimoMensaje.autorUsuario, tipo: 'USUARIO' }
+                    : { ...chat.ultimoMensaje.autorOrganizacion, tipo: 'ONG '},
+            },
+        }));
+
         return {
             ok: true,
-            chats,
+            chats: chatsConAutor,
         }
     }
 
