@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ChatConnectionService } from "./chat-connection.service";
-import { strict } from "assert";
 
 @Injectable()
 export class ChatService {
