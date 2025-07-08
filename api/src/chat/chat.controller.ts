@@ -95,6 +95,7 @@ export class ChatController {
     }
 
 
+    @UseGuards(AuthGuard(['jwt-local', 'supabase']))
     @Get(':chatId/mensajes')
     @ApiOperation({ summary: 'Obtener mensajes de un chat, validando acceso' })
     @ApiParam({ name: 'chatId', type: 'string', description: 'ID del chat' })
