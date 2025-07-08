@@ -85,56 +85,58 @@ export class UsuariosService {
 
 
   async actualizarUsuario(id: string, datosDeUsuario: ActualizarUsuarioDTO) {
-    const { email, contrasena, telefono, direccion, ciudad, pais } = datosDeUsuario;
+
     const usuario = await this.prisma.usuario.findUnique({
-      where: { id },
+      where: { id }
     });
 
     if (!usuario) {
-      throw new NotFoundException(`No se encontró el usuario con id ${id}`);
+      throw new NotFoundException(`No se encuentro el usuario con id ${id}`);
     }
-
-    const data: any = {};
 
     const esExterno = !!usuario.externalId;
 
-    if (!esExterno && datosDeUsuario.email) {
-      data.email = datosDeUsuario.email
+    const data: Partial<typeof usuario> = {};
+
+    if (!esExterno) {
+      if (datosDeUsuario.email && datosDeUsuario.email !== usuario.email) {
+        data.email = datosDeUsuario.email;
+      }
+
+      if (datosDeUsuario.contrasena) {
+        data.contrasena = await bcrypt.hash(datosDeUsuario.contrasena, 10);
+      }
     }
 
-    if (!esExterno && datosDeUsuario.contrasena) {
-      data.contrasena = await bcrypt.hash(datosDeUsuario.contrasena, 10)
-    }
+      if (datosDeUsuario.telefono) data.telefono = datosDeUsuario.telefono;
+      if (datosDeUsuario.direccion) data.direccion = datosDeUsuario.direccion;
+      if (datosDeUsuario.ciudad) data.ciudad = datosDeUsuario.ciudad;
+      if (datosDeUsuario.pais) data.pais = datosDeUsuario.pais;
 
-    if(datosDeUsuario.telefono) data.telefono = datosDeUsuario.telefono;
-    if(datosDeUsuario.direccion) data.direccion = datosDeUsuario.direccion;
-    if(datosDeUsuario.ciudad) data.ciudad = datosDeUsuario.ciudad;
-    if(datosDeUsuario.pais) data.pais = datosDeUsuario.pais;
+      await this.prisma.usuario.update({
+        where: { id },
+        data,
+      });
 
-    await this.prisma.usuario.update({
-      where: { id },
-      data,
-    });
+      const usuarioActualizado = await this.prisma.usuario.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          nombre: true,
+          email: true,
+          telefono: true,
+          direccion: true,
+          ciudad: true,
+          pais: true,
+          rol: true,
+        },
+      });
 
-    const usuarioActualizado = await this.prisma.usuario.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        nombre: true,
-        email: true,
-        telefono: true,
-        direccion: true,
-        ciudad: true,
-        pais: true,
-        rol: true,
-      },
-    });
-
-    return {
-      ok: true,
-      mensaje: 'Usuario actualizado correctamente',
-      usuarioActualizado,
-    }
+      return {
+        ok: true,
+        mensaje: 'Usuario axtualizado correctamente',
+        usuarioActualizado,
+      }
   }
 
   async borrarUsuario(id: string) {
