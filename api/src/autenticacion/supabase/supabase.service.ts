@@ -48,6 +48,7 @@ export class SupabaseService {
         id: usuario.id,
         email: usuario.email,
         rol: usuario.rol,
+        tipo: 'USUARIO',
         name: usuario.nombre,
         picture: usuario.imagenPerfil,
         external: true,
