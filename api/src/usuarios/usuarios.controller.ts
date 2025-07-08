@@ -45,20 +45,37 @@ export class UsuariosController {
     return { total };
   }
 
-
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('mis-donaciones')
   @ApiOperation({summary: 'ver mis donaciones'})
   async obtenerMisDonaciones(@Req() req: AuthenticateRequest){
-    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(req.user.id);
+    const usuarioId = req.user.id;
+    return await this.usuariosService.obtenerDonacionesDelUsuarioAutenticado(usuarioId);
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('mis-solicitudes')
   @ApiOperation({ summary: 'Ver mis solicitudes de adopción'})
   async obtenerMisSolicitudes(@Req() req: AuthenticateRequest){
-    return await this.usuariosService.obtenerSolicitudesDelUsuario(req.user.id);
+    const usuarioId = req.user.id;
+    return await this.usuariosService.obtenerSolicitudesDelUsuario(usuarioId);
+  }
+
+  @Get('verificar-email/:email')
+  @ApiOperation({ summary: 'Verificar si el email ya está registrado'})
+  async verificarEmail(
+    @Param('email') email: string
+  ){
+    const usuario = await this.usuariosService.buscarPorEmail(email);
+    return {
+      disponible: !usuario,
+      mensaje: usuario ? 'El email ya está registrado' : 'El email está disponible',
+    };
   }
 
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @Get('me')
   @ApiOperation({ summary: 'Obtener el usuario autenticado' })
   @ApiResponse({ status: 200, description: 'Usuario actual retornado exitosamente' })
@@ -77,7 +94,7 @@ export class UsuariosController {
   }
 
   @UseGuards(AuthGuard(['jwt-local', 'supabase']))
-  @Get('favoritos/casos/')
+  @Get('favoritos/casos')
   obetnerFavoritos(
     @Req() req: AuthenticateRequest
   ){

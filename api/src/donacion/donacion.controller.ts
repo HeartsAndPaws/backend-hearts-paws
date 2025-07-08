@@ -50,10 +50,14 @@ export class DonacionController {
   }
 
   @Get('detalleDonacion/:CasoId')
-  getDetalleDonacionByCasoId(@Param('CasoId') CasoId: string) {
+  getDetalleDonacionByCasoId(
+    @Param('CasoId') CasoId: string,
+  ) {
     return this.donacionService.getDetalleDonacionByCasoId(CasoId);
   }
 
+
+  
   @Get('detalle/donaciones')
   getDetallesDonacion(){
 
