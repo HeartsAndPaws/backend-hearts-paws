@@ -204,6 +204,10 @@ model Chat {
   organizacionId String
   mensajes       Mensaje[]
   creado_en      DateTime     @default(now())
+
+  ultimoMensaje   Mensaje?    @relation("UltimoMensajeChat", fields: [ultimoMensajeId], references: [id])
+  ultimoMensajeId String?     @unique
+
 }
 
 model Mensaje {
@@ -216,6 +220,9 @@ model Mensaje {
   autorOrganizacionId    String?
   contenido  String
   enviado_en DateTime @default(now())
+
+  chatComoUltimoMensaje Chat? @relation("UltimoMensajeChat")
+
 }
 
 enum Rol {
