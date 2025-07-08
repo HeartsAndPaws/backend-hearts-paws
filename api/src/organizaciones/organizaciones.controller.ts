@@ -8,7 +8,7 @@ import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
 import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { JwtAutCookiesGuardia } from 'src/autenticacion/guards/jwtAut.guardia';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiParam, ApiConsumes, ApiBody, ApiExtraModels } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiParam, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 
@@ -20,7 +20,6 @@ export class OrganizacionesController {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-
   @UseGuards(AuthGuard('jwt-local'), RolesGuard)
   @Roles('ADMIN')
   @Get()
@@ -30,18 +29,20 @@ export class OrganizacionesController {
     return this.organizacionesService.listarTodas(query);
   }
 
-
   @UseGuards(AuthGuard('jwt-local'), RolesGuard)
   @Roles('ADMIN')
   @Get('aprobadas')
+  @ApiOperation({ summary: 'Obtener organizaciones aprobadas' })
+  @ApiResponse({ status: 200, description: 'Lista de organizaciones aprobadas' })
   async obtenerAprobadas(@Query() query: any){
     return await this.organizacionesService.listarAprobadas(query);
   }
 
-
   @UseGuards(AuthGuard('jwt-local'), RolesGuard)
   @Roles('ADMIN')
   @Get('rechazadas')
+  @ApiOperation({ summary: 'Obtener organizaciones rechazadas' })
+  @ApiResponse({ status: 200, description: 'Lista de organizaciones rechazadas' })
   async obtenerRechazadas(@Query() query: any){
     return await this.organizacionesService.listarRechazadas(query);
   }
@@ -49,7 +50,15 @@ export class OrganizacionesController {
   @UseGuards(AuthGuard('jwt-local'), RolesGuard)
   @Roles('ADMIN')
   @Get('aprobadas/total')
-  async contarOngsAprobadas(){
+  @ApiOperation({ summary: 'Contar el total de organizaciones aprobadas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Total de organizaciones con estado APROBADA',
+    schema: {
+      example: { total: 10 }
+    }
+  })
+  async contarOngsAprobadas() {
     return await this.organizacionesService.contarAprobadas();
   }
 
@@ -75,7 +84,6 @@ export class OrganizacionesController {
     return await this.organizacionesService.buscarPorId(req.user.id)
   }
 
-
   @UseGuards(AuthGuard('jwt-local'), RolesGuard)
   @Roles('ADMIN')
   @Get(':id')
@@ -86,12 +94,14 @@ export class OrganizacionesController {
     return this.organizacionesService.buscarPorId(id);
   }
 
-
   @UseGuards(JwtAutCookiesGuardia)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar datos de una organización' })
-  @ApiParam({ name: 'id', type: 'string' })
-  @ApiResponse({ status: 200, description: 'Organización actualizada' })
+  @ApiParam({ name: 'id', type: 'string', description: 'ID de la organización a actualizar' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organización actualizada'
+  })
   async actualizar(
     @Param('id') id: string,
     @Body() data: UpdateOrganizacioneDto,
@@ -103,7 +113,6 @@ export class OrganizacionesController {
     return this.organizacionesService.actualizarDatosOng(id, data);
   }
 
-
   @Patch(':id/estado')
   @UseInterceptors(AnyFilesInterceptor())
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
@@ -114,12 +123,11 @@ export class OrganizacionesController {
   @ApiResponse({ status: 200, description: 'Estado actualizado' })
   async cambiarEstado(
     @Param('id') id: string,
-    @Body('estado') estado: EstadoOrganizacion // 'APROBADA' o 'RECHAZADA'
+    @Body('estado') estado: EstadoOrganizacion
   ){
     return this.organizacionesService.actualizarEstado(id, estado);
   }
 
-  
   @UseGuards(JwtAutCookiesGuardia)
   @Post(':id/foto')
   @UseInterceptors(FileInterceptor('file', {
@@ -149,20 +157,25 @@ export class OrganizacionesController {
     if (req.user.id !== id) {
       return { error: 'No autorizado'};
     }
-
     const subirImagen = await this.cloudinaryService.subirIamgen(file);
     return this.organizacionesService.actualizarFotoPerfil(id, subirImagen.secure_url);
   }
 
-
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Roles('ADMIN')
   @Get(':id/archivo-verificacion')
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
-  @Roles('ADMIN')
-  async obtenerArchivoPdf(@Param('id') id: string, @Res() res: Response){
+  @ApiOperation({ summary: 'Obtener el archivo PDF de verificación de la organización (solo ADMIN)' })
+  @ApiParam({ name: 'id', type: 'string', description: 'ID de la organización' })
+  @ApiResponse({
+    status: 200,
+    description: 'Archivo PDF de verificación de la organización (se devuelve como stream)',
+    schema: {
+      type: 'string',
+      format: 'binary',
+      example: 'application/pdf'
+    }
+  })
+  async obtenerArchivoPdf(@Param('id') id: string, @Res() res: Response) {
     return this.organizacionesService.servirArchivoVerificacion(id, res);
   }
-
-
 }
