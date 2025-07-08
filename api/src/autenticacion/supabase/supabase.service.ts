@@ -44,10 +44,17 @@ export class SupabaseService {
         });
     }
 
+    if (usuario.rol !== 'USUARIO') {
+        await this.prisma.usuario.update({
+            where: { id: usuario.id},
+            data: { rol: 'USUARIO'},
+        })
+    }
+
     return {
         id: usuario.id,
         email: usuario.email,
-        rol: usuario.rol,
+        rol: 'USUARIO',
         tipo: 'USUARIO',
         name: usuario.nombre,
         picture: usuario.imagenPerfil,
