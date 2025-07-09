@@ -319,4 +319,14 @@ async aceptarSolicitud(
 
     return { total };
   }
+
+  async existenciaDeSolicitud(usuarioId: string, casoAdopcionId: string) {
+  const solicitud = await this.prisma.solicitudDeAdopcion.findFirst({
+    where: {
+      usuarioId,
+      casoAdopcionId,
+    },
+  });
+    return solicitud
+}
 }
