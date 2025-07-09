@@ -4,7 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MailerService } from 'src/shared/email/email-server.service';
 import { BadRequestException } from '@nestjs/common';
 import { EstadoAdopcion } from '@prisma/client';
-import { prismaMock } from 'src/test/mocks/prisma.mocks';
+import { prismaMock } from 'src/test/mocks/prisma.mock';
 
 describe('SolicitudAdoptarService', () => {
   let service: SolicitudAdoptarService;

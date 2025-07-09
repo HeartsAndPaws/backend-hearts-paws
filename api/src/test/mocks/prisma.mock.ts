@@ -21,6 +21,7 @@ export const prismaMock: jest.Mocked<PrismaService> = {
 
   solicitudDeAdopcion: {
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
     findMany: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
@@ -40,5 +41,4 @@ export const prismaMock: jest.Mocked<PrismaService> = {
     findMany: jest.fn(),
     findUnique: jest.fn(),
   } as any,
-
 } as unknown as jest.Mocked<PrismaService>;
