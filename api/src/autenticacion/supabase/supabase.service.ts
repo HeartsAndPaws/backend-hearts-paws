@@ -28,7 +28,7 @@ export class SupabaseService {
         usuario = await this.prisma.usuario.create({
             data: {
                 email,
-                nombre: name || 'Usuario Externo',
+                nombre: name || email.split('@')[0],
                 imagenPerfil: picture || null,
                 rol: 'USUARIO',
                 contrasena: null,

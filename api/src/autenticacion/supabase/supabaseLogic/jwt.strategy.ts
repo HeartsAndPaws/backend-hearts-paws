@@ -52,6 +52,7 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
       email: usuario.email,
       tipo: 'USUARIO',
       rol: usuario.rol,
+      name: usuario.name,
       picture,
       external: true,
     }
