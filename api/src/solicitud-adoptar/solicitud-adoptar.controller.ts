@@ -96,16 +96,6 @@ export class SolicitudAdoptarController {
     return this.solicitudAdoptarService.verSolicitudesPorCasoDeAdopcion(ongId);
   }
 
-@Get('yaExisteLaSolicitud/:idCasoAdopcion')
-async verifica(
-  @Req() req: ExpressRequest & { user: User },
-  @Param('idCasoAdopcion') idCasoAdopcion: string
-) {
-  const userId = req.user.id
-  console.log(userId)
-  return this.solicitudAdoptarService.existenciaDeSolicitud(userId, idCasoAdopcion);
-}
-
   @Get('filtro')
   @ApiOperation({ summary: 'Filtrar solicitudes por vivienda y tipo de mascota' })
   @ApiQuery({ name: 'casoAdopcionId', type: 'string', required: true })
