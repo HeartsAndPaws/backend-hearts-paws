@@ -14,6 +14,7 @@ export class CasosController {
     private readonly casosService: CasosService
   ) {}
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get()
   @ApiOperation({ summary: 'Obtener todos los casos' })
   @ApiResponse({ status: 200, description: 'Lista de todos los casos obtenida exitosamente' })
@@ -21,6 +22,7 @@ export class CasosController {
     return this.casosService.GetCasos();
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('adopcion')
   @ApiOperation({ summary: 'Obtener casos de adopción' })
   @ApiResponse({ status: 200, description: 'Lista de casos de adopción obtenida exitosamente' })
@@ -28,6 +30,7 @@ export class CasosController {
     return this.casosService.GetCasosAdopcion();
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('donacion')
   @ApiOperation({ summary: 'Obtener casos de donación' })
   @ApiResponse({ status: 200, description: 'Lista de casos de donación obtenida exitosamente' })
@@ -35,6 +38,7 @@ export class CasosController {
     return this.casosService.GetCasosDonacion();
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('idAdopcion/:mascotaId')
   @ApiOperation({ summary: 'Obtener ID del caso de adopción por mascota' })
   @ApiParam({ name: 'mascotaId', description: 'ID de la mascota', type: 'string' })
@@ -44,6 +48,7 @@ export class CasosController {
     return this.casosService.obtenerIdDelCasoAdopcion(mascotaId)
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('adopcion/buscar')
   @ApiOperation({ summary: 'Buscar casos de adopción por tipo de mascota' })
   @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
@@ -52,6 +57,7 @@ export class CasosController {
     return this.casosService.filtroParaAdopcionesPorMascota(tipo)
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('donacion/buscar')
   @ApiOperation({ summary: 'Buscar casos de donación por tipo de mascota' })
   @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de mascota (Perro, Gato, etc.)' })
@@ -80,7 +86,7 @@ export class CasosController {
     return this.casosService.filtrarPorTipoYordenTemporal(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);
   }
 
-  @UseGuards(AuthGuard('jwt-local'))
+  @UseGuards(AuthGuard(['jwt-local']))
   @Post()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Crear un nuevo caso (solo ONG autenticada)' })
@@ -165,6 +171,7 @@ export class CasosController {
     return this.casosService.CreateCaso(createCasoDto, ongId);
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get('buscar')
   @ApiOperation({ summary: 'Buscar casos por tipo y nombre de mascota' })
   @ApiQuery({ name: 'tipo', required: false, description: 'Tipo de mascota' })
@@ -174,6 +181,7 @@ export class CasosController {
     return this.casosService.buscarCasos({ tipoMascota, nombreMascota });
   }
 
+  @UseGuards(AuthGuard(['jwt-local']))
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un caso por ID' })
   @ApiParam({ name: 'id', description: 'ID del caso', type: 'string' })
