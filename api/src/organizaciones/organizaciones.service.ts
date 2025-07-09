@@ -130,7 +130,7 @@ export class OrganizacionesService {
     return {
       ok: true,
       mensaje: `Estado actualizado a ${estado}`,
-      organizacion: actualizada,
+      nombre: actualizada.nombre,
     };
   }
 

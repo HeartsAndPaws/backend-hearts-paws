@@ -1,236 +1,30 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import { PrismaClient, Rol, Plan, EstadoAdopcion, TipoCaso } from "@prisma/client";
-import * as bcrypt from 'bcrypt';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
-    // Hasheo de contraseñas
-    const hashedPasswordUsuario = await bcrypt.hash('usuario123', 10);
-    const hashedPasswordAdmin = await bcrypt.hash('admin123', 10);
-    const hashedPasswordONG = await bcrypt.hash('ong123', 10);
+  const tipoPerro = await prisma.tiposMascota.upsert({
+    where: { nombre: 'Perro' },
+    update: {},
+    create: { nombre: 'Perro' },
+  });
 
-    // === Crear tipos de mascota si no existen ===
-    const tipoPerro = await prisma.tiposMascota.upsert({
-        where: { nombre: 'Perro' },
-        update: {},
-        create: { nombre: 'Perro' },
-    });
+  const tipoGato = await prisma.tiposMascota.upsert({
+    where: { nombre: 'Gato' },
+    update: {},
+    create: { nombre: 'Gato' },
+  });
 
-    const tipoGato = await prisma.tiposMascota.upsert({
-        where: { nombre: 'Gato' },
-        update: {},
-        create: { nombre: 'Gato' },
-    });
-
-    // === Crear usuarios si no existen ===
-    const usuario1 = await prisma.usuario.upsert({
-        where: { email: 'lucia@example.com' },
-        update: {},
-        create: {
-            nombre: 'Lucía Fernández',
-            email: 'lucia@example.com',
-            contrasena: hashedPasswordUsuario,
-            telefono: '+5491122334455',
-            direccion: 'Av. Siempre Viva 123',
-            ciudad: 'Buenos Aires',
-            pais: 'Argentina',
-            rol: Rol.USUARIO,
-        },
-    });
-
-    const admin = await prisma.usuario.upsert({
-        where: { email: 'admin@heartsandpaws.com' },
-        update: {},
-        create: {
-            nombre: 'Admin Hearts',
-            email: 'admin@heartsandpaws.com',
-            contrasena: hashedPasswordAdmin,
-            rol: Rol.ADMIN,
-            ciudad: 'Ciudad Autónoma',
-            pais: 'Argentina',
-        },
-    });
-
-    // === Crear organizaciones si no existen ===
-    const ong1 = await prisma.organizacion.upsert({
-        where: { email: 'contacto@patitas.org' },
-        update: {},
-        create: {
-            nombre: 'Patitas Callejeras',
-            email: 'contacto@patitas.org',
-            contrasena: hashedPasswordONG,
-            descripcion: 'Refugio y rehabilitación de animales en situación de calle.',
-            telefono: '+5491144455566',
-            direccion: 'Calle Rescate Animal 456',
-            ciudad: 'Córdoba',
-            pais: 'Argentina',
-            plan: Plan.GRATUITO,
-        },
-    });
-
-    const ong2 = await prisma.organizacion.upsert({
-        where: { email: 'info@huellas.org' },
-        update: {},
-        create: {
-            nombre: 'Huellas de Amor',
-            email: 'info@huellas.org',
-            contrasena: hashedPasswordONG,
-            descripcion: 'Adopciones responsables con seguimiento post-adopción.',
-            direccion: 'Av. Adopción 789',
-            ciudad: 'Mendoza',
-            pais: 'Argentina',
-            telefono: '+5491177788899',
-            plan: Plan.PREMIUM,
-        },
-    });
-
-    // === Crear mascotas si no existen ===
-    const existingMascota = await prisma.mascota.findFirst({
-        where: { nombre: 'Luna' },
-    });
-
-    let mascota1;
-    if (!existingMascota) {
-        mascota1 = await prisma.mascota.create({
-            data: {
-                nombre: 'Luna',
-                edad: 2,
-                descripcion: 'Muy cariñosa, ideal para familias.',
-                organizacionId: ong1.id,
-                tipoId: tipoPerro.id,
-            },
-        });
-    } else {
-        mascota1 = existingMascota;
-    }
-
-    let mascota2 = await prisma.mascota.findFirst({
-        where: {
-            nombre: 'Michi',
-            organizacionId: ong2.id,
-        },
-    });
-
-    if (!mascota2) {
-        mascota2 = await prisma.mascota.create({
-            data: {
-                nombre: 'Michi',
-                edad: 1,
-                descripcion: 'Tranquilo, le gusta dormir al sol.',
-                organizacionId: ong2.id,
-                tipoId: tipoGato.id,
-            },
-        });
-    }
-
-    // === Agregar imágenes si no existen ===
-    const existingImages = await prisma.imagenMascota.findMany();
-    if (!existingImages.length) {
-        await prisma.imagenMascota.createMany({
-            data: [
-                { url: 'https://placedog.net/400/300', mascotaId: mascota1.id },
-                { url: 'https://comunidad.retorn.com/wp-content/uploads/cache/2018/09/gatitos/1583254719.jpg', mascotaId: mascota2.id },
-            ],
-        });
-    }
-
-    // === Crear casos solo si no existen ===
-    const existingCasoAdopcion = await prisma.caso.findFirst({
-        where: { titulo: 'Adopta a Luna' },
-    });
-
-    let casoAdopcionLuna;
-    if (!existingCasoAdopcion) {
-        casoAdopcionLuna = await prisma.caso.create({
-            data: {
-                titulo: 'Adopta a Luna',
-                descripcion: 'Luna busca una familia amorosa.',
-                tipo: TipoCaso.ADOPCION,
-                mascotaId: mascota1.id,
-                ongId: ong1.id,
-            }
-        });
-
-        await prisma.casoAdopcion.create({
-            data: {
-                casoId: casoAdopcionLuna.id,
-                estado: EstadoAdopcion.PENDIENTE,
-            }
-        });
-    } else {
-        casoAdopcionLuna = existingCasoAdopcion;
-    }
-
-    const existingCasoDonacion = await prisma.caso.findFirst({
-        where: { titulo: 'Ayuda a Michi' },
-    });
-
-    let casoDonacionMichi;
-    if (!existingCasoDonacion) {
-        casoDonacionMichi = await prisma.caso.create({
-            data: {
-                titulo: 'Ayuda a Michi',
-                descripcion: 'Recaudación para operación de Michi.',
-                tipo: TipoCaso.DONACION,
-                mascotaId: mascota2.id,
-                ongId: ong2.id,
-            }
-        });
-
-        await prisma.casoDonacion.create({
-            data: {
-                casoId: casoDonacionMichi.id,
-                metaDonacion: 250000,
-                estadoDonacion: 35000,
-            }
-        });
-    } else {
-        casoDonacionMichi = existingCasoDonacion;
-    }
-
-    // === Favoritos ESENCIALES (sin variedad) ===
-    // Caso Donación de Michi
-    const casoDonacionMichiObj = await prisma.casoDonacion.findFirst({
-        where: { casoId: casoDonacionMichi.id }
-    });
-
-    if (casoDonacionMichiObj) {
-        await prisma.favorito.upsert({
-            where: {
-                usuarioId_casoId: { usuarioId: usuario1.id, casoId: casoDonacionMichi.id }
-            },
-            update: {},
-            create: {
-                usuarioId: usuario1.id,
-                casoId: casoDonacionMichi.id
-            }
-        });
-    }
-
-    // Si quieres probar con el de adopción también (opcional)
-    if (casoAdopcionLuna) {
-        await prisma.favorito.upsert({
-            where: {
-                usuarioId_casoId: { usuarioId: usuario1.id, casoId: casoAdopcionLuna.id }
-            },
-            update: {},
-            create: {
-                usuarioId: usuario1.id,
-                casoId: casoAdopcionLuna.id
-            }
-        });
-    }
-
-    console.log('Seed ejecutado sin borrar datos previos');
+  console.log('🐾 Tipos de mascota cargados correctamente:', [tipoPerro.nombre, tipoGato.nombre]);
 }
 
 main()
-    .catch((e) => {
-        console.error('Error en el seed:', e);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+  .catch((e) => {
+    console.error('❌ Error al ejecutar el seeder:', e);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
