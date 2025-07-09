@@ -156,4 +156,14 @@ async verifica(
   borrarSolicitud(@Param('id') id: string) {
     return this.solicitudAdoptarService.borrarSolicitud(id);
   }
+
+  @Get('yaExisteLaSolicitud/:idCasoAdopcion')
+  async verifica(
+  @Req() req: ExpressRequest & { user: User },
+  @Param('idCasoAdopcion') idCasoAdopcion: string
+) {
+  const userId = req.user.id
+  console.log(userId)
+  return this.solicitudAdoptarService.existenciaDeSolicitud(userId, idCasoAdopcion);
+}
 }
