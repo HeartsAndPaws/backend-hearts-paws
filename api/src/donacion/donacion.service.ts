@@ -1,5 +1,5 @@
 
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { formatearARS, calcularPorcentajeProgreso } from 'src/utils/formatters';
 
@@ -130,30 +130,23 @@ export class DonacionService {
     }
   }
 
-  async getDetalleDonacionByCasoId(CasoId: string) {
-    const haDonado = await this.prismaService.donacion.findFirst({
-      where: {
-        casoDonacion: {
-          casoId: CasoId,
-        },
-      },
-    });
+async getDetalleDonacionByCasoId(CasoId: string) {
+  const casos = await this.prismaService.casoDonacion.findMany({
+    where: { casoId: CasoId },
+  });
 
-    if (!haDonado) {
-      throw new ForbiddenException('No tienes permiso para ver el detalle de esta donacion')
-    }
-
-    const casos =await this.prismaService.casoDonacion.findMany({
-      where: {casoId: CasoId},
-    });
-
-    return casos.map((caso) => ({
-      ...caso,
-      estadoDonacionARS: formatearARS(caso.estadoDonacion),
-      metaDonacionARS: formatearARS(caso.metaDonacion),
-      progreso: calcularPorcentajeProgreso(caso.metaDonacion, caso.estadoDonacion),
-    }))
+  if (!casos || casos.length === 0) {
+    throw new NotFoundException('No se encontró detalle de donación para este caso');
   }
+
+  return casos.map((caso) => ({
+    ...caso,
+    estadoDonacionARS: formatearARS(caso.estadoDonacion),
+    metaDonacionARS: formatearARS(caso.metaDonacion),
+    progreso: calcularPorcentajeProgreso(caso.metaDonacion, caso.estadoDonacion),
+  }));
+}
+
 
   async getDetallesDonacion(){
     const casos = await this.prismaService.casoDonacion.findMany();

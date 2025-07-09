@@ -71,6 +71,7 @@ export class DonacionController {
     return this.donacionService.getDonacionById(id);
   }
 
+
   @Get('detalleDonacion/:CasoId')
   @ApiOperation({ summary: 'Obtener el detalle de donación por ID de caso' })
   @ApiParam({ name: 'CasoId', type: 'string', description: 'ID del caso de donación' })
