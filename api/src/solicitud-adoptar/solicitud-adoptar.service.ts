@@ -12,7 +12,6 @@ export class SolicitudAdoptarService {
     private readonly mailerService: MailerService
   ) {}
 
-
   async crearSolicitud(usuarioId: string ,solicitud: SolicitudParaAdoptarDto) {
     const { 
       casoAdopcionId, 
@@ -32,17 +31,6 @@ export class SolicitudAdoptarService {
 
   if (!usuarioSolicitante) {
     throw new BadRequestException('Falta el usuario solicitante');
-  }
-
-  const solicitudExistente = await this.prisma.solicitudDeAdopcion.findFirst({
-    where: {
-      usuarioId,
-      casoAdopcionId
-    }
-  });
-
-  if (solicitudExistente) {
-    throw new BadRequestException('El usuario no puede enviar mas de 1 solicitud para el mismo caso de adopción');
   }
 
   const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
@@ -325,8 +313,8 @@ async aceptarSolicitud(
     where: {
       usuarioId,
       casoAdopcionId,
-    },
-  });
-    return solicitud
+    },
+  });
+  return solicitud !== null;
 }
 }
