@@ -121,9 +121,7 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
 
   async SubirImagenes(mascotaId: string, archivos: Express.Multer.File[], ongId: string) {
 
-    try {
-      
-      const mascota = await this.prismaService.mascota.findUnique({
+    const mascota = await this.prismaService.mascota.findUnique({
       where: { id: mascotaId},
     });
 
@@ -137,53 +135,60 @@ async CreateMascota(createMascotaDto: CreateMascotaDto, ongId: string) {
 
     const imagenes: any = []
 
-    for(const file of archivos){
-      const result = await this.cloudinaryService.subirIamgen(file);
+    try {
+      for(const file of archivos){
+        const result = await this.cloudinaryService.subirIamgen(file);
 
-      const res = await axios.get('https://api.sightengine.com/1.0/check.json', {
-        params: {
-          url: result.secure_url,
-          models: 'violence, gore',
-          api_user: process.env.SIGHTENGINE_USER,
-          api_secret: process.env.SIGHTENGINE_SECRET,
-        },
-      });
+        const res = await axios.get('https://api.sightengine.com/1.0/check.json', {
+          params: {
+            url: result.secure_url,
+            models: 'violence, gore',
+            api_user: process.env.SIGHTENGINE_USER,
+            api_secret: process.env.SIGHTENGINE_SECRET,
+          },
+        });
 
-      if (res.data.status === 'failure') {
-        console.warn('Sightengine error:', res.data.error.message);
-        throw new BadRequestException('Error al analizar imagen: ' + res.data.error.message);
+        if (res.data.status === 'failure') {
+          console.warn('Sightengine error:', res.data.error.message);
+          throw new BadRequestException('Error al analizar imagen: ' + res.data.error.message);
+        }
+
+        const violenciaScore = Math.max(
+          res.data.violence?.prob || 0,
+          res.data.gore?.prob || 0
+        );
+        const esSensible = violenciaScore > 0.7;
+
+        let urlDesenfocada: string | null = null;
+        if (esSensible) {
+          const urlOriginal = result.secure_url;
+          const partes = urlOriginal.split('/upload/');
+          urlDesenfocada = `${partes[0]}/upload/e_pixelate:100/${partes[1]}`;
+        }
+
+        const imagen = await this.prismaService.imagenMascota.create({
+          data: {
+            url: result.secure_url,
+            urlBlur: urlDesenfocada,
+            mascotaId,
+            violenciaScore,
+            esSensible,
+          },
+        });
+
+        imagenes.push(imagen);
       }
 
-      const violenciaScore = Math.max(
-        res.data.violence?.prob || 0,
-        res.data.gore?.prob || 0
-      );
-      const esSensible = violenciaScore > 0.7;
-
-      let urlDesenfocada: string | null = null;
-      if (esSensible) {
-        const urlOriginal = result.secure_url;
-        const partes = urlOriginal.split('/upload/');
-        urlDesenfocada = `${partes[0]}/upload/e_pixelate:100/${partes[1]}`;
-      }
-
-      const imagen = await this.prismaService.imagenMascota.create({
-        data: {
-          url: result.secure_url,
-          urlBlur: urlDesenfocada,
-          mascotaId,
-          violenciaScore,
-          esSensible,
-        },
-      });
-
-      imagenes.push(imagen);
-
-    }
-
-    return imagenes;
+      return imagenes;
     } catch (error) {
-      console.error('ErrorAl subir imagen:', error);
+      // Re-throw specific HTTP exceptions
+      if (error instanceof BadRequestException || 
+          error instanceof NotFoundException || 
+          error instanceof ForbiddenException) {
+        throw error;
+      }
+      
+      console.error('Error al subir imagen:', error);
       throw new Error('Fallo la subida de imagen.')
     }
 
