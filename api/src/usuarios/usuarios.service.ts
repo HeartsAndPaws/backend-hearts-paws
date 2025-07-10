@@ -3,14 +3,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { ActualizarUsuarioDTO } from './dto/ActualizarUsuario.dto';
 import { Rol } from '@prisma/client';
-import { GoogleVisionService } from 'src/google-vision/google-vision.service';
-
 
 @Injectable()
 export class UsuariosService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly googleVisionService: GoogleVisionService
   ){}
 
   async actualizarFotoPerfil(id: string, fotoUrl: string){
