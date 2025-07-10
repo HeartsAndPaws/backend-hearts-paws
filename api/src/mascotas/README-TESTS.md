@@ -179,3 +179,86 @@ Actualmente todas las pruebas pasan:
 - **Total**: 20 pruebas ✅
 
 Las pruebas cubren los casos principales de uso y manejo de errores del módulo de mascotas.
+
+## Cambios Realizados en el Código
+
+### Modificación en `MascotasService.SubirImagenes`
+
+Durante la implementación de las pruebas, fue necesario modificar el método `SubirImagenes` para mejorar el manejo de errores:
+
+#### **Problema Original:**
+```typescript
+async SubirImagenes(mascotaId: string, archivos: Express.Multer.File[], ongId: string) {
+  try {
+    const mascota = await this.prismaService.mascota.findUnique({
+      where: { id: mascotaId},
+    });
+
+    if (!mascota) {
+      throw new NotFoundException('Mascota no encontrada');
+    }
+
+    if (mascota.organizacionId !== ongId) {
+      throw new ForbiddenException('No puedes subir imagenes a esta mascota');
+    }
+
+    // ... resto del código
+  } catch (error) {
+    console.error('ErrorAl subir imagen:', error);
+    throw new Error('Fallo la subida de imagen.')  // ❌ Problema: capturaba TODAS las excepciones
+  }
+}
+```
+
+#### **Solución Implementada:**
+```typescript
+async SubirImagenes(mascotaId: string, archivos: Express.Multer.File[], ongId: string) {
+  // Validaciones fuera del try-catch
+  const mascota = await this.prismaService.mascota.findUnique({
+    where: { id: mascotaId},
+  });
+
+  if (!mascota) {
+    throw new NotFoundException('Mascota no encontrada');
+  }
+
+  if (mascota.organizacionId !== ongId) {
+    throw new ForbiddenException('No puedes subir imagenes a esta mascota');
+  }
+
+  const imagenes: any = []
+
+  try {
+    // Solo el procesamiento de archivos en el try-catch
+    for(const file of archivos){
+      // ... procesamiento de imágenes
+    }
+    return imagenes;
+  } catch (error) {
+    // Re-throw specific HTTP exceptions
+    if (error instanceof BadRequestException || 
+        error instanceof NotFoundException || 
+        error instanceof ForbiddenException) {
+      throw error;  // ✅ Solución: re-lanzar excepciones específicas
+    }
+    
+    console.error('Error al subir imagen:', error);
+    throw new Error('Fallo la subida de imagen.')
+  }
+}
+```
+
+#### **¿Por qué era necesario este cambio?**
+
+1. **Problema**: El `try-catch` original capturaba **todas** las excepciones, incluyendo `NotFoundException` y `ForbiddenException`
+2. **Efecto**: Las excepciones específicas se convertían en un `Error` genérico
+3. **Resultado**: Las pruebas fallaban porque esperaban excepciones específicas pero recibían errores genéricos
+
+#### **Beneficios del cambio:**
+
+1. **✅ Pruebas funcionan**: Las validaciones lanzan las excepciones correctas
+2. **✅ Mejor separación**: Validaciones fuera del try-catch, procesamiento dentro
+3. **✅ Manejo específico**: Re-lanza excepciones HTTP específicas
+4. **✅ Logging preservado**: Mantiene el log de errores para errores no HTTP
+
+Este cambio mejoró tanto la testabilidad como la claridad del código, siguiendo el principio de "fail fast" para las validaciones.
