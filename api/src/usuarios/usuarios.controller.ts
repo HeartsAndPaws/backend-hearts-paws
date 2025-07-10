@@ -152,7 +152,10 @@ export class UsuariosController {
     return await this.usuariosService.borrarUsuario(id);
   }
 
-  @Post(':id/foto')
+
+
+  @Post('foto')
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']))
   @UseInterceptors(FileInterceptor('file', {
     fileFilter: filtroArchivoImagen,
     limits: limits
@@ -173,11 +176,12 @@ export class UsuariosController {
   })
   @ApiResponse({ status: 200, description: 'Foto de perfil actualizada correctamente' })
   async subirFotoPerfil(
-    @Param('id') id: string,
+    @Req() req: AuthenticateRequest,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    const userId = req.user.id;
     const subirImagen = await this.cloudinaryService.subirIamgen(file);
-    return this.usuariosService.actualizarFotoPerfil(id, subirImagen.secure_url);
+    return this.usuariosService.actualizarFotoPerfil(userId, subirImagen.secure_url);
   }
 
   @UseGuards(AuthGuard(['jwt-local', 'supabase']))
