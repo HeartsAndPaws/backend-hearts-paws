@@ -206,6 +206,9 @@ async filtroParaAdopcionesPorMascota(tipo: string) {
           },
         },
       },
+      adopcion: {
+        estado: 'PENDIENTE',
+      }
     },
     include: {
       adopcion: true,
