@@ -89,6 +89,8 @@ export class UsuariosController {
     return await this.usuariosService.obtenerSolicitudesDelUsuario(usuarioId);
   }
 
+
+  @UseGuards()
   @Get('verificar-email/:email')
   @ApiOperation({ summary: 'Verificar si el email ya está registrado' })
   @ApiParam({ name: 'email', type: 'string' })
@@ -97,7 +99,7 @@ export class UsuariosController {
     const usuario = await this.usuariosService.buscarPorEmail(email);
     return {
       disponible: !usuario,
-      mensaje: usuario ? 'El email esta disponible' : 'El email ya esta registrado',
+      mensaje: usuario ? 'El email ya esta registrado' : 'El email esta disponible',
     };
   }
 
