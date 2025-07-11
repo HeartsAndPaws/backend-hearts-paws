@@ -139,15 +139,6 @@ export class SolicitudAdoptarController {
     );
   }
   
-@Get('yaExisteLaSolicitud/:idCasoAdopcion')
-async verifica(
-  @Req() req: ExpressRequest & { user: User },
-  @Param('idCasoAdopcion') idCasoAdopcion: string
-) {
-  const userId = req.user.id
-  console.log(userId)
-  return this.solicitudAdoptarService.existenciaDeSolicitud(userId, idCasoAdopcion);
-}
 
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una solicitud de adopción' })
