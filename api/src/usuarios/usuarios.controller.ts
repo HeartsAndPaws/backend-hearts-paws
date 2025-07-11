@@ -36,7 +36,6 @@ import { Roles } from 'src/autenticacion/decoradores/roles.decorator';
 import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @ApiTags('Usuarios')
-@UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
 @ApiBearerAuth()
 @Controller('usuarios')
 export class UsuariosController {
@@ -45,6 +44,8 @@ export class UsuariosController {
     private readonly cloudinaryService: CloudinaryService
   ) {}
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Get()
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Listar todos los usuarios' })
@@ -62,6 +63,8 @@ export class UsuariosController {
     return await this.usuariosService.listaDeUsuarios({ rol, pais, email, nombre });
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Get('estadisticas/total')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Obtener total de usuarios' })
@@ -90,7 +93,6 @@ export class UsuariosController {
   }
 
 
-  @UseGuards()
   @Get('verificar-email/:email')
   @ApiOperation({ summary: 'Verificar si el email ya está registrado' })
   @ApiParam({ name: 'email', type: 'string' })
@@ -112,6 +114,7 @@ export class UsuariosController {
   }
 
 
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Get(':id')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Obtener usuario por ID' })
@@ -145,6 +148,8 @@ export class UsuariosController {
     return await this.usuariosService.actualizarUsuario(userId, datosDeUsuario);
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Delete(':id')
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Eliminar un usuario por ID' })
