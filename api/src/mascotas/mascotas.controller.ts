@@ -63,7 +63,6 @@ export class MascotasController {
   }
 
 
-  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Get('tipo')
   @ApiOperation({ summary: 'Obtener todos los tipos de mascotas' })
   @ApiResponse({ status: 200, description: 'Lista de tipos de mascotas.' })
