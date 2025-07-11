@@ -143,6 +143,8 @@ model SolicitudDeAdopcion {
   devolucionDeMascota        String
   siNoPodesCuidarla          String
   declaracionFinal           String
+
+  @@unique([usuarioId, casoAdopcionId])
 }
 
 enum TipoCaso {
