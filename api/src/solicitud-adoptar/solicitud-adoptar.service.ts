@@ -33,6 +33,17 @@ export class SolicitudAdoptarService {
     throw new BadRequestException('Falta el usuario solicitante');
   }
 
+  const solicitudExistente = await this.prisma.solicitudDeAdopcion.findFirst({
+    where: {
+      usuarioId,
+      casoAdopcionId,
+    },
+  });
+
+  if (solicitudExistente) {
+    throw new BadRequestException('Ya enviaste una solicitud para este caso de adopción');
+  }
+
   const nuevaSolicitud = await this.prisma.solicitudDeAdopcion.create({
     data: {
       usuarioId, casoAdopcionId, estado, tipoVivienda, integrantesFlia, hijos, hayOtrasMascotas,
