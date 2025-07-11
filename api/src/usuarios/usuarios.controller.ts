@@ -97,7 +97,7 @@ export class UsuariosController {
     const usuario = await this.usuariosService.buscarPorEmail(email);
     return {
       disponible: !usuario,
-      mensaje: usuario ? 'El email ya está registrado' : 'El email está disponible',
+      mensaje: usuario ? 'El email esta disponible' : 'El email ya esta registrado',
     };
   }
 
