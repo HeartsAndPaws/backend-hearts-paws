@@ -36,14 +36,24 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
     const user = data.user;
     const sub = user?.id;
     const email = user?.email;
+<<<<<<< HEAD
     const name = user.user_metadata?.full_name || 'Usuario Externo';
     const picture = user.user_metadata?.avatar_url || null;
+=======
+    const picture = user.user_metadata?.avatar_url || null;
+    const name = user.user_metadata?.full_name?.trim();
+>>>>>>> origin/main
 
     const usuario = await this.supabaseService.registrarOrSync({
       sub,
       email,
+<<<<<<< HEAD
       name,
       picture,
+=======
+      picture,
+      name,
+>>>>>>> origin/main
     });
 
 
@@ -52,6 +62,10 @@ export class SupabaseStrategy extends PassportStrategy(Strategy, 'supabase') {
       email: usuario.email,
       tipo: 'USUARIO',
       rol: usuario.rol,
+<<<<<<< HEAD
+=======
+      name: usuario.name,
+>>>>>>> origin/main
       picture,
       external: true,
     }

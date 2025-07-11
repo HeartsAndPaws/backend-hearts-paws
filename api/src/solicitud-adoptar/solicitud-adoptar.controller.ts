@@ -25,6 +25,7 @@ import { User } from '@supabase/supabase-js';
 import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request.interface';
 
 @ApiTags('Solicitudes de Adopción')
+@UseGuards(AuthGuard(['jwt-local', 'supabase']))
 @Controller('solicitud-adoptar')
 export class SolicitudAdoptarController {
   constructor(private readonly solicitudAdoptarService: SolicitudAdoptarService) {}
@@ -137,7 +138,7 @@ export class SolicitudAdoptarController {
       req.user.id,
     );
   }
-
+  
   @Delete(':id')
   @ApiOperation({ summary: 'Borrar una solicitud de adopción' })
   @ApiParam({ name: 'id', type: 'string', description: 'ID de la solicitud' })

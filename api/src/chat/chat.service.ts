@@ -203,8 +203,16 @@ export class ChatService {
     async crearMensaje(chatId: string, autorId: string, contenido: string) {
         
         const chat = await this.getChatPorId(chatId);
+
         const usuario = await this.prisma.usuario.findUnique({where: { id: autorId}});
-        const esUsuario = Boolean(usuario)
+
+        const organizacion = !usuario
+            ? await this.prisma.organizacion.findUnique({ where: { id: autorId}})
+            : null;
+
+        if (!usuario && !organizacion) {
+            throw new NotFoundException('No se encontró usuario u organización con ese ID')
+        }
 
         const mensaje = await this.prisma.mensaje.create({
             data: {
@@ -212,7 +220,7 @@ export class ChatService {
                 chat: {
                     connect: { id: chatId},
                 },
-                ...(esUsuario
+                ...(usuario
                     ? { autorUsuario: { connect: { id: autorId}}}
                     : { autorOrganizacion: { connect: { id: autorId}}}
                 )

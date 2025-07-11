@@ -9,10 +9,17 @@ export class SupabaseService {
     async registrarOrSync(supabaseUser: {
     sub: string;
     email: string;
+<<<<<<< HEAD
     name: string;
     picture?: string;
 }) {
     const { sub: externalId, email, name, picture } = supabaseUser;
+=======
+    picture?: string;
+    name?: string;
+}) {
+    const { sub: externalId, email, picture, name } = supabaseUser;
+>>>>>>> origin/main
 
     if (!email || !externalId) {
         throw new UnauthorizedException('Token inválido: faltan campos obligatorios');
@@ -28,7 +35,11 @@ export class SupabaseService {
         usuario = await this.prisma.usuario.create({
             data: {
                 email,
+<<<<<<< HEAD
                 nombre: name?.trim() || 'Usuario Externo',
+=======
+                nombre: name || email.split('@')[0],
+>>>>>>> origin/main
                 imagenPerfil: picture || null,
                 rol: 'USUARIO',
                 contrasena: null,

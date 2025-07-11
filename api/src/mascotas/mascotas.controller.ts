@@ -30,8 +30,6 @@ import { AuthenticateRequest } from 'src/common/interfaces/authenticated-request
 @Controller('mascotas')
 export class MascotasController {
   constructor(private readonly mascotasService: MascotasService) {}
-
-  // ADMIN: Lista todas las mascotas
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Roles('ADMIN')
   @Get()
@@ -41,7 +39,6 @@ export class MascotasController {
     return this.mascotasService.GetMascotas();
   }
 
-  // ONG autenticada: mascotas en adopción propias
   @UseGuards(AuthGuard('jwt-local'))
   @Get('mascotas-por-ong-adopcion')
   @ApiOperation({ summary: 'Obtener mascotas en adopción de mi ONG autenticada' })
@@ -51,7 +48,6 @@ export class MascotasController {
     return this.mascotasService.mascotasEnAdopcionPorOng(ongId);
   }
 
-  // ADMIN: Total de mascotas
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Roles('ADMIN')
   @Get('total')
@@ -61,7 +57,6 @@ export class MascotasController {
     return await this.mascotasService.contarMascotas();
   }
 
-  // Tipos de mascota (público)
   @Get('tipo')
   @ApiOperation({ summary: 'Obtener todos los tipos de mascotas' })
   @ApiResponse({ status: 200, description: 'Lista de tipos de mascotas.' })
@@ -69,7 +64,6 @@ export class MascotasController {
     return this.mascotasService.GetTipo();
   }
 
-  // ONG autenticada: mascotas propias
   @UseGuards(AuthGuard('jwt-local'))
   @Get('ong')
   @ApiOperation({ summary: 'Obtener mascotas de mi ONG autenticada' })
@@ -79,7 +73,6 @@ export class MascotasController {
     return this.mascotasService.GetMascotasByOngId(ongId);
   }
 
-  // Mascota por ID (público)
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una mascota por ID' })
   @ApiParam({ name: 'id', required: true, description: 'ID de la mascota', example: 'b6985ee8-9802-497c-97b4-1a43843a3c1f' })
@@ -88,7 +81,6 @@ export class MascotasController {
     return this.mascotasService.GetMascotaById(id);
   }
 
-  // ADMIN: Crear tipo de mascota
   @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
   @Roles('ADMIN')
   @Post('crearTipo')
@@ -102,11 +94,12 @@ export class MascotasController {
     }
   })
   @ApiResponse({ status: 201, description: 'Tipo de mascota creado correctamente.' })
+  @UseGuards(AuthGuard(['jwt-local', 'supabase']), RolesGuard)
+  @Post("crearTipo")
   CreateTipoMascota(@Body() createTipoMascotaDto: TipoMascotaDto) {
     return this.mascotasService.CreateTipoMascota(createTipoMascotaDto);
   }
 
-  // ONG autenticada: Crear mascota
   @UseGuards(AuthGuard('jwt-local'))
   @Post()
   @ApiOperation({ summary: 'Crear una nueva mascota (ONG autenticada)' })
@@ -133,7 +126,6 @@ export class MascotasController {
     return this.mascotasService.CreateMascota(createMascotaDto, ongId);
   }
 
-  // ONG autenticada: Crear tipo de mascota (simple)
   @UseGuards(AuthGuard('jwt-local'))
   @Post('tipo')
   @ApiOperation({ summary: 'Crear un tipo de mascota (ONG autenticada)' })

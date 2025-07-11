@@ -61,6 +61,7 @@ export class CasosController {
   }
 
   @Get('filtro-casos-fechas/buscar')
+  @UseGuards(AuthGuard(['jwt-local']))
   @ApiOperation({ summary: 'Buscar casos por tipo y rango de fechas' })
   @ApiQuery({ name: 'tipo', required: true, description: 'Tipo de caso (ADOPCION o DONACION)' })
   @ApiQuery({ name: 'fechaDesde', required: true, description: 'Fecha de inicio (YYYY-MM-DD)' })
@@ -71,6 +72,7 @@ export class CasosController {
   }
 
   @Get('filtro-tipo-mascota-orden-temporal')
+  @UseGuards(AuthGuard(['jwt-local']))
   @ApiOperation({ summary: 'Filtrar casos por tipo de mascota y orden temporal' })
   @ApiQuery({ name: 'ongId', required: true, description: 'ID de la organización' })
   @ApiQuery({ name: 'viejoReciente', required: false, description: 'Orden temporal (RECIENTE o ANTIGUO)' })
@@ -80,6 +82,8 @@ export class CasosController {
     return this.casosService.filtrarPorTipoYordenTemporal(filtros.ongId, filtros.viejoReciente, filtros.tipoMascota);
   }
 
+
+  @UseGuards(AuthGuard(['jwt-local']))
   @UseGuards(AuthGuard('jwt-local'))
   @Post()
   @ApiBearerAuth()
